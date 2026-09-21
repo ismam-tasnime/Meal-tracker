@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
-import { getAdminSession } from "@/lib/auth/session";
+import { getAdminSession, isAdminSetupCompleted } from "@/lib/auth/session";
 import { AdminNav } from "@/components/admin/AdminNav";
+import { ClaimAdminButton } from "@/components/admin/ClaimAdminButton";
 import { signOut } from "@/lib/actions/auth";
 
 export const dynamic = "force-dynamic";
@@ -15,14 +16,35 @@ export default async function ProtectedAdminLayout({ children }: { children: Rea
   }
 
   if (!isAdmin) {
+    // Signup couldn't claim admin inline (email confirmation was required),
+    // so offer the claim here as long as the slot is still open.
+    const setupCompleted = await isAdminSetupCompleted();
+
     return (
       <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-4 text-center">
-        <h1 className="text-lg font-semibold text-slate-900">Not authorized</h1>
+        <h1 className="text-lg font-semibold text-slate-900">
+          {setupCompleted ? "Not authorized" : "Finish admin setup"}
+        </h1>
         <p className="mt-2 text-sm text-slate-500">
-          Your account ({user.email}) is signed in but is not registered as an admin. Ask a
-          superadmin to add a row for you in the <code className="rounded bg-slate-100 px-1">admin_profiles</code>{" "}
-          table.
+          {setupCompleted ? (
+            <>
+              Your account ({user.email}) is signed in but is not an admin. Ask an existing
+              admin to grant you access.
+            </>
+          ) : (
+            <>
+              You&rsquo;re signed in as {user.email}. No admin exists for this office yet —
+              claim it to finish setup.
+            </>
+          )}
         </p>
+
+        {!setupCompleted && (
+          <div className="mt-4">
+            <ClaimAdminButton defaultName={user.email ?? ""} />
+          </div>
+        )}
+
         <form action={signOut} className="mt-4">
           <button
             type="submit"

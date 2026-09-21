@@ -32,16 +32,18 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const isAdminRoute = request.nextUrl.pathname.startsWith("/admin");
-  const isLoginRoute = request.nextUrl.pathname === "/admin/login";
+  const { pathname } = request.nextUrl;
+  const isAdminRoute = pathname.startsWith("/admin");
+  // Reachable without a session: sign-in, and the one-time first-admin signup.
+  const isPublicAdminRoute = pathname === "/admin/login" || pathname === "/admin/signup";
 
-  if (isAdminRoute && !isLoginRoute && !user) {
+  if (isAdminRoute && !isPublicAdminRoute && !user) {
     const loginUrl = new URL("/admin/login", request.url);
-    loginUrl.searchParams.set("next", request.nextUrl.pathname);
+    loginUrl.searchParams.set("next", pathname);
     return NextResponse.redirect(loginUrl);
   }
 
-  if (isLoginRoute && user) {
+  if (pathname === "/admin/login" && user) {
     return NextResponse.redirect(new URL("/admin", request.url));
   }
 
