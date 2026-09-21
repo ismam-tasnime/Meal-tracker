@@ -86,13 +86,17 @@ export type Database = {
     };
     Views: Record<string, never>;
     Functions: {
-      is_admin: {
-        Args: Record<string, never>;
-        Returns: boolean;
-      };
       get_monthly_report: {
         Args: { p_year: number; p_month: number };
         Returns: MonthlyReportRow[];
+      };
+      admin_setup_completed: {
+        Args: Record<string, never>;
+        Returns: boolean;
+      };
+      claim_first_admin: {
+        Args: { p_full_name: string };
+        Returns: boolean;
       };
     };
   };

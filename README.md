@@ -48,6 +48,7 @@ supabase/
 - **meal_records** — `id, employee_id, meal_date, breakfast, lunch, dinner, created_at, updated_at`, unique on `(employee_id, meal_date)`, indexed on both `employee_id` and `meal_date`
 - **meal_prices** — price *history*: `breakfast_price, lunch_price, dinner_price, effective_from`. Updating prices inserts a new row rather than overwriting, so monthly reports for past months keep using whatever price was in effect on each day.
 - **admin_profiles** — `id` (references `auth.users`), `role`. This is the only source of admin authorization — signing in with Supabase Auth alone grants nothing.
+- **First-admin bootstrap** — `private.claim_first_admin()` lets a signed-in user become admin *only* while `admin_profiles` is empty (guarded by an exclusive table lock, so concurrent claims can't both win). `public.admin_setup_completed()` exposes a single boolean so the signup page knows whether to open.
 - **`is_admin()`** — SQL helper used by RLS policies.
 - **`get_monthly_report(year, month)`** — server-side aggregation that joins each day's meal records to the price in effect that day and returns per-employee counts/amounts.
 
@@ -83,16 +84,23 @@ these RLS policies plus the user's session.
    then optionally `supabase/seed.sql` for starter prices (৳30/৳50/৳40 —
    edit these first if your real prices differ). If you use the Supabase
    CLI instead: `supabase link` then `supabase db push`.
-3. **Create your first admin**:
-   - In Supabase Dashboard → Authentication → Users, click "Add user" and
-     create an account with an email + password (or invite yourself).
-   - In the SQL Editor, run:
-     ```sql
-     insert into public.admin_profiles (id, full_name)
-     values ('<paste the user's UUID from the Users list>', 'Your Name');
-     ```
-   - That user can now sign in at `/admin/login`. There is no self-signup
-     and no UI for creating additional admins — add more the same way.
+3. **Create your first admin** — visit `/admin/signup` and fill in the form.
+   This is a **one-time bootstrap**: the page is only open while zero admins
+   exist, and the moment the first admin is created it closes permanently.
+   The rule is enforced in the database (`private.claim_first_admin` takes an
+   exclusive lock and refuses if any admin row exists), not in the UI, so it
+   can't be bypassed by calling the API directly.
+
+   If your Supabase project has "Confirm email" enabled, signup creates the
+   account but can't grant admin inline — confirm the email, sign in, and
+   `/admin` will offer a "Claim admin access" button while the slot is open.
+
+   To add **more** admins later, create the user in Supabase Dashboard →
+   Authentication → Users, then in the SQL Editor run:
+   ```sql
+   insert into public.admin_profiles (id, full_name)
+   values ('<the user''s UUID from the Users list>', 'Their Name');
+   ```
 4. **Environment variables**: copy `.env.example` to `.env.local` and fill
    in your project's URL and anon key (Project Settings → API):
    ```
@@ -144,6 +152,6 @@ required for the plain email/password flow used here).
 
 - [ ] Create the Supabase project and run the migration + seed above
 - [ ] Set real meal prices (via `/admin/prices` or by editing `seed.sql` first)
-- [ ] Create your admin user(s) and their `admin_profiles` rows
+- [ ] Create your first admin at `/admin/signup` (one-time; closes afterwards)
 - [ ] Add real employees via `/admin/employees`
 - [ ] Set `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY` in your deployment host

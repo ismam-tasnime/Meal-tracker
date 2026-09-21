@@ -34,3 +34,21 @@ export async function getAdminSession(): Promise<AdminSession> {
 
   return { user, isAdmin: !!profile, profile: profile ?? null };
 }
+
+/**
+ * Whether the first admin has already been created. Admin signup is a
+ * one-time bootstrap: once this returns true, registration is permanently
+ * closed and the database refuses further claims regardless of the UI.
+ */
+export async function isAdminSetupCompleted(): Promise<boolean> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("admin_setup_completed");
+
+  // Fail closed: if we can't tell, treat setup as done so signup stays shut.
+  if (error) {
+    console.error("admin_setup_completed check failed", error);
+    return true;
+  }
+
+  return data ?? true;
+}
