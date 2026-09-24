@@ -7,6 +7,7 @@ import { setDayWeights } from "@/lib/actions/mess";
 import type { AdminMealSheetRow } from "@/lib/data/meals";
 import { MealToggleButton } from "@/components/public/MealToggleButton";
 import { DEFAULT_MEAL_WEIGHTS, formatMealCount, type MealWeights } from "@/lib/utils/mess";
+import { EmployeeName } from "@/components/EmployeeName";
 
 type CellStatus = "idle" | "saving" | "error";
 type MealKey = "breakfast" | "lunch" | "dinner";
@@ -205,7 +206,7 @@ export function MealStatusEditor({
                 <tr key={row.employeeId} className="border-b border-slate-100 last:border-b-0">
                   <td className="sticky left-0 z-10 bg-white px-3 py-2 font-medium text-slate-800">
                     <span className="flex items-center gap-1.5">
-                      {row.employeeName}
+                      <EmployeeName name={row.employeeName} tokenNo={row.tokenNo} />
                       {!row.isActive && (
                         <span className="rounded-full bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-400">
                           Inactive

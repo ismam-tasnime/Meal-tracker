@@ -6,6 +6,7 @@ import { deleteDeposit } from "@/lib/actions/mess";
 import type { DepositWithEmployee } from "@/lib/data/mess";
 import { formatBDT } from "@/lib/utils/currency";
 import { formatDisplayDate } from "@/lib/utils/date";
+import { EmployeeName } from "@/components/EmployeeName";
 
 export function DepositList({ deposits }: { deposits: DepositWithEmployee[] }) {
   const router = useRouter();
@@ -43,7 +44,9 @@ export function DepositList({ deposits }: { deposits: DepositWithEmployee[] }) {
         {deposits.map((d) => (
           <li key={d.id} className="flex items-center gap-3 px-3 py-2.5">
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium text-slate-800">{d.employee_name}</p>
+              <p className="truncate text-sm font-medium text-slate-800">
+                <EmployeeName name={d.employee_name} tokenNo={d.token_no} />
+              </p>
               <p className="truncate text-xs text-slate-500">
                 {formatDisplayDate(d.deposited_on)}
                 {d.note ? ` · ${d.note}` : ""}

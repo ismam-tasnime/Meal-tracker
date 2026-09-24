@@ -47,7 +47,11 @@ export default async function ManagerReportPage({
         <>
           <ReportFilters
             employeeId={employeeId}
-            employees={rows.map((r) => ({ id: r.employee_id, name: r.employee_name }))}
+            employees={rows.map((r) => ({
+              id: r.employee_id,
+              name: r.employee_name,
+              tokenNo: r.token_no,
+            }))}
           />
           <BillSummaryTable rows={filteredRows} period={period} showMealBreakdown allowExport />
         </>

@@ -4,6 +4,8 @@
 
 export type Employee = {
   id: string;
+  /** Office token number (TKN); unique when set. */
+  token_no: number | null;
   name: string;
   is_active: boolean;
   created_at: string;
@@ -61,6 +63,7 @@ export type Deposit = {
 
 export type PeriodReportRow = {
   employee_id: string;
+  token_no: number | null;
   employee_name: string;
   is_active: boolean;
   breakfast_count: number;

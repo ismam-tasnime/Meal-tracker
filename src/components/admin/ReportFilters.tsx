@@ -2,13 +2,14 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTransition } from "react";
+import { employeeLabel } from "@/components/EmployeeName";
 
 export function ReportFilters({
   employeeId,
   employees,
 }: {
   employeeId: string;
-  employees: { id: string; name: string }[];
+  employees: { id: string; name: string; tokenNo: number | null }[];
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -34,7 +35,7 @@ export function ReportFilters({
         <option value="">All employees</option>
         {employees.map((e) => (
           <option key={e.id} value={e.id}>
-            {e.name}
+            {employeeLabel(e.name, e.tokenNo)}
           </option>
         ))}
       </select>

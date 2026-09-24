@@ -8,6 +8,7 @@ export async function listAllEmployees(): Promise<Employee[]> {
     .from("employees")
     .select("*")
     .order("is_active", { ascending: false })
+    .order("token_no", { ascending: true, nullsFirst: false })
     .order("name", { ascending: true });
 
   if (error) throw error;
