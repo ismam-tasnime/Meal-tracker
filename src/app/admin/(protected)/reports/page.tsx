@@ -1,23 +1,20 @@
 import { ReportFilters } from "@/components/admin/ReportFilters";
 import { PeriodReportTable } from "@/components/admin/PeriodReportTable";
-import { PeriodSelect } from "@/components/admin/PeriodSelect";
 import { getPeriodReport } from "@/lib/data/reports";
 import { listAllEmployees } from "@/lib/data/employees";
-import { listMyPeriods } from "@/lib/data/periods";
-import { pickPeriod } from "@/lib/utils/mess";
+import { getMyPeriod } from "@/lib/data/periods";
 
 export const dynamic = "force-dynamic";
 
 export default async function ManagerReportsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ period?: string; employee?: string }>;
+  searchParams: Promise<{ employee?: string }>;
 }) {
   const params = await searchParams;
   const employeeId = params.employee ?? "";
 
-  const periods = await listMyPeriods().catch(() => []);
-  const period = pickPeriod(periods, params.period);
+  const period = await getMyPeriod().catch(() => null);
   if (!period) return null;
 
   let rows: Awaited<ReturnType<typeof getPeriodReport>> = [];
@@ -42,10 +39,7 @@ export default async function ManagerReportsPage({
         </p>
       </div>
 
-      <div className="flex flex-wrap items-end gap-3">
-        <PeriodSelect periods={periods} selectedId={period.id} />
-        <ReportFilters employeeId={employeeId} employees={employees} />
-      </div>
+      <ReportFilters employeeId={employeeId} employees={employees} />
 
       {loadError ? (
         <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{loadError}</p>

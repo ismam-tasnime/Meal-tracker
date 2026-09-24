@@ -1,6 +1,4 @@
 import { ManagerSignupForm } from "@/components/admin/ManagerSignupForm";
-import { todayInOfficeTz } from "@/lib/utils/date";
-import { messMonthForDate } from "@/lib/utils/mess";
 
 export const dynamic = "force-dynamic";
 
@@ -16,7 +14,7 @@ export default function ManagerSignupPage() {
       </div>
 
       <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <ManagerSignupForm defaultMonth={messMonthForDate(todayInOfficeTz())} />
+        <ManagerSignupForm />
       </div>
     </div>
   );

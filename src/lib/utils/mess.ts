@@ -1,48 +1,49 @@
 import { format } from "date-fns";
 import type { MessPeriod } from "@/lib/types/database";
-import { MONTH_NAMES, addDaysToDateStr, parseDateStr, todayInOfficeTz } from "@/lib/utils/date";
+import { MONTH_NAMES, addDaysToDateStr, parseDateStr } from "@/lib/utils/date";
 
 /** Each mess month runs from this day of one month to the day before it in the next. */
 export const MESS_START_DAY = 5;
 
 export type PeriodRange = Pick<MessPeriod, "start_date" | "end_date">;
+export type MessMonth = { year: number; month: number };
 
-/** The mess month that starts in the given calendar month, e.g. January → 5 Jan – 4 Feb. */
-export function messMonthRange(year: number, month1to12: number): PeriodRange {
+/**
+ * Parses a mess manager username such as "January 2026" (any capitalisation,
+ * extra spaces allowed). Only a full month name followed by a 4-digit year
+ * is accepted.
+ */
+export function parseMessMonthName(input: string): MessMonth | null {
+  const match = input.trim().toLowerCase().match(/^([a-z]+)\s+(\d{4})$/);
+  if (!match) return null;
+  const monthIndex = MONTH_NAMES.findIndex((name) => name.toLowerCase() === match[1]);
+  const year = Number(match[2]);
+  if (monthIndex === -1 || year < 2000 || year > 2100) return null;
+  return { year, month: monthIndex + 1 };
+}
+
+/** The 5th-to-5th dates a mess month covers (end exclusive). */
+export function messMonthRange({ year, month }: MessMonth): PeriodRange {
   const day = String(MESS_START_DAY).padStart(2, "0");
-  const nextYear = month1to12 === 12 ? year + 1 : year;
-  const nextMonth = month1to12 === 12 ? 1 : month1to12 + 1;
+  const next = month === 12 ? { year: year + 1, month: 1 } : { year, month: month + 1 };
   return {
-    start_date: `${year}-${String(month1to12).padStart(2, "0")}-${day}`,
-    end_date: `${nextYear}-${String(nextMonth).padStart(2, "0")}-${day}`,
+    start_date: `${year}-${String(month).padStart(2, "0")}-${day}`,
+    end_date: `${next.year}-${String(next.month).padStart(2, "0")}-${day}`,
   };
 }
 
-export function validMessMonth(year: number, month: number): boolean {
-  return (
-    Number.isInteger(year) &&
-    Number.isInteger(month) &&
-    year >= 2000 &&
-    year <= 2100 &&
-    month >= 1 &&
-    month <= 12
-  );
+/** "January 2026" */
+export function formatMessMonthName({ year, month }: MessMonth): string {
+  return `${MONTH_NAMES[month - 1]} ${year}`;
 }
 
-/** Turns a mess_periods insert error into something a manager can act on. */
-export function periodErrorMessage(error: { code?: string }, fallback: string): string {
-  // 23P01 = exclusion_violation: the mess_periods_no_overlap constraint.
-  if (error.code === "23P01") {
-    return "That month already has a mess manager. Pick a different month.";
-  }
-  return fallback;
-}
-
-/** The mess month (as year/month of its start) that contains the given date. */
-export function messMonthForDate(dateStr: string): { year: number; month: number } {
-  const [year, month, day] = dateStr.split("-").map(Number);
-  if (day >= MESS_START_DAY) return { year, month };
-  return month === 1 ? { year: year - 1, month: 12 } : { year, month: month - 1 };
+/**
+ * The internal Supabase Auth login address behind a month username. Nobody
+ * sees it or receives mail at it. Must match the pattern in
+ * private.register_mess_manager() (supabase/migrations/0005_mess_managers.sql).
+ */
+export function messAccountEmail({ year, month }: MessMonth): string {
+  return `mess-${year}-${String(month).padStart(2, "0")}@mess-manager.app`;
 }
 
 export function isDateInPeriod(dateStr: string, period: PeriodRange): boolean {
@@ -57,7 +58,7 @@ export function periodLastDay(period: PeriodRange): string {
 /** "January 2027" — named after the month the period starts in. */
 export function formatPeriodName(period: PeriodRange): string {
   const [year, month] = period.start_date.split("-").map(Number);
-  return `${MONTH_NAMES[month - 1]} ${year}`;
+  return formatMessMonthName({ year, month });
 }
 
 /** "5 Jan – 4 Feb 2027" */
@@ -66,23 +67,4 @@ export function formatPeriodRange(period: PeriodRange): string {
   const last = parseDateStr(periodLastDay(period));
   const sameYear = start.getFullYear() === last.getFullYear();
   return `${format(start, sameYear ? "d MMM" : "d MMM yyyy")} – ${format(last, "d MMM yyyy")}`;
-}
-
-/**
- * Which of a manager's periods to show: the one asked for (if it's theirs),
- * otherwise the one running today, otherwise the most recent one.
- * `periods` is expected newest-first.
- */
-export function pickPeriod<T extends MessPeriod>(periods: T[], requestedId?: string): T | null {
-  if (requestedId) {
-    const requested = periods.find((p) => p.id === requestedId);
-    if (requested) return requested;
-  }
-  const today = todayInOfficeTz();
-  return (
-    periods.find((p) => isDateInPeriod(today, p)) ??
-    periods.find((p) => p.start_date <= today) ??
-    periods[periods.length - 1] ??
-    null
-  );
 }

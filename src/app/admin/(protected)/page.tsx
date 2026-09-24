@@ -1,27 +1,19 @@
 import Link from "next/link";
 import { StatCard } from "@/components/admin/StatCard";
-import { PeriodSelect } from "@/components/admin/PeriodSelect";
 import { getDashboardStats } from "@/lib/data/dashboard";
-import { listMyPeriods } from "@/lib/data/periods";
+import { getMyPeriod } from "@/lib/data/periods";
 import { formatBDT } from "@/lib/utils/currency";
 import { formatDisplayDate, todayInOfficeTz } from "@/lib/utils/date";
-import { formatPeriodName, formatPeriodRange, pickPeriod } from "@/lib/utils/mess";
+import { formatPeriodName, formatPeriodRange } from "@/lib/utils/mess";
 
 export const dynamic = "force-dynamic";
 
-export default async function ManagerDashboardPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ period?: string }>;
-}) {
-  const { period: periodId } = await searchParams;
-
+export default async function ManagerDashboardPage() {
   let stats: Awaited<ReturnType<typeof getDashboardStats>> | null = null;
   let loadError: string | null = null;
 
-  const periods = await listMyPeriods().catch(() => []);
-  // The layout shows the "pick your month" prompt when there are none.
-  const period = pickPeriod(periods, periodId);
+  // The layout shows the error when the period can't be loaded.
+  const period = await getMyPeriod().catch(() => null);
   if (!period) return null;
 
   try {
@@ -31,7 +23,6 @@ export default async function ManagerDashboardPage({
   }
 
   const periodName = formatPeriodName(period);
-  const query = `?period=${period.id}`;
 
   return (
     <div className="flex flex-col gap-4">
@@ -39,8 +30,6 @@ export default async function ManagerDashboardPage({
         <h1 className="text-lg font-bold tracking-tight text-slate-900">Dashboard</h1>
         <p className="text-sm text-slate-500">{formatDisplayDate(todayInOfficeTz())}</p>
       </div>
-
-      <PeriodSelect periods={periods} selectedId={period.id} />
 
       {loadError || !stats ? (
         <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{loadError}</p>
@@ -69,13 +58,13 @@ export default async function ManagerDashboardPage({
 
           <div className="flex flex-wrap gap-2">
             <Link
-              href={`/admin/meals${query}`}
+              href="/admin/meals"
               className="h-10 rounded-full bg-indigo-600 px-4 text-sm font-semibold text-white transition-colors hover:bg-indigo-700 flex items-center"
             >
               Edit meals
             </Link>
             <Link
-              href={`/admin/reports${query}`}
+              href="/admin/reports"
               className="h-10 rounded-full border border-slate-300 bg-white px-4 text-sm font-medium text-slate-700 flex items-center"
             >
               View full report

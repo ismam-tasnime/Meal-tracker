@@ -108,8 +108,8 @@ export type Database = {
         Returns: PeriodReportRow[];
       };
       register_mess_manager: {
-        Args: { p_full_name: string; p_start_date: string; p_end_date: string };
-        Returns: string;
+        Args: Record<string, never>;
+        Returns: boolean;
       };
     };
   };

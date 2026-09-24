@@ -1,12 +1,20 @@
--- Multiple mess managers, each with a private dashboard.
+-- Mess managers, one per mess month, each with a private dashboard.
 --
--- The mess runs in periods that start on the 5th of one month and end the
--- day before the 5th of the next (e.g. 5 Jan – 4 Feb). Each period has one
--- mess manager. Anyone may now sign up as a mess manager (the one-time
--- first-admin bootstrap from 0003 is removed), but everything money-related
--- is scoped to the manager who owns the period:
+-- The mess runs in months that start on the 5th and end the day before the
+-- 5th of the next month (e.g. 5 Jan – 4 Feb), with a different manager each
+-- month. A manager's username *is* the month: they sign up as "January 2026"
+-- with a password, and each month can be taken only once. This replaces the
+-- one-time first-admin bootstrap from 0003.
 --
---   * mess_periods      — a manager sees only their own periods.
+-- Supabase Auth logs in by email, so the app maps each month to a fixed
+-- internal login address (January 2026 -> mess-2026-01@mess-manager.app,
+-- see messAccountEmail() in src/lib/utils/mess.ts). No mail is ever sent to
+-- it, so the project's "Confirm email" setting must be off. Auth's unique
+-- email constraint is what makes each month name single-use.
+--
+-- Everything money-related is scoped to the manager who owns the month:
+--
+--   * mess_periods      — a manager sees only their own period.
 --   * meal_prices       — every price row belongs to one period; only that
 --                         period's manager can see or change it.
 --   * get_period_report — only returns data for a period the caller owns.
@@ -24,7 +32,8 @@
 
 create table if not exists public.mess_periods (
   id uuid primary key default gen_random_uuid(),
-  manager_id uuid not null default auth.uid()
+  -- One account manages exactly one month.
+  manager_id uuid not null unique
     references public.admin_profiles (id) on delete cascade,
   start_date date not null,
   -- Exclusive: a 5 Jan period has end_date 5 Feb, which is also the next
@@ -32,19 +41,17 @@ create table if not exists public.mess_periods (
   end_date date not null,
   created_at timestamptz not null default now(),
   constraint mess_periods_valid_range check (end_date > start_date),
-  -- One manager per day: two periods may touch but never overlap. Enforced
-  -- by the database, so it holds even though managers can't see each
-  -- other's periods.
+  -- One manager per day: two periods may touch but never overlap.
   constraint mess_periods_no_overlap
     exclude using gist ((daterange(start_date, end_date)) with &&)
 );
 
-create index if not exists idx_mess_periods_manager_id on public.mess_periods (manager_id);
-
 alter table public.mess_periods enable row level security;
 
--- Nothing public-facing needs periods.
+-- Periods are only ever created by register_mess_manager below; clients
+-- can read their own row and nothing else.
 revoke all on public.mess_periods from anon;
+revoke insert, update, delete, truncate on public.mess_periods from authenticated;
 
 drop policy if exists mess_periods_owner_select on public.mess_periods;
 create policy mess_periods_owner_select
@@ -52,78 +59,96 @@ create policy mess_periods_owner_select
   to authenticated
   using (manager_id = auth.uid());
 
-drop policy if exists mess_periods_owner_insert on public.mess_periods;
-create policy mess_periods_owner_insert
-  on public.mess_periods for insert
-  to authenticated
-  with check (manager_id = auth.uid() and private.is_admin());
-
-drop policy if exists mess_periods_owner_delete on public.mess_periods;
-create policy mess_periods_owner_delete
-  on public.mess_periods for delete
-  to authenticated
-  using (manager_id = auth.uid());
-
--- ---------------------------------------------------------------------------
--- Open signup: any signed-in user may create their own manager profile.
--- ---------------------------------------------------------------------------
-
-drop policy if exists admin_profiles_self_insert on public.admin_profiles;
-create policy admin_profiles_self_insert
-  on public.admin_profiles for insert
-  to authenticated
-  with check (id = auth.uid() and role = 'admin');
-
 drop function if exists public.claim_first_admin(text);
 drop function if exists private.claim_first_admin(text);
 drop function if exists public.admin_setup_completed();
 drop function if exists private.admin_exists();
 
--- Profile + first period in one transaction, so a clash on the chosen month
--- doesn't leave a half-registered manager behind. SECURITY INVOKER: both
--- inserts go through the RLS policies above.
-create or replace function public.register_mess_manager(
-  p_full_name text,
-  p_start_date date,
-  p_end_date date
-)
-returns uuid
+-- ---------------------------------------------------------------------------
+-- Registration: the month comes from the caller's own login address
+-- ---------------------------------------------------------------------------
+
+-- Called right after Supabase Auth signup. Takes no arguments on purpose:
+-- the month is read from the signed-in user's email, so an account can only
+-- ever become manager of the month in its own username. SECURITY DEFINER
+-- because clients have no insert rights on admin_profiles / mess_periods.
+create or replace function private.register_mess_manager()
+returns boolean
 language plpgsql
 volatile
-security invoker
-set search_path = public
+security definer
+set search_path = ''
 as $$
 declare
-  v_period_id uuid;
+  v_uid uuid := auth.uid();
+  v_match text[];
+  v_year int;
+  v_month int;
+  v_start date;
 begin
-  if auth.uid() is null then
+  if v_uid is null then
     raise exception 'Must be signed in to register as a mess manager';
   end if;
 
+  -- Already registered: idempotent success.
+  if exists (select 1 from public.admin_profiles where id = v_uid) then
+    return true;
+  end if;
+
+  v_match := regexp_match(
+    lower(coalesce(auth.jwt() ->> 'email', '')),
+    '^mess-(\d{4})-(\d{2})@mess-manager\.app$'
+  );
+  if v_match is null then
+    return false;
+  end if;
+
+  v_year := v_match[1]::int;
+  v_month := v_match[2]::int;
+  if v_month < 1 or v_month > 12 then
+    return false;
+  end if;
+
+  v_start := make_date(v_year, v_month, 5);
+
   insert into public.admin_profiles (id, full_name)
-  values (auth.uid(), nullif(trim(coalesce(p_full_name, '')), ''))
-  on conflict (id) do nothing;
+  values (v_uid, to_char(make_date(v_year, v_month, 1), 'FMMonth') || ' ' || v_year);
 
   insert into public.mess_periods (manager_id, start_date, end_date)
-  values (auth.uid(), p_start_date, p_end_date)
-  returning id into v_period_id;
+  values (v_uid, v_start, (v_start + interval '1 month')::date);
 
-  return v_period_id;
+  return true;
 end;
 $$;
 
-revoke all on function public.register_mess_manager(text, date, date) from public;
-revoke execute on function public.register_mess_manager(text, date, date) from anon;
-grant execute on function public.register_mess_manager(text, date, date) to authenticated;
+revoke all on function private.register_mess_manager() from public;
+revoke all on function private.register_mess_manager() from anon;
+grant execute on function private.register_mess_manager() to authenticated;
+
+create or replace function public.register_mess_manager()
+returns boolean
+language sql
+volatile
+security invoker
+set search_path = ''
+as $$
+  select private.register_mess_manager();
+$$;
+
+revoke all on function public.register_mess_manager() from public;
+revoke all on function public.register_mess_manager() from anon;
+grant execute on function public.register_mess_manager() to authenticated;
 
 -- ---------------------------------------------------------------------------
 -- Prices belong to a period
 -- ---------------------------------------------------------------------------
 
--- Rows from before this migration have no period and become invisible to
--- everyone; each manager sets prices for their own period.
 alter table public.meal_prices
   add column if not exists period_id uuid references public.mess_periods (id) on delete cascade;
+
+-- Rows from before this migration belong to no month and could never be
+-- seen again; each manager sets prices for their own month instead.
+delete from public.meal_prices where period_id is null;
 
 create index if not exists idx_meal_prices_period_id on public.meal_prices (period_id);
 

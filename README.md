@@ -7,10 +7,12 @@ A mobile-first office meal management app with two panels:
   ever appear here.
 - **Mess manager panel** (`/admin`) — requires a mess manager account. The
   mess runs in months from the 5th to the 4th of the next month (e.g.
-  5 Jan – 4 Feb), with a different manager each month. Anyone can sign up as
-  a mess manager at `/admin/signup` and pick the month they manage; each
-  manager's dashboard, prices, and reports are private to them. Managers can
-  also manage the shared employee list and edit meals within their month.
+  5 Jan – 4 Feb), with a different manager each month. A manager signs up
+  at `/admin/signup` with the month as their username — e.g.
+  `January 2026` — and a password. Each month can be signed up only once.
+  Each manager's dashboard, prices, and reports are private to them.
+  Managers can also manage the shared employee list and edit meals within
+  their month.
 
 Stack: Next.js 16 (App Router, TypeScript), Tailwind CSS 4, Supabase
 (Postgres + Auth + Row Level Security).
@@ -30,7 +32,6 @@ src/
         meals/page.tsx        Edit meals for days in your mess month
         prices/page.tsx       Your mess month's prices + history
         reports/page.tsx      Your mess month's report + CSV export
-        periods/page.tsx      "My months" — add/remove the months you manage
   components/
     public/                  Public panel UI (date nav, meal toggle, sheet table)
     admin/                   Mess manager UI (nav, forms, tables)
@@ -50,10 +51,10 @@ supabase/
 
 - **employees** — `id, name, is_active, created_at, updated_at`
 - **meal_records** — `id, employee_id, meal_date, breakfast, lunch, dinner, created_at, updated_at`, unique on `(employee_id, meal_date)`, indexed on both `employee_id` and `meal_date`
-- **admin_profiles** — `id` (references `auth.users`), `full_name`. A row here means "is a mess manager". Users create their own row when they sign up.
-- **mess_periods** — `manager_id, start_date, end_date` (end exclusive). One row per mess month a manager runs. An exclusion constraint stops two periods from overlapping, so each month has exactly one manager.
+- **admin_profiles** — `id` (references `auth.users`), `full_name` (e.g. "January 2026"). A row here means "is a mess manager".
+- **mess_periods** — `manager_id` (unique), `start_date, end_date` (end exclusive). Each account manages exactly one month. An exclusion constraint stops two periods from overlapping.
 - **meal_prices** — price *history* per period: `period_id, breakfast_price, lunch_price, dinner_price, effective_from`. Changing prices inserts a new row, so earlier days keep the price in effect then. `effective_from` must fall inside the period.
-- **`register_mess_manager(name, start, end)`** — creates the caller's manager profile and first period in one transaction.
+- **`register_mess_manager()`** — run right after signup. Reads the month from the caller's own login address and creates their profile and period, so an account can only ever manage the month in its own username.
 - **`get_period_report(period_id)`** — per-employee meal counts and amounts for one period, priced with that period's prices. Returns nothing for a period the caller doesn't own.
 - **`private.is_admin()`** — SQL helper used by RLS policies ("is the caller a mess manager?").
 
@@ -67,9 +68,9 @@ Enforced in Postgres, not just hidden in the UI:
 |---|---|---|
 | `employees` | read only | full CRUD (shared) |
 | `meal_records` | read + write (by design — see below) | read + write; delete only inside own periods |
-| `mess_periods` | **no access** | own rows only |
+| `mess_periods` | **no access** | read own row only |
 | `meal_prices` | **no access** | only rows of own periods |
-| `admin_profiles` | no access | create + read own row only |
+| `admin_profiles` | no access | read own row only |
 
 Managers can't see each other's periods, prices, reports, or profiles —
 the January manager and the February manager each see only their own
@@ -80,10 +81,20 @@ is that any employee, without logging in, can toggle anyone's meal status.
 That table holds no financial data, so this carries no money/price
 exposure. Prices and periods are locked to the manager who owns them.
 
-Mess manager signup is **open**: anyone with the link to `/admin/signup`
-can create a manager account. A new manager can't see anyone else's data,
-but can edit the shared employee list and claim a month nobody has taken
-yet.
+### Month-name logins
+
+Supabase Auth logs in by email, so each month username maps to a fixed
+internal address: `January 2026` → `mess-2026-01@mess-manager.app`
+(`messAccountEmail()` in `src/lib/utils/mess.ts`). Nobody types or sees it,
+and no mail is sent to it. Supabase's unique email rule is what makes each
+month name single-use.
+
+Signup is **open**: anyone with the link to `/admin/signup` can take a month
+nobody has taken yet, without a verified email. They can't see anyone
+else's data, but can edit the shared employee list. There's no "forgot
+password" — to reset a manager's password, change it for their
+`mess-YYYY-MM@mess-manager.app` user in Supabase Dashboard →
+Authentication → Users.
 
 The app never uses the Supabase **service_role** key anywhere — all access,
 public and admin, goes through the anon key and is governed entirely by
@@ -97,20 +108,14 @@ these RLS policies plus the user's session.
    followed by every other file in `supabase/migrations/` in number order.
    If you use the Supabase CLI instead: `supabase link` then
    `supabase db push`.
-3. **Mess managers sign up** — each manager visits `/admin/signup`, enters
-   their name, email, password, and the month they manage. They set their
-   own meal prices under Prices. A manager who runs more than one month adds
-   it under "My months".
-
-   If your Supabase project has "Confirm email" enabled, signup creates the
-   account but can't finish registration inline — confirm the email, sign
-   in, and `/admin` asks for the mess month again.
-
-   Upgrading from the single-admin version: the existing admin stays a mess
-   manager and is asked to pick their month on next sign-in. Prices set
-   before the upgrade aren't tied to any month, so re-enter them on the
-   Prices page.
-4. **Environment variables**: copy `.env.example` to `.env.local` and fill
+3. **Turn off email confirmation**: Supabase Dashboard → Authentication →
+   Sign In / Providers → Email → **Confirm email** off. Month logins use
+   internal addresses that can't receive mail, so signup fails while this
+   is on.
+4. **Mess managers sign up** — each manager visits `/admin/signup` and
+   enters their month (e.g. `January 2026`) and a password, then sets their
+   meal prices under Prices.
+5. **Environment variables**: copy `.env.example` to `.env.local` and fill
    in your project's URL and anon key (Project Settings → API):
    ```
    NEXT_PUBLIC_SUPABASE_URL=https://your-project-ref.supabase.co
@@ -160,6 +165,7 @@ required for the plain email/password flow used here).
 ## Still to configure before going live
 
 - [ ] Create the Supabase project and run the migrations above
-- [ ] Each mess manager signs up at `/admin/signup` and sets their month's prices
+- [ ] Turn off "Confirm email" in Supabase Authentication settings
+- [ ] Each mess manager signs up at `/admin/signup` (username = month, e.g. `January 2026`) and sets their month's prices
 - [ ] Add real employees via `/admin/employees`
 - [ ] Set `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY` in your deployment host

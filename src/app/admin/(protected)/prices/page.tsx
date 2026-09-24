@@ -1,22 +1,14 @@
 import { PriceForm } from "@/components/admin/PriceForm";
-import { PeriodSelect } from "@/components/admin/PeriodSelect";
-import { listMyPeriods } from "@/lib/data/periods";
+import { getMyPeriod } from "@/lib/data/periods";
 import { getPriceHistory } from "@/lib/data/prices";
 import { formatBDT } from "@/lib/utils/currency";
 import { todayInOfficeTz } from "@/lib/utils/date";
-import { pickPeriod } from "@/lib/utils/mess";
+import { formatPeriodName, formatPeriodRange } from "@/lib/utils/mess";
 
 export const dynamic = "force-dynamic";
 
-export default async function ManagerPricesPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ period?: string }>;
-}) {
-  const { period: periodId } = await searchParams;
-
-  const periods = await listMyPeriods().catch(() => []);
-  const period = pickPeriod(periods, periodId);
+export default async function ManagerPricesPage() {
+  const period = await getMyPeriod().catch(() => null);
   if (!period) return null;
 
   let history: Awaited<ReturnType<typeof getPriceHistory>> = [];
@@ -43,7 +35,10 @@ export default async function ManagerPricesPage({
         </p>
       </div>
 
-      <PeriodSelect periods={periods} selectedId={period.id} />
+      <p className="text-sm font-semibold text-slate-700">
+        {formatPeriodName(period)}{" "}
+        <span className="font-normal text-slate-500">({formatPeriodRange(period)})</span>
+      </p>
 
       {loadError ? (
         <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{loadError}</p>
@@ -55,7 +50,7 @@ export default async function ManagerPricesPage({
             </p>
           )}
 
-          <PriceForm key={period.id} period={period} current={current} />
+          <PriceForm period={period} current={current} />
 
           {history.length > 0 && (
             <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">

@@ -6,7 +6,7 @@ import { signInWithPassword } from "@/lib/actions/auth";
 
 export function LoginForm({ next }: { next: string }) {
   const router = useRouter();
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -15,7 +15,7 @@ export function LoginForm({ next }: { next: string }) {
     e.preventDefault();
     setError(null);
     startTransition(async () => {
-      const result = await signInWithPassword(email, password);
+      const result = await signInWithPassword(username, password);
       if (result.ok) {
         router.replace(next);
         router.refresh();
@@ -28,16 +28,17 @@ export function LoginForm({ next }: { next: string }) {
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="email" className="text-sm font-medium text-slate-700">
-          Email
+        <label htmlFor="username" className="text-sm font-medium text-slate-700">
+          Username (mess month)
         </label>
         <input
-          id="email"
-          type="email"
+          id="username"
+          type="text"
           required
           autoComplete="username"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          placeholder="January 2026"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
           className="h-11 rounded-xl border border-slate-300 px-3 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
         />
       </div>
