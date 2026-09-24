@@ -36,19 +36,22 @@ export async function getAdminSession(): Promise<AdminSession> {
 }
 
 /**
- * Whether the first admin has already been created. Admin signup is a
- * one-time bootstrap: once this returns true, registration is permanently
- * closed and the database refuses further claims regardless of the UI.
+ * Whether the one-time first-admin signup is still open.
+ *
+ * "unreachable" is kept distinct from "closed" so the UI doesn't claim an
+ * admin already exists when the real problem is that we couldn't ask the
+ * database. Both states keep signup shut — only "open" opens the form.
  */
-export async function isAdminSetupCompleted(): Promise<boolean> {
+export type AdminSetupState = "open" | "closed" | "unreachable";
+
+export async function getAdminSetupState(): Promise<AdminSetupState> {
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("admin_setup_completed");
 
-  // Fail closed: if we can't tell, treat setup as done so signup stays shut.
   if (error) {
     console.error("admin_setup_completed check failed", error);
-    return true;
+    return "unreachable";
   }
 
-  return data ?? true;
+  return data === false ? "open" : "closed";
 }
