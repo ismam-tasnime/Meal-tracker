@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { StatCard } from "@/components/admin/StatCard";
 import { getDashboardStats } from "@/lib/data/dashboard";
 import { getMyPeriod } from "@/lib/data/periods";
@@ -34,56 +33,33 @@ export default async function ManagerDashboardPage() {
       {loadError || !stats ? (
         <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{loadError}</p>
       ) : (
-        <>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-            <StatCard label="Active employees" value={String(stats.totalEmployees)} />
-            {stats.today && (
-              <>
-                <StatCard label="Today's breakfast" value={String(stats.today.breakfast)} />
-                <StatCard label="Today's lunch" value={String(stats.today.lunch)} />
-                <StatCard label="Today's dinner" value={String(stats.today.dinner)} />
-              </>
-            )}
-            <StatCard
-              label="Month meal count"
-              value={formatMealCount(stats.periodMealCount)}
-              hint={range}
-            />
-            <StatCard label="Deposits received" value={formatBDT(stats.periodDeposits)} hint={range} />
-            <StatCard
-              label="Meal rate"
-              value={period.meal_rate === null ? "Not set" : formatBDT(period.meal_rate)}
-              hint="Set at month end"
-            />
-            {stats.periodBill !== null && (
-              <>
-                <StatCard label="Total bill" value={formatBDT(stats.periodBill)} hint={range} />
-                <StatCard label="Still due" value={formatBDT(stats.totalDue)} hint="From all employees" />
-              </>
-            )}
-          </div>
-
-          <div className="flex flex-wrap gap-2">
-            <Link
-              href="/admin/meals"
-              className="h-10 rounded-full bg-indigo-600 px-4 text-sm font-semibold text-white transition-colors hover:bg-indigo-700 flex items-center"
-            >
-              Meal status
-            </Link>
-            <Link
-              href="/admin/expenses"
-              className="h-10 rounded-full border border-slate-300 bg-white px-4 text-sm font-medium text-slate-700 flex items-center"
-            >
-              Expense status
-            </Link>
-            <Link
-              href="/admin/reports"
-              className="h-10 rounded-full border border-slate-300 bg-white px-4 text-sm font-medium text-slate-700 flex items-center"
-            >
-              Final report
-            </Link>
-          </div>
-        </>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+          <StatCard label="Active employees" value={String(stats.totalEmployees)} />
+          {stats.today && (
+            <>
+              <StatCard label="Today's breakfast" value={String(stats.today.breakfast)} />
+              <StatCard label="Today's lunch" value={String(stats.today.lunch)} />
+              <StatCard label="Today's dinner" value={String(stats.today.dinner)} />
+            </>
+          )}
+          <StatCard
+            label="Month meal count"
+            value={formatMealCount(stats.periodMealCount)}
+            hint={range}
+          />
+          <StatCard label="Deposits received" value={formatBDT(stats.periodDeposits)} hint={range} />
+          <StatCard
+            label="Meal rate"
+            value={period.meal_rate === null ? "Not set" : formatBDT(period.meal_rate)}
+            hint="Set at month end"
+          />
+          {stats.periodBill !== null && (
+            <>
+              <StatCard label="Total bill" value={formatBDT(stats.periodBill)} hint={range} />
+              <StatCard label="Still due" value={formatBDT(stats.totalDue)} hint="From all employees" />
+            </>
+          )}
+        </div>
       )}
     </div>
   );

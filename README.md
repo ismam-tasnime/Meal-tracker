@@ -1,4 +1,4 @@
-# Office Meal Manager
+# Meal Manager
 
 A mobile-first office meal management app with two panels:
 

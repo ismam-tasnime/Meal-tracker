@@ -45,18 +45,11 @@ export default async function ProtectedAdminLayout({ children }: { children: Rea
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-4 px-4 py-5 sm:flex-row sm:gap-6 sm:py-8">
-      <aside className="sm:w-48 sm:flex-shrink-0">
-        <div className="mb-3 hidden sm:block">
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
-            Mess manager
-          </p>
-          <p className="truncate text-sm font-medium text-slate-700">{profile?.full_name}</p>
-          <p className="text-xs text-slate-500">{formatPeriodRange(period)}</p>
-        </div>
-        <AdminNav />
-      </aside>
-      <main className="min-w-0 flex-1">{children}</main>
+    <div className="flex w-full flex-1 flex-col sm:flex-row">
+      <AdminNav accountName={profile?.full_name ?? ""} periodRange={formatPeriodRange(period)} />
+      <main className="mx-auto w-full min-w-0 max-w-4xl flex-1 px-4 py-5 sm:px-8 sm:py-8">
+        {children}
+      </main>
     </div>
   );
 }
