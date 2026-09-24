@@ -27,7 +27,7 @@ export default async function PublicMealSheetPage({
     <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col px-4 py-5 sm:py-8">
       <header className="mb-5 flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">Office Meal Sheet</h1>
+          <h1 className="text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">Employee Panel</h1>
           <p className="text-xs text-slate-500">
             Tap a meal to switch it ON or OFF. Saves instantly — no login needed.
           </p>

@@ -8,10 +8,13 @@ import { isDateInPeriod } from "@/lib/utils/mess";
 
 export type DashboardStats = {
   totalEmployees: number;
-  /** Null when today falls outside the period being viewed. */
+  /** Null when today falls outside the mess month. */
   today: { breakfast: number; lunch: number; dinner: number } | null;
-  periodTotalMeals: number;
-  periodTotalAmount: number;
+  periodMealCount: number;
+  periodDeposits: number;
+  /** Null until the meal rate is set. */
+  periodBill: number | null;
+  totalDue: number;
 };
 
 export async function getDashboardStats(period: MessPeriod): Promise<DashboardStats> {
@@ -20,7 +23,7 @@ export async function getDashboardStats(period: MessPeriod): Promise<DashboardSt
 
   const supabase = await createClient();
 
-  const [totalEmployees, todayResult, periodRows] = await Promise.all([
+  const [totalEmployees, todayResult, rows] = await Promise.all([
     countActiveEmployees(),
     includeToday
       ? supabase.from("meal_records").select("breakfast, lunch, dinner").eq("meal_date", today)
@@ -30,12 +33,7 @@ export async function getDashboardStats(period: MessPeriod): Promise<DashboardSt
 
   if (todayResult?.error) throw todayResult.error;
   const todayRecords = todayResult?.data ?? [];
-
-  const periodTotalMeals = periodRows.reduce(
-    (sum, r) => sum + r.breakfast_count + r.lunch_count + r.dinner_count,
-    0
-  );
-  const periodTotalAmount = periodRows.reduce((sum, r) => sum + r.total_amount, 0);
+  const rateSet = period.meal_rate !== null;
 
   return {
     totalEmployees,
@@ -46,7 +44,9 @@ export async function getDashboardStats(period: MessPeriod): Promise<DashboardSt
           dinner: todayRecords.filter((r) => r.dinner).length,
         }
       : null,
-    periodTotalMeals,
-    periodTotalAmount,
+    periodMealCount: rows.reduce((sum, r) => sum + r.meal_count, 0),
+    periodDeposits: rows.reduce((sum, r) => sum + r.total_deposit, 0),
+    periodBill: rateSet ? rows.reduce((sum, r) => sum + (r.total_bill ?? 0), 0) : null,
+    totalDue: rows.reduce((sum, r) => sum + Math.max(0, -(r.balance ?? 0)), 0),
   };
 }

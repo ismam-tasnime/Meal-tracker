@@ -29,14 +29,14 @@ export function LoginForm({ next }: { next: string }) {
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       <div className="flex flex-col gap-1.5">
         <label htmlFor="username" className="text-sm font-medium text-slate-700">
-          Username (mess month)
+          Account name (month + year)
         </label>
         <input
           id="username"
           type="text"
           required
           autoComplete="username"
-          placeholder="January 2026"
+          placeholder="January2026"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
           className="h-11 rounded-xl border border-slate-300 px-3 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"

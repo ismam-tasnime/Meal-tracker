@@ -2,14 +2,13 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTransition } from "react";
-import type { Employee } from "@/lib/types/database";
 
 export function ReportFilters({
   employeeId,
   employees,
 }: {
   employeeId: string;
-  employees: Employee[];
+  employees: { id: string; name: string }[];
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
