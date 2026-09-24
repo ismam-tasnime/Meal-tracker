@@ -34,7 +34,7 @@ export async function updateSession(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
   const isAdminRoute = pathname.startsWith("/admin");
-  // Reachable without a session: sign-in, and the one-time first-admin signup.
+  // Reachable without a session: sign-in and mess manager signup.
   const isPublicAdminRoute = pathname === "/admin/login" || pathname === "/admin/signup";
 
   if (isAdminRoute && !isPublicAdminRoute && !user) {
@@ -43,7 +43,7 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  if (pathname === "/admin/login" && user) {
+  if (isPublicAdminRoute && user) {
     return NextResponse.redirect(new URL("/admin", request.url));
   }
 

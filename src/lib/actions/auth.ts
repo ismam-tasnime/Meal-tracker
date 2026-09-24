@@ -2,8 +2,8 @@
 
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { getAdminSetupState } from "@/lib/auth/session";
 import type { ActionResult } from "@/lib/actions/employees";
+import { messMonthRange, periodErrorMessage, validMessMonth } from "@/lib/utils/mess";
 
 export type SignInResult = { ok: true } | { ok: false; error: string };
 
@@ -30,31 +30,32 @@ export async function signOut(): Promise<void> {
 
 export type SignUpResult =
   | { ok: true; needsEmailConfirmation: boolean }
-  | { ok: false; error: string };
+  // accountCreated: the login exists and is signed in, only the month failed
+  // (usually already taken) — they can pick another one from /admin.
+  | { ok: false; error: string; accountCreated?: boolean };
 
 /**
- * One-time bootstrap: creates the very first admin account. The database
- * enforces the "only while zero admins exist" rule atomically, so this
- * can't be raced or bypassed by calling the API directly.
+ * Creates a mess manager account and their first mess month. Signup is open
+ * to anyone; what keeps managers apart is RLS — each one only ever sees
+ * their own periods, prices, and reports.
  */
-export async function signUpFirstAdmin(
-  email: string,
-  password: string,
-  fullName: string
-): Promise<SignUpResult> {
+export async function signUpMessManager(input: {
+  email: string;
+  password: string;
+  fullName: string;
+  year: number;
+  month: number;
+}): Promise<SignUpResult> {
+  const { email, password, fullName, year, month } = input;
+
   if (!email || !password) {
     return { ok: false, error: "Email and password are required." };
   }
   if (password.length < 8) {
     return { ok: false, error: "Password must be at least 8 characters." };
   }
-
-  const setupState = await getAdminSetupState();
-  if (setupState === "unreachable") {
-    return { ok: false, error: "Could not reach the database. Please try again." };
-  }
-  if (setupState === "closed") {
-    return { ok: false, error: "Admin registration is already closed." };
+  if (!validMessMonth(year, month)) {
+    return { ok: false, error: "Pick the month you're managing." };
   }
 
   const supabase = await createClient();
@@ -65,32 +66,30 @@ export async function signUpFirstAdmin(
   }
 
   // No session means the project requires email confirmation first. The
-  // account exists; they claim admin after confirming and signing in.
+  // account exists; they pick their month again after confirming and signing in.
   if (!data.session) {
     return { ok: true, needsEmailConfirmation: true };
   }
 
-  const { data: claimed, error: claimError } = await supabase.rpc("claim_first_admin", {
-    p_full_name: fullName,
-  });
-
-  if (claimError) {
-    console.error("claim_first_admin failed", claimError);
-    return { ok: false, error: "Account created, but granting admin access failed." };
-  }
-
-  if (!claimed) {
-    return { ok: false, error: "Admin registration is already closed." };
-  }
+  const result = await registerAsMessManager(fullName, year, month);
+  if (!result.ok) return { ...result, accountCreated: true };
 
   return { ok: true, needsEmailConfirmation: false };
 }
 
 /**
- * For an already signed-in user to take the first admin slot — used after
- * email confirmation, where signup couldn't claim it inline.
+ * For an already signed-in user to become a mess manager — used after email
+ * confirmation, where signup couldn't register them inline.
  */
-export async function claimAdminAccess(fullName: string): Promise<ActionResult> {
+export async function registerAsMessManager(
+  fullName: string,
+  year: number,
+  month: number
+): Promise<ActionResult> {
+  if (!validMessMonth(year, month)) {
+    return { ok: false, error: "Pick the month you're managing." };
+  }
+
   const supabase = await createClient();
 
   const {
@@ -99,17 +98,16 @@ export async function claimAdminAccess(fullName: string): Promise<ActionResult> 
 
   if (!user) return { ok: false, error: "You need to sign in first." };
 
-  const { data: claimed, error } = await supabase.rpc("claim_first_admin", {
+  const range = messMonthRange(year, month);
+  const { error } = await supabase.rpc("register_mess_manager", {
     p_full_name: fullName,
+    p_start_date: range.start_date,
+    p_end_date: range.end_date,
   });
 
   if (error) {
-    console.error("claim_first_admin failed", error);
-    return { ok: false, error: "Could not grant admin access." };
-  }
-
-  if (!claimed) {
-    return { ok: false, error: "An admin already exists, so registration is closed." };
+    console.error("register_mess_manager failed", error);
+    return { ok: false, error: periodErrorMessage(error, "Could not register you as mess manager.") };
   }
 
   return { ok: true };

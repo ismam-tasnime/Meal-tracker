@@ -3,16 +3,19 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { signUpFirstAdmin } from "@/lib/actions/auth";
+import { signUpMessManager } from "@/lib/actions/auth";
+import { MessMonthPicker, type MessMonth } from "@/components/admin/MessMonthPicker";
 
-export function AdminSignupForm() {
+export function ManagerSignupForm({ defaultMonth }: { defaultMonth: MessMonth }) {
   const router = useRouter();
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [messMonth, setMessMonth] = useState(defaultMonth);
   const [error, setError] = useState<string | null>(null);
   const [confirmationSent, setConfirmationSent] = useState(false);
+  const [accountCreated, setAccountCreated] = useState(false);
   const [isPending, startTransition] = useTransition();
 
   function handleSubmit(e: React.FormEvent) {
@@ -25,10 +28,17 @@ export function AdminSignupForm() {
     }
 
     startTransition(async () => {
-      const result = await signUpFirstAdmin(email, password, fullName);
+      const result = await signUpMessManager({
+        email,
+        password,
+        fullName,
+        year: messMonth.year,
+        month: messMonth.month,
+      });
 
       if (!result.ok) {
         setError(result.error);
+        setAccountCreated(!!result.accountCreated);
         return;
       }
 
@@ -42,6 +52,22 @@ export function AdminSignupForm() {
     });
   }
 
+  if (accountCreated) {
+    return (
+      <div className="flex flex-col gap-3 text-sm">
+        <p className="rounded-xl bg-amber-50 px-3 py-2 text-amber-800">
+          Your account was created, but: {error}
+        </p>
+        <Link
+          href="/admin"
+          className="flex h-11 items-center justify-center rounded-full bg-indigo-600 text-sm font-semibold text-white transition-colors hover:bg-indigo-700"
+        >
+          Pick another month
+        </Link>
+      </div>
+    );
+  }
+
   if (confirmationSent) {
     return (
       <div className="flex flex-col gap-3 text-sm">
@@ -49,8 +75,7 @@ export function AdminSignupForm() {
           Account created. Check <strong>{email}</strong> for a confirmation link.
         </p>
         <p className="text-slate-600">
-          After confirming, sign in and you&rsquo;ll be offered admin access on your first
-          visit.
+          After confirming, sign in and pick your mess month again to open your dashboard.
         </p>
         <Link
           href="/admin/login"
@@ -125,6 +150,8 @@ export function AdminSignupForm() {
         />
       </div>
 
+      <MessMonthPicker value={messMonth} onChange={setMessMonth} />
+
       {error && (
         <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700" role="alert">
           {error}
@@ -136,7 +163,7 @@ export function AdminSignupForm() {
         disabled={isPending}
         className="h-11 rounded-full bg-indigo-600 text-sm font-semibold text-white transition-colors hover:bg-indigo-700 transition-colors active:bg-indigo-700 disabled:opacity-60"
       >
-        {isPending ? "Creating account…" : "Create admin account"}
+        {isPending ? "Creating account…" : "Create mess manager account"}
       </button>
 
       <p className="text-center text-xs text-slate-500">

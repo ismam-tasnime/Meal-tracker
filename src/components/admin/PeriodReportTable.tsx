@@ -1,18 +1,16 @@
 "use client";
 
 import Papa from "papaparse";
-import type { MonthlyReportRow } from "@/lib/types/database";
+import type { MessPeriod, PeriodReportRow } from "@/lib/types/database";
 import { formatBDT } from "@/lib/utils/currency";
-import { MONTH_NAMES } from "@/lib/utils/date";
+import { formatPeriodName, formatPeriodRange } from "@/lib/utils/mess";
 
-export function MonthlyReportTable({
+export function PeriodReportTable({
   rows,
-  year,
-  month,
+  period,
 }: {
-  rows: MonthlyReportRow[];
-  year: number;
-  month: number;
+  rows: PeriodReportRow[];
+  period: MessPeriod;
 }) {
   const grandTotal = rows.reduce((sum, r) => sum + r.total_amount, 0);
 
@@ -33,7 +31,7 @@ export function MonthlyReportTable({
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `meal-report-${year}-${String(month).padStart(2, "0")}.csv`;
+    a.download = `mess-report-${period.start_date}-to-${period.end_date}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   }
@@ -42,7 +40,8 @@ export function MonthlyReportTable({
     <div className="flex flex-col gap-3">
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-semibold text-slate-700">
-          {MONTH_NAMES[month - 1]} {year}
+          {formatPeriodName(period)}{" "}
+          <span className="font-normal text-slate-500">({formatPeriodRange(period)})</span>
         </h2>
         <button
           type="button"

@@ -1,30 +1,31 @@
 import { ReportFilters } from "@/components/admin/ReportFilters";
-import { MonthlyReportTable } from "@/components/admin/MonthlyReportTable";
-import { getMonthlyReport } from "@/lib/data/reports";
+import { PeriodReportTable } from "@/components/admin/PeriodReportTable";
+import { PeriodSelect } from "@/components/admin/PeriodSelect";
+import { getPeriodReport } from "@/lib/data/reports";
 import { listAllEmployees } from "@/lib/data/employees";
-import { todayInOfficeTz } from "@/lib/utils/date";
+import { listMyPeriods } from "@/lib/data/periods";
+import { pickPeriod } from "@/lib/utils/mess";
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminReportsPage({
+export default async function ManagerReportsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ year?: string; month?: string; employee?: string }>;
+  searchParams: Promise<{ period?: string; employee?: string }>;
 }) {
   const params = await searchParams;
-  const today = todayInOfficeTz();
-  const [todayYear, todayMonth] = today.split("-").map(Number);
-
-  const year = Number(params.year) || todayYear;
-  const month = Number(params.month) || todayMonth;
   const employeeId = params.employee ?? "";
 
-  let rows: Awaited<ReturnType<typeof getMonthlyReport>> = [];
+  const periods = await listMyPeriods().catch(() => []);
+  const period = pickPeriod(periods, params.period);
+  if (!period) return null;
+
+  let rows: Awaited<ReturnType<typeof getPeriodReport>> = [];
   let employees: Awaited<ReturnType<typeof listAllEmployees>> = [];
   let loadError: string | null = null;
 
   try {
-    [rows, employees] = await Promise.all([getMonthlyReport(year, month), listAllEmployees()]);
+    [rows, employees] = await Promise.all([getPeriodReport(period.id), listAllEmployees()]);
   } catch {
     loadError = "Could not load the report. Please refresh the page.";
   }
@@ -34,18 +35,22 @@ export default async function AdminReportsPage({
   return (
     <div className="flex flex-col gap-4">
       <div>
-        <h1 className="text-lg font-bold tracking-tight text-slate-900">Monthly Report</h1>
+        <h1 className="text-lg font-bold tracking-tight text-slate-900">Mess Report</h1>
         <p className="text-sm text-slate-500">
-          Meal counts and calculated cost per employee, using the price in effect on each day.
+          Meal counts and calculated cost per employee for your mess month, using the price in
+          effect on each day.
         </p>
       </div>
 
-      <ReportFilters year={year} month={month} employeeId={employeeId} employees={employees} />
+      <div className="flex flex-wrap items-end gap-3">
+        <PeriodSelect periods={periods} selectedId={period.id} />
+        <ReportFilters employeeId={employeeId} employees={employees} />
+      </div>
 
       {loadError ? (
         <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{loadError}</p>
       ) : (
-        <MonthlyReportTable rows={filteredRows} year={year} month={month} />
+        <PeriodReportTable rows={filteredRows} period={period} />
       )}
     </div>
   );

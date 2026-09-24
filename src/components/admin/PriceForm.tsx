@@ -4,15 +4,20 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { updatePrices } from "@/lib/actions/prices";
 import { formatBDT } from "@/lib/utils/currency";
-import type { MealPrice } from "@/lib/types/database";
+import type { MealPrice, MessPeriod } from "@/lib/types/database";
 import { todayInOfficeTz } from "@/lib/utils/date";
+import { isDateInPeriod, periodLastDay } from "@/lib/utils/mess";
 
-export function PriceForm({ current }: { current: MealPrice | null }) {
+export function PriceForm({ period, current }: { period: MessPeriod; current: MealPrice | null }) {
   const router = useRouter();
   const [breakfast, setBreakfast] = useState(String(current?.breakfast_price ?? ""));
   const [lunch, setLunch] = useState(String(current?.lunch_price ?? ""));
   const [dinner, setDinner] = useState(String(current?.dinner_price ?? ""));
-  const [effectiveFrom, setEffectiveFrom] = useState(todayInOfficeTz());
+  const today = todayInOfficeTz();
+  const [effectiveFrom, setEffectiveFrom] = useState(
+    // The first price of a month should cover it from day one.
+    current && isDateInPeriod(today, period) ? today : period.start_date
+  );
   const [message, setMessage] = useState<{ type: "ok" | "error"; text: string } | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -21,6 +26,7 @@ export function PriceForm({ current }: { current: MealPrice | null }) {
     setMessage(null);
     startTransition(async () => {
       const result = await updatePrices({
+        periodId: period.id,
         breakfastPrice: Number(breakfast),
         lunchPrice: Number(lunch),
         dinnerPrice: Number(dinner),
@@ -88,13 +94,15 @@ export function PriceForm({ current }: { current: MealPrice | null }) {
         <label className="text-sm font-medium text-slate-700">Effective from</label>
         <input
           type="date"
+          min={period.start_date}
+          max={periodLastDay(period)}
           value={effectiveFrom}
           onChange={(e) => setEffectiveFrom(e.target.value)}
           className="h-10 rounded-xl border border-slate-300 px-3 text-sm"
         />
         <p className="text-xs text-slate-400">
-          Applies to this date onward. Meals before this date keep using the price that was in
-          effect then.
+          Applies from this date to the end of the mess month. Earlier days keep the price that
+          was in effect then.
         </p>
       </div>
 

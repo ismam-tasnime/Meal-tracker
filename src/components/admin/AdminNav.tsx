@@ -7,10 +7,11 @@ import { signOut } from "@/lib/actions/auth";
 
 const LINKS = [
   { href: "/admin", label: "Dashboard", exact: true },
-  { href: "/admin/employees", label: "Employees" },
   { href: "/admin/meals", label: "Meals" },
   { href: "/admin/prices", label: "Prices" },
   { href: "/admin/reports", label: "Reports" },
+  { href: "/admin/employees", label: "Employees" },
+  { href: "/admin/periods", label: "My months" },
 ];
 
 export function AdminNav() {

@@ -1,12 +1,12 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
-import type { MonthlyReportRow } from "@/lib/types/database";
+import type { PeriodReportRow } from "@/lib/types/database";
 
-export async function getMonthlyReport(year: number, month: number): Promise<MonthlyReportRow[]> {
+/** Per-employee totals for one mess period. Returns nothing for a period the caller doesn't own. */
+export async function getPeriodReport(periodId: string): Promise<PeriodReportRow[]> {
   const supabase = await createClient();
-  const { data, error } = await supabase.rpc("get_monthly_report", {
-    p_year: year,
-    p_month: month,
+  const { data, error } = await supabase.rpc("get_period_report", {
+    p_period_id: periodId,
   });
 
   if (error) throw error;
