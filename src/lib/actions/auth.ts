@@ -2,22 +2,31 @@
 
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { getAdminSetupState } from "@/lib/auth/session";
-import type { ActionResult } from "@/lib/actions/employees";
+import { formatMessMonthName, messAccountEmail, parseMessMonthName } from "@/lib/utils/mess";
 
-export type SignInResult = { ok: true } | { ok: false; error: string };
+export type AuthResult = { ok: true } | { ok: false; error: string };
 
-export async function signInWithPassword(email: string, password: string): Promise<SignInResult> {
-  if (!email || !password) {
-    return { ok: false, error: "Email and password are required." };
-  }
+const USERNAME_HINT = 'Username must be a month and year, like "January 2026".';
+
+export async function signInWithPassword(username: string, password: string): Promise<AuthResult> {
+  const messMonth = parseMessMonthName(username ?? "");
+  if (!messMonth) return { ok: false, error: USERNAME_HINT };
+  if (!password) return { ok: false, error: "Password is required." };
 
   const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  const { error } = await supabase.auth.signInWithPassword({
+    email: messAccountEmail(messMonth),
+    password,
+  });
 
   if (error) {
-    return { ok: false, error: "Invalid email or password." };
+    return { ok: false, error: "Wrong month name or password." };
   }
+
+  // Idempotent. Finishes setup for an account whose signup got interrupted
+  // between creating the login and registering the month.
+  const { error: registerError } = await supabase.rpc("register_mess_manager");
+  if (registerError) console.error("register_mess_manager failed", registerError);
 
   return { ok: true };
 }
@@ -28,88 +37,50 @@ export async function signOut(): Promise<void> {
   redirect("/admin/login");
 }
 
-export type SignUpResult =
-  | { ok: true; needsEmailConfirmation: boolean }
-  | { ok: false; error: string };
-
 /**
- * One-time bootstrap: creates the very first admin account. The database
- * enforces the "only while zero admins exist" rule atomically, so this
- * can't be raced or bypassed by calling the API directly.
+ * Creates the mess manager account for one month, e.g. "January 2026".
+ * Each month can be signed up only once: the username maps to a fixed
+ * Supabase Auth login address, and Auth refuses a second account with it.
+ * register_mess_manager() then derives the month from that address, so an
+ * account can't claim any month but its own.
  */
-export async function signUpFirstAdmin(
-  email: string,
-  password: string,
-  fullName: string
-): Promise<SignUpResult> {
-  if (!email || !password) {
-    return { ok: false, error: "Email and password are required." };
-  }
-  if (password.length < 8) {
+export async function signUpMessManager(username: string, password: string): Promise<AuthResult> {
+  const messMonth = parseMessMonthName(username ?? "");
+  if (!messMonth) return { ok: false, error: USERNAME_HINT };
+  if (!password || password.length < 8) {
     return { ok: false, error: "Password must be at least 8 characters." };
   }
 
-  const setupState = await getAdminSetupState();
-  if (setupState === "unreachable") {
-    return { ok: false, error: "Could not reach the database. Please try again." };
-  }
-  if (setupState === "closed") {
-    return { ok: false, error: "Admin registration is already closed." };
-  }
-
+  const name = formatMessMonthName(messMonth);
   const supabase = await createClient();
-  const { data, error } = await supabase.auth.signUp({ email, password });
+  const { data, error } = await supabase.auth.signUp({
+    email: messAccountEmail(messMonth),
+    password,
+  });
 
   if (error) {
-    return { ok: false, error: error.message };
+    if (error.code === "user_already_exists" || /already registered/i.test(error.message)) {
+      return { ok: false, error: `${name} already has a mess manager. Sign in instead.` };
+    }
+    console.error("signUp failed", error);
+    return { ok: false, error: "Could not create the account. Please try again." };
   }
 
-  // No session means the project requires email confirmation first. The
-  // account exists; they claim admin after confirming and signing in.
+  // With "Confirm email" on, Supabase returns no session (and, for an
+  // existing address, a fake user) — neither can be registered here.
   if (!data.session) {
-    return { ok: true, needsEmailConfirmation: true };
+    return {
+      ok: false,
+      error: `${name} may already be taken, or sign-up isn't fully set up yet ("Confirm email" must be off in Supabase).`,
+    };
   }
 
-  const { data: claimed, error: claimError } = await supabase.rpc("claim_first_admin", {
-    p_full_name: fullName,
-  });
+  const { data: registered, error: registerError } = await supabase.rpc("register_mess_manager");
 
-  if (claimError) {
-    console.error("claim_first_admin failed", claimError);
-    return { ok: false, error: "Account created, but granting admin access failed." };
-  }
-
-  if (!claimed) {
-    return { ok: false, error: "Admin registration is already closed." };
-  }
-
-  return { ok: true, needsEmailConfirmation: false };
-}
-
-/**
- * For an already signed-in user to take the first admin slot — used after
- * email confirmation, where signup couldn't claim it inline.
- */
-export async function claimAdminAccess(fullName: string): Promise<ActionResult> {
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) return { ok: false, error: "You need to sign in first." };
-
-  const { data: claimed, error } = await supabase.rpc("claim_first_admin", {
-    p_full_name: fullName,
-  });
-
-  if (error) {
-    console.error("claim_first_admin failed", error);
-    return { ok: false, error: "Could not grant admin access." };
-  }
-
-  if (!claimed) {
-    return { ok: false, error: "An admin already exists, so registration is closed." };
+  if (registerError || !registered) {
+    console.error("register_mess_manager failed", registerError);
+    await supabase.auth.signOut();
+    return { ok: false, error: `Could not set up ${name}. Please try again.` };
   }
 
   return { ok: true };

@@ -48,7 +48,7 @@ export default async function PublicMealSheetPage({
 
       <footer className="mt-8 flex justify-center">
         <Link href="/admin" className="text-xs text-slate-400 hover:text-slate-600">
-          Admin login
+          Mess manager login
         </Link>
       </footer>
     </div>

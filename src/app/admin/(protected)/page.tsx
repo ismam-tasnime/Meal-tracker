@@ -1,20 +1,28 @@
 import Link from "next/link";
 import { StatCard } from "@/components/admin/StatCard";
 import { getDashboardStats } from "@/lib/data/dashboard";
+import { getMyPeriod } from "@/lib/data/periods";
 import { formatBDT } from "@/lib/utils/currency";
-import { MONTH_NAMES, formatDisplayDate, todayInOfficeTz } from "@/lib/utils/date";
+import { formatDisplayDate, todayInOfficeTz } from "@/lib/utils/date";
+import { formatPeriodName, formatPeriodRange } from "@/lib/utils/mess";
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminDashboardPage() {
+export default async function ManagerDashboardPage() {
   let stats: Awaited<ReturnType<typeof getDashboardStats>> | null = null;
   let loadError: string | null = null;
 
+  // The layout shows the error when the period can't be loaded.
+  const period = await getMyPeriod().catch(() => null);
+  if (!period) return null;
+
   try {
-    stats = await getDashboardStats();
+    stats = await getDashboardStats(period);
   } catch {
     loadError = "Could not load dashboard stats. Please refresh the page.";
   }
+
+  const periodName = formatPeriodName(period);
 
   return (
     <div className="flex flex-col gap-4">
@@ -28,19 +36,23 @@ export default async function AdminDashboardPage() {
       ) : (
         <>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-            <StatCard label="Total employees" value={String(stats.totalEmployees)} />
-            <StatCard label="Today's breakfast" value={String(stats.todayBreakfastCount)} />
-            <StatCard label="Today's lunch" value={String(stats.todayLunchCount)} />
-            <StatCard label="Today's dinner" value={String(stats.todayDinnerCount)} />
+            <StatCard label="Active employees" value={String(stats.totalEmployees)} />
+            {stats.today && (
+              <>
+                <StatCard label="Today's breakfast" value={String(stats.today.breakfast)} />
+                <StatCard label="Today's lunch" value={String(stats.today.lunch)} />
+                <StatCard label="Today's dinner" value={String(stats.today.dinner)} />
+              </>
+            )}
             <StatCard
-              label="This month's meals"
-              value={String(stats.monthTotalMeals)}
-              hint={`${MONTH_NAMES[stats.monthLabel.month - 1]} ${stats.monthLabel.year}`}
+              label={`${periodName} meals`}
+              value={String(stats.periodTotalMeals)}
+              hint={formatPeriodRange(period)}
             />
             <StatCard
-              label="This month's total"
-              value={formatBDT(stats.monthTotalAmount)}
-              hint={`${MONTH_NAMES[stats.monthLabel.month - 1]} ${stats.monthLabel.year}`}
+              label={`${periodName} total`}
+              value={formatBDT(stats.periodTotalAmount)}
+              hint={formatPeriodRange(period)}
             />
           </div>
 
@@ -49,7 +61,7 @@ export default async function AdminDashboardPage() {
               href="/admin/meals"
               className="h-10 rounded-full bg-indigo-600 px-4 text-sm font-semibold text-white transition-colors hover:bg-indigo-700 flex items-center"
             >
-              Edit today&rsquo;s meals
+              Edit meals
             </Link>
             <Link
               href="/admin/reports"

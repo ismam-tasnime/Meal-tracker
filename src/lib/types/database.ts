@@ -23,6 +23,7 @@ export type MealRecord = {
 
 export type MealPrice = {
   id: string;
+  period_id: string | null;
   breakfast_price: number;
   lunch_price: number;
   dinner_price: number;
@@ -37,7 +38,16 @@ export type AdminProfile = {
   created_at: string;
 };
 
-export type MonthlyReportRow = {
+/** One mess month (e.g. 5 Jan – 4 Feb), owned by a single mess manager. */
+export type MessPeriod = {
+  id: string;
+  manager_id: string;
+  start_date: string; // YYYY-MM-DD, inclusive
+  end_date: string; // YYYY-MM-DD, exclusive
+  created_at: string;
+};
+
+export type PeriodReportRow = {
   employee_id: string;
   employee_name: string;
   is_active: boolean;
@@ -73,8 +83,15 @@ export type Database = {
           breakfast_price: number;
           lunch_price: number;
           dinner_price: number;
+          period_id: string;
         };
         Update: Partial<MealPrice>;
+        Relationships: [];
+      };
+      mess_periods: {
+        Row: MessPeriod;
+        Insert: Partial<MessPeriod> & { start_date: string; end_date: string };
+        Update: Partial<MessPeriod>;
         Relationships: [];
       };
       admin_profiles: {
@@ -86,16 +103,12 @@ export type Database = {
     };
     Views: Record<string, never>;
     Functions: {
-      get_monthly_report: {
-        Args: { p_year: number; p_month: number };
-        Returns: MonthlyReportRow[];
+      get_period_report: {
+        Args: { p_period_id: string };
+        Returns: PeriodReportRow[];
       };
-      admin_setup_completed: {
+      register_mess_manager: {
         Args: Record<string, never>;
-        Returns: boolean;
-      };
-      claim_first_admin: {
-        Args: { p_full_name: string };
         Returns: boolean;
       };
     };
