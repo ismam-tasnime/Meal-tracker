@@ -22,8 +22,8 @@ export function MealToggleButton({
         "flex h-9 w-full min-w-[3.75rem] items-center justify-center rounded-full text-xs font-semibold transition-colors sm:text-sm",
         "disabled:cursor-wait disabled:opacity-70",
         value
-          ? "bg-emerald-500 text-white active:bg-emerald-600"
-          : "bg-slate-200 text-slate-600 active:bg-slate-300",
+          ? "bg-indigo-600 text-white shadow-sm hover:bg-indigo-700 active:bg-indigo-800"
+          : "bg-slate-100 text-slate-500 hover:bg-slate-200 active:bg-slate-300",
         status === "error" ? "ring-2 ring-red-500" : "",
       ].join(" ")}
       aria-pressed={value}

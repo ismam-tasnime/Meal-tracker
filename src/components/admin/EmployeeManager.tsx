@@ -83,24 +83,24 @@ export function EmployeeManager({ initialEmployees: employees }: { initialEmploy
           value={newName}
           onChange={(e) => setNewName(e.target.value)}
           placeholder="New employee name"
-          className="h-10 flex-1 rounded-lg border border-slate-300 px-3 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          className="h-10 flex-1 rounded-xl border border-slate-300 px-3 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
         />
         <button
           type="submit"
           disabled={isPending || !newName.trim()}
-          className="h-10 rounded-lg bg-indigo-600 px-4 text-sm font-semibold text-white disabled:opacity-60"
+          className="h-10 rounded-full bg-indigo-600 px-4 text-sm font-semibold text-white transition-colors hover:bg-indigo-700 disabled:opacity-60"
         >
           Add
         </button>
       </form>
 
       {error && (
-        <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700" role="alert">
+        <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700" role="alert">
           {error}
         </p>
       )}
 
-      <div className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
         <ul className="divide-y divide-slate-100">
           {employees.map((employee) => (
             <li key={employee.id} className="flex items-center gap-2 px-3 py-2.5">
@@ -109,7 +109,7 @@ export function EmployeeManager({ initialEmployees: employees }: { initialEmploy
                   value={editingName}
                   onChange={(e) => setEditingName(e.target.value)}
                   autoFocus
-                  className="h-9 flex-1 rounded-md border border-slate-300 px-2 text-sm"
+                  className="h-9 flex-1 rounded-xl border border-slate-300 px-2 text-sm"
                   onKeyDown={(e) => e.key === "Enter" && saveEdit(employee.id)}
                 />
               ) : (
@@ -132,27 +132,27 @@ export function EmployeeManager({ initialEmployees: employees }: { initialEmploy
               {editingId === employee.id ? (
                 <button
                   onClick={() => saveEdit(employee.id)}
-                  className="h-8 rounded-md bg-indigo-600 px-2.5 text-xs font-semibold text-white"
+                  className="h-8 rounded-full bg-indigo-600 px-2.5 text-xs font-semibold text-white transition-colors hover:bg-indigo-700"
                 >
                   Save
                 </button>
               ) : (
                 <button
                   onClick={() => startEdit(employee)}
-                  className="h-8 rounded-md border border-slate-200 px-2.5 text-xs font-medium text-slate-600"
+                  className="h-8 rounded-full border border-slate-200 px-2.5 text-xs font-medium text-slate-600"
                 >
                   Edit
                 </button>
               )}
               <button
                 onClick={() => toggleActive(employee)}
-                className="h-8 rounded-md border border-slate-200 px-2.5 text-xs font-medium text-slate-600"
+                className="h-8 rounded-full border border-slate-200 px-2.5 text-xs font-medium text-slate-600"
               >
                 {employee.is_active ? "Deactivate" : "Activate"}
               </button>
               <button
                 onClick={() => remove(employee)}
-                className="h-8 rounded-md border border-red-200 px-2.5 text-xs font-medium text-red-600"
+                className="h-8 rounded-full border border-red-200 px-2.5 text-xs font-medium text-red-600"
               >
                 Remove
               </button>

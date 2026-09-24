@@ -18,20 +18,20 @@ export default async function AdminPricesPage() {
   return (
     <div className="flex flex-col gap-4">
       <div>
-        <h1 className="text-lg font-bold text-slate-900">Meal Prices</h1>
+        <h1 className="text-lg font-bold tracking-tight text-slate-900">Meal Prices</h1>
         <p className="text-sm text-slate-500">
           Never shown on the public panel. Used only for admin monthly calculations.
         </p>
       </div>
 
       {loadError ? (
-        <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{loadError}</p>
+        <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{loadError}</p>
       ) : (
         <>
           <PriceForm current={current} />
 
           {history.length > 0 && (
-            <div className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+            <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">

@@ -34,7 +34,7 @@ export default async function AdminReportsPage({
   return (
     <div className="flex flex-col gap-4">
       <div>
-        <h1 className="text-lg font-bold text-slate-900">Monthly Report</h1>
+        <h1 className="text-lg font-bold tracking-tight text-slate-900">Monthly Report</h1>
         <p className="text-sm text-slate-500">
           Meal counts and calculated cost per employee, using the price in effect on each day.
         </p>
@@ -43,7 +43,7 @@ export default async function AdminReportsPage({
       <ReportFilters year={year} month={month} employeeId={employeeId} employees={employees} />
 
       {loadError ? (
-        <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{loadError}</p>
+        <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{loadError}</p>
       ) : (
         <MonthlyReportTable rows={filteredRows} year={year} month={month} />
       )}

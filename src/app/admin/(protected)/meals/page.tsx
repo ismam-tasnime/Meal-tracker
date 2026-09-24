@@ -24,7 +24,7 @@ export default async function AdminMealsPage({
   return (
     <div className="flex flex-col gap-4">
       <div>
-        <h1 className="text-lg font-bold text-slate-900">Meals</h1>
+        <h1 className="text-lg font-bold tracking-tight text-slate-900">Meals</h1>
         <p className="text-sm text-slate-500">
           Edit any employee&rsquo;s meal status for any date, including inactive employees.
         </p>
@@ -33,7 +33,7 @@ export default async function AdminMealsPage({
       <DateNav date={date} basePath="/admin/meals" />
 
       {loadError ? (
-        <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{loadError}</p>
+        <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{loadError}</p>
       ) : (
         <AdminMealEditor key={date} date={date} initialRows={rows} />
       )}

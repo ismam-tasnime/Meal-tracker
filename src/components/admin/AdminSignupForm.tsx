@@ -45,7 +45,7 @@ export function AdminSignupForm() {
   if (confirmationSent) {
     return (
       <div className="flex flex-col gap-3 text-sm">
-        <p className="rounded-md bg-emerald-50 px-3 py-2 text-emerald-800">
+        <p className="rounded-xl bg-emerald-50 px-3 py-2 text-emerald-800">
           Account created. Check <strong>{email}</strong> for a confirmation link.
         </p>
         <p className="text-slate-600">
@@ -54,7 +54,7 @@ export function AdminSignupForm() {
         </p>
         <Link
           href="/admin/login"
-          className="flex h-11 items-center justify-center rounded-lg bg-indigo-600 text-sm font-semibold text-white"
+          className="flex h-11 items-center justify-center rounded-full bg-indigo-600 text-sm font-semibold text-white transition-colors hover:bg-indigo-700"
         >
           Go to sign in
         </Link>
@@ -74,7 +74,7 @@ export function AdminSignupForm() {
           autoComplete="name"
           value={fullName}
           onChange={(e) => setFullName(e.target.value)}
-          className="h-11 rounded-lg border border-slate-300 px-3 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          className="h-11 rounded-xl border border-slate-300 px-3 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
         />
       </div>
 
@@ -89,7 +89,7 @@ export function AdminSignupForm() {
           autoComplete="username"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="h-11 rounded-lg border border-slate-300 px-3 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          className="h-11 rounded-xl border border-slate-300 px-3 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
         />
       </div>
 
@@ -105,7 +105,7 @@ export function AdminSignupForm() {
           autoComplete="new-password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="h-11 rounded-lg border border-slate-300 px-3 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          className="h-11 rounded-xl border border-slate-300 px-3 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
         />
         <p className="text-xs text-slate-400">At least 8 characters.</p>
       </div>
@@ -121,12 +121,12 @@ export function AdminSignupForm() {
           autoComplete="new-password"
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
-          className="h-11 rounded-lg border border-slate-300 px-3 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          className="h-11 rounded-xl border border-slate-300 px-3 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
         />
       </div>
 
       {error && (
-        <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700" role="alert">
+        <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700" role="alert">
           {error}
         </p>
       )}
@@ -134,7 +134,7 @@ export function AdminSignupForm() {
       <button
         type="submit"
         disabled={isPending}
-        className="h-11 rounded-lg bg-indigo-600 text-sm font-semibold text-white transition-colors active:bg-indigo-700 disabled:opacity-60"
+        className="h-11 rounded-full bg-indigo-600 text-sm font-semibold text-white transition-colors hover:bg-indigo-700 transition-colors active:bg-indigo-700 disabled:opacity-60"
       >
         {isPending ? "Creating account…" : "Create admin account"}
       </button>

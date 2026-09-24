@@ -38,7 +38,7 @@ export function ReportFilters({
         <select
           value={month}
           onChange={(e) => updateParam("month", e.target.value)}
-          className="h-9 rounded-md border border-slate-300 bg-white px-2 text-sm"
+          className="h-9 rounded-2xl border border-slate-300 bg-white px-2 text-sm"
         >
           {MONTH_NAMES.map((name, idx) => (
             <option key={name} value={idx + 1}>
@@ -53,7 +53,7 @@ export function ReportFilters({
         <select
           value={year}
           onChange={(e) => updateParam("year", e.target.value)}
-          className="h-9 rounded-md border border-slate-300 bg-white px-2 text-sm"
+          className="h-9 rounded-2xl border border-slate-300 bg-white px-2 text-sm"
         >
           {years.map((y) => (
             <option key={y} value={y}>
@@ -68,7 +68,7 @@ export function ReportFilters({
         <select
           value={employeeId}
           onChange={(e) => updateParam("employee", e.target.value)}
-          className="h-9 max-w-[10rem] rounded-md border border-slate-300 bg-white px-2 text-sm"
+          className="h-9 max-w-[10rem] rounded-2xl border border-slate-300 bg-white px-2 text-sm"
         >
           <option value="">All employees</option>
           {employees.map((e) => (

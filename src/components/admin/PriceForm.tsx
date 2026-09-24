@@ -36,7 +36,7 @@ export function PriceForm({ current }: { current: MealPrice | null }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4 rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+    <form onSubmit={handleSubmit} className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
       {current && (
         <p className="text-sm text-slate-500">
           Current: Breakfast {formatBDT(current.breakfast_price)} · Lunch{" "}
@@ -55,7 +55,7 @@ export function PriceForm({ current }: { current: MealPrice | null }) {
             value={breakfast}
             onChange={(e) => setBreakfast(e.target.value)}
             required
-            className="h-10 rounded-lg border border-slate-300 px-3 text-sm"
+            className="h-10 rounded-xl border border-slate-300 px-3 text-sm"
           />
         </div>
         <div className="flex flex-col gap-1">
@@ -67,7 +67,7 @@ export function PriceForm({ current }: { current: MealPrice | null }) {
             value={lunch}
             onChange={(e) => setLunch(e.target.value)}
             required
-            className="h-10 rounded-lg border border-slate-300 px-3 text-sm"
+            className="h-10 rounded-xl border border-slate-300 px-3 text-sm"
           />
         </div>
         <div className="flex flex-col gap-1">
@@ -79,7 +79,7 @@ export function PriceForm({ current }: { current: MealPrice | null }) {
             value={dinner}
             onChange={(e) => setDinner(e.target.value)}
             required
-            className="h-10 rounded-lg border border-slate-300 px-3 text-sm"
+            className="h-10 rounded-xl border border-slate-300 px-3 text-sm"
           />
         </div>
       </div>
@@ -90,7 +90,7 @@ export function PriceForm({ current }: { current: MealPrice | null }) {
           type="date"
           value={effectiveFrom}
           onChange={(e) => setEffectiveFrom(e.target.value)}
-          className="h-10 rounded-lg border border-slate-300 px-3 text-sm"
+          className="h-10 rounded-xl border border-slate-300 px-3 text-sm"
         />
         <p className="text-xs text-slate-400">
           Applies to this date onward. Meals before this date keep using the price that was in
@@ -100,7 +100,7 @@ export function PriceForm({ current }: { current: MealPrice | null }) {
 
       {message && (
         <p
-          className={`rounded-md px-3 py-2 text-sm ${
+          className={`rounded-xl px-3 py-2 text-sm ${
             message.type === "ok" ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-700"
           }`}
         >
@@ -111,7 +111,7 @@ export function PriceForm({ current }: { current: MealPrice | null }) {
       <button
         type="submit"
         disabled={isPending}
-        className="h-10 w-fit rounded-lg bg-indigo-600 px-4 text-sm font-semibold text-white disabled:opacity-60"
+        className="h-10 w-fit rounded-full bg-indigo-600 px-4 text-sm font-semibold text-white transition-colors hover:bg-indigo-700 disabled:opacity-60"
       >
         {isPending ? "Saving…" : "Save prices"}
       </button>

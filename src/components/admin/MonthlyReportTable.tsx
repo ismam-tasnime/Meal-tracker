@@ -48,13 +48,13 @@ export function MonthlyReportTable({
           type="button"
           onClick={exportCsv}
           disabled={rows.length === 0}
-          className="h-9 rounded-lg border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 disabled:opacity-50"
+          className="h-9 rounded-full border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 disabled:opacity-50"
         >
           Export CSV
         </button>
       </div>
 
-      <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white shadow-sm">
+      <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm">
         <table className="w-full min-w-[560px] text-sm">
           <thead>
             <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
@@ -98,7 +98,7 @@ export function MonthlyReportTable({
                 <td colSpan={4} className="px-3 py-2 text-right text-sm font-semibold text-slate-600">
                   Grand total
                 </td>
-                <td className="px-3 py-2 text-right text-sm font-bold text-slate-900">
+                <td className="px-3 py-2 text-right text-sm font-bold tracking-tight text-slate-900">
                   {formatBDT(grandTotal)}
                 </td>
               </tr>

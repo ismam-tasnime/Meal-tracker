@@ -16,7 +16,7 @@ export default async function AdminEmployeesPage() {
   return (
     <div className="flex flex-col gap-4">
       <div>
-        <h1 className="text-lg font-bold text-slate-900">Employees</h1>
+        <h1 className="text-lg font-bold tracking-tight text-slate-900">Employees</h1>
         <p className="text-sm text-slate-500">
           Add, rename, activate/deactivate, or remove employees. Only active employees appear on
           the public meal sheet.
@@ -24,7 +24,7 @@ export default async function AdminEmployeesPage() {
       </div>
 
       {loadError ? (
-        <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{loadError}</p>
+        <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{loadError}</p>
       ) : (
         <EmployeeManager initialEmployees={employees} />
       )}
