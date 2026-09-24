@@ -26,7 +26,7 @@ export function AdminNav() {
             key={link.href}
             href={link.href}
             className={[
-              "whitespace-nowrap rounded-full px-3 py-2 text-sm font-medium transition-colors",
+              "whitespace-nowrap rounded-full px-3 py-2 text-sm font-semibold transition-colors",
               isActive
                 ? "bg-indigo-600 text-white"
                 : "text-slate-600 hover:bg-slate-100 sm:text-slate-700",
@@ -40,7 +40,7 @@ export function AdminNav() {
         type="button"
         disabled={isPending}
         onClick={() => startTransition(() => signOut())}
-        className="ml-auto whitespace-nowrap rounded-full px-3 py-2 text-left text-sm font-medium text-slate-500 hover:bg-slate-100 disabled:opacity-60 sm:ml-0 sm:mt-4"
+        className="ml-auto whitespace-nowrap rounded-full px-3 py-2 text-left text-sm font-semibold text-slate-500 hover:bg-slate-100 disabled:opacity-60 sm:ml-0 sm:mt-4"
       >
         {isPending ? "Signing out…" : "Sign out"}
       </button>

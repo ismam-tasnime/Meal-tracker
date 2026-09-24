@@ -53,7 +53,7 @@ export default async function AdminDashboardPage() {
             </Link>
             <Link
               href="/admin/reports"
-              className="h-10 rounded-full border border-slate-300 bg-white px-4 text-sm font-medium text-slate-700 flex items-center"
+              className="h-10 rounded-full border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-700 flex items-center"
             >
               View full report
             </Link>

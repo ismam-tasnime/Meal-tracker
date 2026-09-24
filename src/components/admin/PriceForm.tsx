@@ -47,7 +47,7 @@ export function PriceForm({ current }: { current: MealPrice | null }) {
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <div className="flex flex-col gap-1">
-          <label className="text-sm font-medium text-slate-700">Breakfast price (৳)</label>
+          <label className="text-sm font-semibold text-slate-700">Breakfast price (৳)</label>
           <input
             type="number"
             min="0"
@@ -59,7 +59,7 @@ export function PriceForm({ current }: { current: MealPrice | null }) {
           />
         </div>
         <div className="flex flex-col gap-1">
-          <label className="text-sm font-medium text-slate-700">Lunch price (৳)</label>
+          <label className="text-sm font-semibold text-slate-700">Lunch price (৳)</label>
           <input
             type="number"
             min="0"
@@ -71,7 +71,7 @@ export function PriceForm({ current }: { current: MealPrice | null }) {
           />
         </div>
         <div className="flex flex-col gap-1">
-          <label className="text-sm font-medium text-slate-700">Dinner price (৳)</label>
+          <label className="text-sm font-semibold text-slate-700">Dinner price (৳)</label>
           <input
             type="number"
             min="0"
@@ -85,7 +85,7 @@ export function PriceForm({ current }: { current: MealPrice | null }) {
       </div>
 
       <div className="flex flex-col gap-1 sm:w-56">
-        <label className="text-sm font-medium text-slate-700">Effective from</label>
+        <label className="text-sm font-semibold text-slate-700">Effective from</label>
         <input
           type="date"
           value={effectiveFrom}

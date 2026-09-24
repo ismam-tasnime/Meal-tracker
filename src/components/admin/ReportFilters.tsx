@@ -34,7 +34,7 @@ export function ReportFilters({
   return (
     <div className="flex flex-wrap items-end gap-3">
       <div className="flex flex-col gap-1">
-        <label className="text-xs font-medium text-slate-500">Month</label>
+        <label className="text-xs font-semibold text-slate-500">Month</label>
         <select
           value={month}
           onChange={(e) => updateParam("month", e.target.value)}
@@ -49,7 +49,7 @@ export function ReportFilters({
       </div>
 
       <div className="flex flex-col gap-1">
-        <label className="text-xs font-medium text-slate-500">Year</label>
+        <label className="text-xs font-semibold text-slate-500">Year</label>
         <select
           value={year}
           onChange={(e) => updateParam("year", e.target.value)}
@@ -64,7 +64,7 @@ export function ReportFilters({
       </div>
 
       <div className="flex flex-col gap-1">
-        <label className="text-xs font-medium text-slate-500">Employee</label>
+        <label className="text-xs font-semibold text-slate-500">Employee</label>
         <select
           value={employeeId}
           onChange={(e) => updateParam("employee", e.target.value)}

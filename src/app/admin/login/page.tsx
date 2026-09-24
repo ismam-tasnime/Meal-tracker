@@ -27,7 +27,7 @@ export default async function AdminLoginPage({
         {setupState === "open" && (
           <p className="mt-4 border-t border-slate-100 pt-4 text-center text-xs text-slate-500">
             No admin account exists yet.{" "}
-            <Link href="/admin/signup" className="font-medium text-indigo-600">
+            <Link href="/admin/signup" className="font-semibold text-indigo-600">
               Create the first one
             </Link>
           </p>

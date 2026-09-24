@@ -128,7 +128,7 @@ export function MealSheetTable({
                 >
                   <td
                     className={[
-                      "sticky left-0 z-10 px-3 py-2 font-medium",
+                      "sticky left-0 z-10 px-3 py-2 font-semibold",
                       isMe ? "bg-indigo-50 text-indigo-900" : "bg-white text-slate-800",
                     ].join(" ")}
                   >

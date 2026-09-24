@@ -48,7 +48,7 @@ export function MonthlyReportTable({
           type="button"
           onClick={exportCsv}
           disabled={rows.length === 0}
-          className="h-9 rounded-full border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 disabled:opacity-50"
+          className="h-9 rounded-full border border-slate-300 bg-white px-3 text-sm font-semibold text-slate-700 disabled:opacity-50"
         >
           Export CSV
         </button>
@@ -68,10 +68,10 @@ export function MonthlyReportTable({
           <tbody>
             {rows.map((r) => (
               <tr key={r.employee_id} className="border-b border-slate-100 last:border-b-0">
-                <td className="px-3 py-2 font-medium text-slate-800">
+                <td className="px-3 py-2 font-semibold text-slate-800">
                   {r.employee_name}
                   {!r.is_active && (
-                    <span className="ml-1.5 rounded-full bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-400">
+                    <span className="ml-1.5 rounded-full bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-400">
                       Inactive
                     </span>
                   )}
