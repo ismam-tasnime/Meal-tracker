@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { isAdminSetupCompleted } from "@/lib/auth/session";
+import { getAdminSetupState } from "@/lib/auth/session";
 import type { ActionResult } from "@/lib/actions/employees";
 
 export type SignInResult = { ok: true } | { ok: false; error: string };
@@ -49,7 +49,11 @@ export async function signUpFirstAdmin(
     return { ok: false, error: "Password must be at least 8 characters." };
   }
 
-  if (await isAdminSetupCompleted()) {
+  const setupState = await getAdminSetupState();
+  if (setupState === "unreachable") {
+    return { ok: false, error: "Could not reach the database. Please try again." };
+  }
+  if (setupState === "closed") {
     return { ok: false, error: "Admin registration is already closed." };
   }
 
