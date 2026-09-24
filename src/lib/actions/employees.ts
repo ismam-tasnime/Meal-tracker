@@ -73,7 +73,16 @@ export async function deleteEmployee(id: string): Promise<ActionResult> {
   const supabase = await createClient();
   const { error } = await supabase.from("employees").delete().eq("id", id);
 
-  if (error) return { ok: false, error: "Could not remove employee." };
+  if (error) {
+    // 23503: still referenced — they have deposits in some mess month.
+    if (error.code === "23503") {
+      return {
+        ok: false,
+        error: "This employee has deposit records and can't be deleted. Deactivate them instead.",
+      };
+    }
+    return { ok: false, error: "Could not remove employee." };
+  }
 
   revalidatePath("/admin/employees");
   revalidatePath("/");

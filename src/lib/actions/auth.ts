@@ -6,7 +6,7 @@ import { formatMessMonthName, messAccountEmail, parseMessMonthName } from "@/lib
 
 export type AuthResult = { ok: true } | { ok: false; error: string };
 
-const USERNAME_HINT = 'Username must be a month and year, like "January 2026".';
+const USERNAME_HINT = 'Account name must be a month and year, like "January2026".';
 
 export async function signInWithPassword(username: string, password: string): Promise<AuthResult> {
   const messMonth = parseMessMonthName(username ?? "");
@@ -20,7 +20,7 @@ export async function signInWithPassword(username: string, password: string): Pr
   });
 
   if (error) {
-    return { ok: false, error: "Wrong month name or password." };
+    return { ok: false, error: "Wrong account name or password." };
   }
 
   // Idempotent. Finishes setup for an account whose signup got interrupted
@@ -38,7 +38,7 @@ export async function signOut(): Promise<void> {
 }
 
 /**
- * Creates the mess manager account for one month, e.g. "January 2026".
+ * Creates the mess manager account for one month, e.g. "January2026".
  * Each month can be signed up only once: the username maps to a fixed
  * Supabase Auth login address, and Auth refuses a second account with it.
  * register_mess_manager() then derives the month from that address, so an

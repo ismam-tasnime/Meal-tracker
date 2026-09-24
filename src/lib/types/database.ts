@@ -21,16 +21,6 @@ export type MealRecord = {
   updated_at: string;
 };
 
-export type MealPrice = {
-  id: string;
-  period_id: string | null;
-  breakfast_price: number;
-  lunch_price: number;
-  dinner_price: number;
-  effective_from: string; // YYYY-MM-DD
-  created_at: string;
-};
-
 export type AdminProfile = {
   id: string;
   full_name: string | null;
@@ -44,6 +34,28 @@ export type MessPeriod = {
   manager_id: string;
   start_date: string; // YYYY-MM-DD, inclusive
   end_date: string; // YYYY-MM-DD, exclusive
+  /** Month-end meal rate (BDT per meal count); null until the team sets it. */
+  meal_rate: number | null;
+  created_at: string;
+};
+
+/** Meal counts (weights) for one date. No row = the defaults. */
+export type MealDayWeights = {
+  period_id: string;
+  meal_date: string; // YYYY-MM-DD
+  breakfast_weight: number;
+  lunch_weight: number;
+  dinner_weight: number;
+  updated_at: string;
+};
+
+export type Deposit = {
+  id: string;
+  period_id: string;
+  employee_id: string;
+  amount: number;
+  deposited_on: string; // YYYY-MM-DD
+  note: string | null;
   created_at: string;
 };
 
@@ -54,10 +66,13 @@ export type PeriodReportRow = {
   breakfast_count: number;
   lunch_count: number;
   dinner_count: number;
-  breakfast_amount: number;
-  lunch_amount: number;
-  dinner_amount: number;
-  total_amount: number;
+  /** Weighted: Σ meals ON × that date's meal count. */
+  meal_count: number;
+  /** meal_count × meal rate; null until the rate is set. */
+  total_bill: number | null;
+  total_deposit: number;
+  /** total_deposit − total_bill: > 0 remaining, 0 settled, < 0 due. Null until the rate is set. */
+  balance: number | null;
 };
 
 export type MealType = "breakfast" | "lunch" | "dinner";
@@ -77,15 +92,16 @@ export type Database = {
         Update: Partial<MealRecord>;
         Relationships: [];
       };
-      meal_prices: {
-        Row: MealPrice;
-        Insert: Partial<MealPrice> & {
-          breakfast_price: number;
-          lunch_price: number;
-          dinner_price: number;
-          period_id: string;
-        };
-        Update: Partial<MealPrice>;
+      meal_day_weights: {
+        Row: MealDayWeights;
+        Insert: Partial<MealDayWeights> & { period_id: string; meal_date: string };
+        Update: Partial<MealDayWeights>;
+        Relationships: [];
+      };
+      deposits: {
+        Row: Deposit;
+        Insert: Partial<Deposit> & { period_id: string; employee_id: string; amount: number };
+        Update: Partial<Deposit>;
         Relationships: [];
       };
       mess_periods: {

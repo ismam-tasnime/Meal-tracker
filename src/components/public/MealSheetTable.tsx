@@ -74,7 +74,7 @@ export function MealSheetTable({
   if (rows.length === 0) {
     return (
       <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-6 text-center text-sm text-slate-500">
-        No active employees yet. Ask an admin to add employees.
+        No active employees yet. Ask the mess manager to add employees.
       </div>
     );
   }

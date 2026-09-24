@@ -30,7 +30,7 @@ export default async function ProtectedAdminLayout({ children }: { children: Rea
         <p className="mt-2 text-sm text-slate-500">
           {isAdmin
             ? "Please refresh the page in a moment."
-            : "This account isn’t set up as a mess manager. Sign out and sign in with your mess month, like “January 2026”."}
+            : "This account isn’t set up as a mess manager. Sign out and sign in with your mess month, like “January2026”."}
         </p>
         <form action={signOut} className="mt-4">
           <button

@@ -8,8 +8,8 @@ export default function ManagerSignupPage() {
       <div className="mb-6 text-center">
         <h1 className="text-xl font-bold tracking-tight text-slate-900">Mess manager sign up</h1>
         <p className="mt-1 text-sm text-slate-500">
-          Your dashboard, prices, and reports are private — other mess managers can&rsquo;t see
-          them.
+          One account per mess month, shared by that month&rsquo;s team. Other months&rsquo;
+          teams can&rsquo;t see your data.
         </p>
       </div>
 

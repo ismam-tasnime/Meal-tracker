@@ -9,12 +9,12 @@ export type PeriodRange = Pick<MessPeriod, "start_date" | "end_date">;
 export type MessMonth = { year: number; month: number };
 
 /**
- * Parses a mess manager username such as "January 2026" (any capitalisation,
- * extra spaces allowed). Only a full month name followed by a 4-digit year
- * is accepted.
+ * Parses a mess manager account name such as "January2026" (any
+ * capitalisation; "January 2026" with a space is accepted too). Only a full
+ * month name followed by a 4-digit year is allowed.
  */
 export function parseMessMonthName(input: string): MessMonth | null {
-  const match = input.trim().toLowerCase().match(/^([a-z]+)\s+(\d{4})$/);
+  const match = input.trim().toLowerCase().match(/^([a-z]+)\s*(\d{4})$/);
   if (!match) return null;
   const monthIndex = MONTH_NAMES.findIndex((name) => name.toLowerCase() === match[1]);
   const year = Number(match[2]);
@@ -32,9 +32,9 @@ export function messMonthRange({ year, month }: MessMonth): PeriodRange {
   };
 }
 
-/** "January 2026" */
+/** "January2026" — the account name for a mess month. */
 export function formatMessMonthName({ year, month }: MessMonth): string {
-  return `${MONTH_NAMES[month - 1]} ${year}`;
+  return `${MONTH_NAMES[month - 1]}${year}`;
 }
 
 /**
@@ -55,7 +55,7 @@ export function periodLastDay(period: PeriodRange): string {
   return addDaysToDateStr(period.end_date, -1);
 }
 
-/** "January 2027" — named after the month the period starts in. */
+/** "January2027" — named after the month the period starts in. */
 export function formatPeriodName(period: PeriodRange): string {
   const [year, month] = period.start_date.split("-").map(Number);
   return formatMessMonthName({ year, month });
@@ -67,4 +67,34 @@ export function formatPeriodRange(period: PeriodRange): string {
   const last = parseDateStr(periodLastDay(period));
   const sameYear = start.getFullYear() === last.getFullYear();
   return `${format(start, sameYear ? "d MMM" : "d MMM yyyy")} – ${format(last, "d MMM yyyy")}`;
+}
+
+export type MealWeights = { breakfast: number; lunch: number; dinner: number };
+
+/**
+ * Meal counts used for a date nobody has customised. Must match the column
+ * defaults in public.meal_day_weights and get_period_report().
+ */
+export const DEFAULT_MEAL_WEIGHTS: MealWeights = { breakfast: 0.75, lunch: 1.25, dinner: 1.0 };
+
+/**
+ * How an employee stands at month end. balance = deposit − bill:
+ * positive means money remaining (refund), negative means still due.
+ */
+export type BalanceStatus =
+  | { kind: "pending" } // meal rate not set yet
+  | { kind: "settled" }
+  | { kind: "remaining"; amount: number }
+  | { kind: "due"; amount: number };
+
+export function balanceStatus(balance: number | null): BalanceStatus {
+  if (balance === null) return { kind: "pending" };
+  // Amounts are rounded to paisa; treat sub-paisa noise as settled.
+  if (Math.abs(balance) < 0.005) return { kind: "settled" };
+  return balance > 0 ? { kind: "remaining", amount: balance } : { kind: "due", amount: -balance };
+}
+
+/** "6.25" / "6" — meal counts without trailing zeros. */
+export function formatMealCount(value: number): string {
+  return Number(value.toFixed(2)).toString();
 }

@@ -43,14 +43,14 @@ export function ManagerSignupForm() {
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       <div className="flex flex-col gap-1.5">
         <label htmlFor="username" className="text-sm font-medium text-slate-700">
-          Username (mess month)
+          Account name (month + year)
         </label>
         <input
           id="username"
           type="text"
           required
           autoComplete="username"
-          placeholder="January 2026"
+          placeholder="January2026"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
           className={INPUT_CLASS}
@@ -58,7 +58,7 @@ export function ManagerSignupForm() {
         <p className="text-xs text-slate-400">
           {messMonth
             ? `Covers ${formatPeriodRange(messMonthRange(messMonth))}.`
-            : "Month name and year, like January 2026. Each month can be signed up once."}
+            : "Month and year, like January2026. Each month can have only one account — share it with your team."}
         </p>
       </div>
 

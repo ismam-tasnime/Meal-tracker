@@ -1,13 +1,14 @@
 import { DateNav } from "@/components/public/DateNav";
-import { AdminMealEditor } from "@/components/admin/AdminMealEditor";
+import { MealStatusEditor } from "@/components/admin/MealStatusEditor";
 import { getAdminMealSheet } from "@/lib/data/meals";
+import { getDayWeights } from "@/lib/data/mess";
 import { getMyPeriod } from "@/lib/data/periods";
 import { isValidDateStr, todayInOfficeTz } from "@/lib/utils/date";
 import { formatPeriodRange, isDateInPeriod } from "@/lib/utils/mess";
 
 export const dynamic = "force-dynamic";
 
-export default async function ManagerMealsPage({
+export default async function ManagerMealStatusPage({
   searchParams,
 }: {
   searchParams: Promise<{ date?: string }>;
@@ -26,10 +27,11 @@ export default async function ManagerMealsPage({
   const inPeriod = isDateInPeriod(date, period);
 
   let rows: Awaited<ReturnType<typeof getAdminMealSheet>> = [];
+  let weights: Awaited<ReturnType<typeof getDayWeights>> | null = null;
   let loadError: string | null = null;
   if (inPeriod) {
     try {
-      rows = await getAdminMealSheet(date);
+      [rows, weights] = await Promise.all([getAdminMealSheet(date), getDayWeights(period.id, date)]);
     } catch {
       loadError = "Could not load meal records. Please refresh the page.";
     }
@@ -38,10 +40,10 @@ export default async function ManagerMealsPage({
   return (
     <div className="flex flex-col gap-4">
       <div>
-        <h1 className="text-lg font-bold tracking-tight text-slate-900">Meals</h1>
+        <h1 className="text-lg font-bold tracking-tight text-slate-900">Meal Status</h1>
         <p className="text-sm text-slate-500">
-          Edit any employee&rsquo;s meal status for any day of your mess month, including
-          inactive employees.
+          Pick a date to see who ate, set that date&rsquo;s meal counts, and fix any employee&rsquo;s
+          meal ON/OFF.
         </p>
       </div>
 
@@ -52,10 +54,16 @@ export default async function ManagerMealsPage({
           This date is outside your mess month ({formatPeriodRange(period)}). Pick a date inside
           it.
         </p>
-      ) : loadError ? (
+      ) : loadError || !weights ? (
         <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{loadError}</p>
       ) : (
-        <AdminMealEditor key={date} date={date} initialRows={rows} />
+        <MealStatusEditor
+          key={date}
+          date={date}
+          initialRows={rows}
+          initialWeights={{ breakfast: weights.breakfast, lunch: weights.lunch, dinner: weights.dinner }}
+          weightsCustomised={weights.customised}
+        />
       )}
     </div>
   );

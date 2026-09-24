@@ -4,7 +4,7 @@ import { getDashboardStats } from "@/lib/data/dashboard";
 import { getMyPeriod } from "@/lib/data/periods";
 import { formatBDT } from "@/lib/utils/currency";
 import { formatDisplayDate, todayInOfficeTz } from "@/lib/utils/date";
-import { formatPeriodName, formatPeriodRange } from "@/lib/utils/mess";
+import { formatMealCount, formatPeriodRange } from "@/lib/utils/mess";
 
 export const dynamic = "force-dynamic";
 
@@ -22,7 +22,7 @@ export default async function ManagerDashboardPage() {
     loadError = "Could not load dashboard stats. Please refresh the page.";
   }
 
-  const periodName = formatPeriodName(period);
+  const range = formatPeriodRange(period);
 
   return (
     <div className="flex flex-col gap-4">
@@ -45,15 +45,22 @@ export default async function ManagerDashboardPage() {
               </>
             )}
             <StatCard
-              label={`${periodName} meals`}
-              value={String(stats.periodTotalMeals)}
-              hint={formatPeriodRange(period)}
+              label="Month meal count"
+              value={formatMealCount(stats.periodMealCount)}
+              hint={range}
             />
+            <StatCard label="Deposits received" value={formatBDT(stats.periodDeposits)} hint={range} />
             <StatCard
-              label={`${periodName} total`}
-              value={formatBDT(stats.periodTotalAmount)}
-              hint={formatPeriodRange(period)}
+              label="Meal rate"
+              value={period.meal_rate === null ? "Not set" : formatBDT(period.meal_rate)}
+              hint="Set at month end"
             />
+            {stats.periodBill !== null && (
+              <>
+                <StatCard label="Total bill" value={formatBDT(stats.periodBill)} hint={range} />
+                <StatCard label="Still due" value={formatBDT(stats.totalDue)} hint="From all employees" />
+              </>
+            )}
           </div>
 
           <div className="flex flex-wrap gap-2">
@@ -61,13 +68,19 @@ export default async function ManagerDashboardPage() {
               href="/admin/meals"
               className="h-10 rounded-full bg-indigo-600 px-4 text-sm font-semibold text-white transition-colors hover:bg-indigo-700 flex items-center"
             >
-              Edit meals
+              Meal status
+            </Link>
+            <Link
+              href="/admin/expenses"
+              className="h-10 rounded-full border border-slate-300 bg-white px-4 text-sm font-medium text-slate-700 flex items-center"
+            >
+              Expense status
             </Link>
             <Link
               href="/admin/reports"
               className="h-10 rounded-full border border-slate-300 bg-white px-4 text-sm font-medium text-slate-700 flex items-center"
             >
-              View full report
+              Final report
             </Link>
           </div>
         </>
