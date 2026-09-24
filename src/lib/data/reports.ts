@@ -18,6 +18,7 @@ export async function getPeriodReport(periodId: string): Promise<PeriodReportRow
   // Postgres numerics can arrive as strings depending on size; normalise.
   return (data ?? []).map((r) => ({
     ...r,
+    token_no: r.token_no === null ? null : Number(r.token_no),
     breakfast_count: Number(r.breakfast_count),
     lunch_count: Number(r.lunch_count),
     dinner_count: Number(r.dinner_count),

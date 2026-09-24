@@ -5,6 +5,7 @@ import type { MessPeriod, PeriodReportRow } from "@/lib/types/database";
 import { formatBDT } from "@/lib/utils/currency";
 import { balanceStatus, formatMealCount, formatPeriodName } from "@/lib/utils/mess";
 import { BalanceBadge } from "@/components/admin/BalanceBadge";
+import { EmployeeName } from "@/components/EmployeeName";
 
 function balanceLabel(balance: number | null): string {
   const status = balanceStatus(balance);
@@ -50,6 +51,7 @@ export function BillSummaryTable({
   function exportCsv() {
     const csv = Papa.unparse(
       rows.map((r) => ({
+        Token: r.token_no ?? "",
         Employee: r.employee_name,
         Breakfasts: r.breakfast_count,
         Lunches: r.lunch_count,
@@ -95,7 +97,7 @@ export function BillSummaryTable({
           >
             <div className="flex items-start justify-between gap-3">
               <p className="font-medium text-slate-800">
-                {r.employee_name}
+                <EmployeeName name={r.employee_name} tokenNo={r.token_no} />
                 {!r.is_active && (
                   <span className="ml-1.5 rounded-full bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-400">
                     Inactive
@@ -173,7 +175,7 @@ export function BillSummaryTable({
             {rows.map((r) => (
               <tr key={r.employee_id} className="border-b border-slate-100 last:border-b-0">
                 <td className="sticky left-0 z-10 bg-white px-3 py-2 font-medium text-slate-800">
-                  {r.employee_name}
+                  <EmployeeName name={r.employee_name} tokenNo={r.token_no} />
                   {!r.is_active && (
                     <span className="ml-1.5 rounded-full bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-400">
                       Inactive

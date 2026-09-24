@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { toggleMeal } from "@/lib/actions/meals";
 import type { MealSheetRow } from "@/lib/data/meals";
 import { MealToggleButton } from "@/components/public/MealToggleButton";
+import { EmployeeName, employeeLabel } from "@/components/EmployeeName";
 
 const MY_EMPLOYEE_KEY = "office-meal:my-employee-id";
 type CellStatus = "idle" | "saving" | "error";
@@ -96,7 +97,7 @@ export function MealSheetTable({
           </option>
           {rows.map((r) => (
             <option key={r.employeeId} value={r.employeeId}>
-              {r.employeeName}
+              {employeeLabel(r.employeeName, r.tokenNo)}
             </option>
           ))}
         </select>
@@ -133,7 +134,7 @@ export function MealSheetTable({
                     ].join(" ")}
                   >
                     <span className="flex items-center gap-1.5">
-                      {row.employeeName}
+                      <EmployeeName name={row.employeeName} tokenNo={row.tokenNo} />
                       {isMe && (
                         <span className="rounded-full bg-indigo-600 px-1.5 py-0.5 text-[10px] font-semibold text-white">
                           You

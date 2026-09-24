@@ -7,15 +7,23 @@ import {
   createEmployee,
   deleteEmployee,
   setEmployeeActive,
-  updateEmployeeName,
+  updateEmployee,
 } from "@/lib/actions/employees";
+import { EmployeeName } from "@/components/EmployeeName";
+
+/** "" → no token; otherwise the number (validated again on the server). */
+function parseToken(value: string): number | null {
+  return value.trim() === "" ? null : Number(value);
+}
 
 export function EmployeeManager({ initialEmployees: employees }: { initialEmployees: Employee[] }) {
   const router = useRouter();
   const [newName, setNewName] = useState("");
+  const [newToken, setNewToken] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState("");
+  const [editingToken, setEditingToken] = useState("");
   const [isPending, startTransition] = useTransition();
 
   function handleAdd(e: React.FormEvent) {
@@ -23,9 +31,10 @@ export function EmployeeManager({ initialEmployees: employees }: { initialEmploy
     if (!newName.trim()) return;
     setError(null);
     startTransition(async () => {
-      const result = await createEmployee(newName);
+      const result = await createEmployee(newName, parseToken(newToken));
       if (result.ok) {
         setNewName("");
+        setNewToken("");
         router.refresh();
       } else {
         setError(result.error);
@@ -36,12 +45,14 @@ export function EmployeeManager({ initialEmployees: employees }: { initialEmploy
   function startEdit(employee: Employee) {
     setEditingId(employee.id);
     setEditingName(employee.name);
+    setEditingToken(employee.token_no === null ? "" : String(employee.token_no));
   }
 
   function saveEdit(id: string) {
     if (!editingName.trim()) return;
+    setError(null);
     startTransition(async () => {
-      const result = await updateEmployeeName(id, editingName);
+      const result = await updateEmployee(id, editingName, parseToken(editingToken));
       if (result.ok) {
         setEditingId(null);
         router.refresh();
@@ -80,10 +91,21 @@ export function EmployeeManager({ initialEmployees: employees }: { initialEmploy
     <div className="flex flex-col gap-4">
       <form onSubmit={handleAdd} className="flex gap-2">
         <input
+          value={newToken}
+          onChange={(e) => setNewToken(e.target.value)}
+          placeholder="Token"
+          aria-label="Token number"
+          type="number"
+          inputMode="numeric"
+          min="0"
+          step="1"
+          className="h-10 w-20 shrink-0 rounded-xl border border-slate-300 px-3 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+        />
+        <input
           value={newName}
           onChange={(e) => setNewName(e.target.value)}
           placeholder="New employee name"
-          className="h-10 flex-1 rounded-xl border border-slate-300 px-3 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          className="h-10 min-w-0 flex-1 rounded-xl border border-slate-300 px-3 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
         />
         <button
           type="submit"
@@ -105,13 +127,27 @@ export function EmployeeManager({ initialEmployees: employees }: { initialEmploy
           {employees.map((employee) => (
             <li key={employee.id} className="flex items-center gap-2 px-3 py-2.5">
               {editingId === employee.id ? (
-                <input
-                  value={editingName}
-                  onChange={(e) => setEditingName(e.target.value)}
-                  autoFocus
-                  className="h-9 flex-1 rounded-xl border border-slate-300 px-2 text-sm"
-                  onKeyDown={(e) => e.key === "Enter" && saveEdit(employee.id)}
-                />
+                <>
+                  <input
+                    value={editingToken}
+                    onChange={(e) => setEditingToken(e.target.value)}
+                    placeholder="Token"
+                    aria-label="Token number"
+                    type="number"
+                    inputMode="numeric"
+                    min="0"
+                    step="1"
+                    className="h-9 w-16 shrink-0 rounded-xl border border-slate-300 px-2 text-sm"
+                    onKeyDown={(e) => e.key === "Enter" && saveEdit(employee.id)}
+                  />
+                  <input
+                    value={editingName}
+                    onChange={(e) => setEditingName(e.target.value)}
+                    autoFocus
+                    className="h-9 min-w-0 flex-1 rounded-xl border border-slate-300 px-2 text-sm"
+                    onKeyDown={(e) => e.key === "Enter" && saveEdit(employee.id)}
+                  />
+                </>
               ) : (
                 <span
                   className={[
@@ -119,7 +155,7 @@ export function EmployeeManager({ initialEmployees: employees }: { initialEmploy
                     employee.is_active ? "text-slate-800" : "text-slate-400 line-through",
                   ].join(" ")}
                 >
-                  {employee.name}
+                  <EmployeeName name={employee.name} tokenNo={employee.token_no} />
                 </span>
               )}
 

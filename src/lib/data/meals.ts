@@ -5,6 +5,7 @@ import type { MealType } from "@/lib/types/database";
 export type MealSheetRow = {
   employeeId: string;
   employeeName: string;
+  tokenNo: number | null;
   breakfast: boolean;
   lunch: boolean;
   dinner: boolean;
@@ -22,8 +23,9 @@ export async function getMealSheet(dateStr: string): Promise<MealSheetRow[]> {
     await Promise.all([
       supabase
         .from("employees")
-        .select("id, name")
+        .select("id, name, token_no")
         .eq("is_active", true)
+        .order("token_no", { ascending: true, nullsFirst: false })
         .order("name", { ascending: true }),
       supabase
         .from("meal_records")
@@ -43,6 +45,7 @@ export async function getMealSheet(dateStr: string): Promise<MealSheetRow[]> {
     return {
       employeeId: employee.id,
       employeeName: employee.name,
+      tokenNo: employee.token_no,
       breakfast: record?.breakfast ?? false,
       lunch: record?.lunch ?? false,
       dinner: record?.dinner ?? false,
@@ -60,7 +63,11 @@ export async function getAdminMealSheet(dateStr: string): Promise<AdminMealSheet
 
   const [{ data: employees, error: employeesError }, { data: records, error: recordsError }] =
     await Promise.all([
-      supabase.from("employees").select("id, name, is_active").order("name", { ascending: true }),
+      supabase
+        .from("employees")
+        .select("id, name, token_no, is_active")
+        .order("token_no", { ascending: true, nullsFirst: false })
+        .order("name", { ascending: true }),
       supabase
         .from("meal_records")
         .select("employee_id, breakfast, lunch, dinner")
@@ -77,6 +84,7 @@ export async function getAdminMealSheet(dateStr: string): Promise<AdminMealSheet
     return {
       employeeId: employee.id,
       employeeName: employee.name,
+      tokenNo: employee.token_no,
       isActive: employee.is_active,
       breakfast: record?.breakfast ?? false,
       lunch: record?.lunch ?? false,

@@ -26,7 +26,7 @@ export async function getDayWeights(
   };
 }
 
-export type DepositWithEmployee = Deposit & { employee_name: string };
+export type DepositWithEmployee = Deposit & { employee_name: string; token_no: number | null };
 
 /** Every deposit recorded for the period, newest first. */
 export async function listDeposits(periodId: string): Promise<DepositWithEmployee[]> {
@@ -39,16 +39,17 @@ export async function listDeposits(periodId: string): Promise<DepositWithEmploye
         .eq("period_id", periodId)
         .order("deposited_on", { ascending: false })
         .order("created_at", { ascending: false }),
-      supabase.from("employees").select("id, name"),
+      supabase.from("employees").select("id, name, token_no"),
     ]);
 
   if (error) throw error;
   if (employeesError) throw employeesError;
 
-  const nameById = new Map((employees ?? []).map((e) => [e.id, e.name]));
+  const employeeById = new Map((employees ?? []).map((e) => [e.id, e]));
   return (deposits ?? []).map((d) => ({
     ...d,
     amount: Number(d.amount),
-    employee_name: nameById.get(d.employee_id) ?? "Unknown",
+    employee_name: employeeById.get(d.employee_id)?.name ?? "Unknown",
+    token_no: employeeById.get(d.employee_id)?.token_no ?? null,
   }));
 }

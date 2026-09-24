@@ -12,30 +12,51 @@ async function requireAdmin() {
   if (!isAdmin) throw new Error("Not authorized.");
 }
 
-export async function createEmployee(name: string): Promise<ActionResult> {
+function validToken(tokenNo: number | null): boolean {
+  return tokenNo === null || (Number.isInteger(tokenNo) && tokenNo >= 0);
+}
+
+function saveError(error: { code?: string }, tokenNo: number | null, fallback: string): ActionResult {
+  // 23505: the employees_token_no_key unique index.
+  if (error.code === "23505" && tokenNo !== null) {
+    return { ok: false, error: `Token ${tokenNo} is already used by another employee.` };
+  }
+  return { ok: false, error: fallback };
+}
+
+export async function createEmployee(name: string, tokenNo: number | null): Promise<ActionResult> {
   await requireAdmin();
   const trimmed = name.trim();
   if (!trimmed) return { ok: false, error: "Name is required." };
+  if (!validToken(tokenNo)) return { ok: false, error: "Token must be a whole number." };
 
   const supabase = await createClient();
-  const { error } = await supabase.from("employees").insert({ name: trimmed });
+  const { error } = await supabase.from("employees").insert({ name: trimmed, token_no: tokenNo });
 
-  if (error) return { ok: false, error: "Could not add employee." };
+  if (error) return saveError(error, tokenNo, "Could not add employee.");
 
   revalidatePath("/admin/employees");
   revalidatePath("/");
   return { ok: true };
 }
 
-export async function updateEmployeeName(id: string, name: string): Promise<ActionResult> {
+export async function updateEmployee(
+  id: string,
+  name: string,
+  tokenNo: number | null
+): Promise<ActionResult> {
   await requireAdmin();
   const trimmed = name.trim();
   if (!trimmed) return { ok: false, error: "Name is required." };
+  if (!validToken(tokenNo)) return { ok: false, error: "Token must be a whole number." };
 
   const supabase = await createClient();
-  const { error } = await supabase.from("employees").update({ name: trimmed }).eq("id", id);
+  const { error } = await supabase
+    .from("employees")
+    .update({ name: trimmed, token_no: tokenNo })
+    .eq("id", id);
 
-  if (error) return { ok: false, error: "Could not update employee." };
+  if (error) return saveError(error, tokenNo, "Could not update employee.");
 
   revalidatePath("/admin/employees");
   revalidatePath("/");

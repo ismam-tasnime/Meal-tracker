@@ -5,11 +5,16 @@ import { useState, useTransition } from "react";
 import { addDeposit } from "@/lib/actions/mess";
 import type { Employee } from "@/lib/types/database";
 import { todayInOfficeTz } from "@/lib/utils/date";
+import { employeeLabel } from "@/components/EmployeeName";
 
 const FIELD_CLASS =
   "h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500";
 
-export function DepositForm({ employees }: { employees: Pick<Employee, "id" | "name">[] }) {
+export function DepositForm({
+  employees,
+}: {
+  employees: Pick<Employee, "id" | "name" | "token_no">[];
+}) {
   const router = useRouter();
   const [employeeId, setEmployeeId] = useState("");
   const [amount, setAmount] = useState("");
@@ -64,7 +69,7 @@ export function DepositForm({ employees }: { employees: Pick<Employee, "id" | "n
             </option>
             {employees.map((emp) => (
               <option key={emp.id} value={emp.id}>
-                {emp.name}
+                {employeeLabel(emp.name, emp.token_no)}
               </option>
             ))}
           </select>
