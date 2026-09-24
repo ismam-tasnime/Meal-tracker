@@ -9,7 +9,7 @@ const dmSans = DM_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Office Meal Manager",
+  title: "Meal Manager",
   description: "Track daily breakfast, lunch, and dinner participation for the office.",
 };
 
@@ -18,7 +18,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html lang="en" className={`${dmSans.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col bg-slate-50 text-slate-900">
         <header className="sticky top-0 z-30 border-b border-slate-200/70 bg-white/85 backdrop-blur">
-          <div className="mx-auto flex h-14 w-full max-w-5xl items-center px-4">
+          <div className="flex h-14 w-full items-center px-4">
             <Link href="/" className="flex items-center gap-2">
               <span
                 aria-hidden
@@ -27,7 +27,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
                 M
               </span>
               <span className="text-base font-bold tracking-tight text-slate-900">
-                Office Meal Manager
+                Meal Manager
               </span>
             </Link>
           </div>
