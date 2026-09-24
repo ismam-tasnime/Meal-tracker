@@ -1,26 +1,41 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/*
+ * Loom-inspired theme. Components use Tailwind's `indigo` (brand) and `slate`
+ * (neutrals) scales, so re-tinting those two scales here restyles the whole
+ * app: indigo becomes a blue-violet brand color and slate becomes cool,
+ * navy-tinted greys.
+ */
+@theme {
+  --color-indigo-50: #f3f3fe;
+  --color-indigo-100: #e6e6fd;
+  --color-indigo-200: #cfcefb;
+  --color-indigo-300: #b0adf9;
+  --color-indigo-400: #8d88f7;
+  --color-indigo-500: #716cf6;
+  --color-indigo-600: #565add;
+  --color-indigo-700: #4446c2;
+  --color-indigo-800: #36389b;
+  --color-indigo-900: #282a74;
+  --color-indigo-950: #1a1b4b;
+
+  --color-slate-50: #f7f7fc;
+  --color-slate-100: #efeff7;
+  --color-slate-200: #e3e2ee;
+  --color-slate-300: #cdccdd;
+  --color-slate-400: #8f8ea8;
+  --color-slate-500: #65647f;
+  --color-slate-600: #4e4d69;
+  --color-slate-700: #3a3956;
+  --color-slate-800: #26254a;
+  --color-slate-900: #14133a;
+  --color-slate-950: #0b0a24;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --font-sans: var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
 }

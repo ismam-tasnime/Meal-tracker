@@ -38,7 +38,7 @@ export function LoginForm({ next }: { next: string }) {
           autoComplete="username"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="h-11 rounded-lg border border-slate-300 px-3 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          className="h-11 rounded-xl border border-slate-300 px-3 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
         />
       </div>
 
@@ -53,12 +53,12 @@ export function LoginForm({ next }: { next: string }) {
           autoComplete="current-password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="h-11 rounded-lg border border-slate-300 px-3 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          className="h-11 rounded-xl border border-slate-300 px-3 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
         />
       </div>
 
       {error && (
-        <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700" role="alert">
+        <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700" role="alert">
           {error}
         </p>
       )}
@@ -66,7 +66,7 @@ export function LoginForm({ next }: { next: string }) {
       <button
         type="submit"
         disabled={isPending}
-        className="h-11 rounded-lg bg-indigo-600 text-sm font-semibold text-white transition-colors active:bg-indigo-700 disabled:opacity-60"
+        className="h-11 rounded-full bg-indigo-600 text-sm font-semibold text-white transition-colors hover:bg-indigo-700 transition-colors active:bg-indigo-700 disabled:opacity-60"
       >
         {isPending ? "Signing in…" : "Sign in"}
       </button>

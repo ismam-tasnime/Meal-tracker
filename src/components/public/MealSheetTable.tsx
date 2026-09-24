@@ -73,7 +73,7 @@ export function MealSheetTable({
 
   if (rows.length === 0) {
     return (
-      <div className="rounded-lg border border-dashed border-slate-300 bg-white p-6 text-center text-sm text-slate-500">
+      <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-6 text-center text-sm text-slate-500">
         No active employees yet. Ask an admin to add employees.
       </div>
     );
@@ -89,7 +89,7 @@ export function MealSheetTable({
           id="who-am-i"
           value={myEmployeeId ?? ""}
           onChange={(e) => e.target.value && selectMe(e.target.value)}
-          className="h-8 w-full max-w-[10rem] rounded-md border border-slate-300 bg-white px-2 text-xs text-slate-700"
+          className="h-8 w-full max-w-[10rem] rounded-2xl border border-slate-300 bg-white px-2 text-xs text-slate-700"
         >
           <option value="" disabled>
             Select your name…
@@ -103,7 +103,7 @@ export function MealSheetTable({
         <span className="text-slate-400">(highlights your row on this device)</span>
       </div>
 
-      <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white shadow-sm">
+      <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm">
         <table className="w-full min-w-[420px] border-collapse text-sm">
           <thead>
             <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">

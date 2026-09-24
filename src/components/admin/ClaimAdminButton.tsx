@@ -27,12 +27,12 @@ export function ClaimAdminButton({ defaultName }: { defaultName: string }) {
         type="button"
         onClick={handleClaim}
         disabled={isPending}
-        className="h-11 rounded-lg bg-indigo-600 px-4 text-sm font-semibold text-white disabled:opacity-60"
+        className="h-11 rounded-full bg-indigo-600 px-4 text-sm font-semibold text-white transition-colors hover:bg-indigo-700 disabled:opacity-60"
       >
         {isPending ? "Granting access…" : "Claim admin access"}
       </button>
       {error && (
-        <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700" role="alert">
+        <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700" role="alert">
           {error}
         </p>
       )}

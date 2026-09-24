@@ -31,7 +31,7 @@ export function DateNav({ date, basePath = "/" }: { date: string; basePath?: str
         <button
           type="button"
           onClick={() => goTo(addDaysToDateStr(date, -1))}
-          className="flex h-11 items-center justify-center rounded-lg border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 active:bg-slate-100"
+          className="flex h-11 items-center justify-center rounded-full border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 active:bg-slate-100"
           aria-label="Previous day"
         >
           ← Prev
@@ -54,7 +54,7 @@ export function DateNav({ date, basePath = "/" }: { date: string; basePath?: str
         <button
           type="button"
           onClick={() => goTo(addDaysToDateStr(date, 1))}
-          className="flex h-11 items-center justify-center rounded-lg border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 active:bg-slate-100"
+          className="flex h-11 items-center justify-center rounded-full border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 active:bg-slate-100"
           aria-label="Next day"
         >
           Next →
@@ -66,14 +66,14 @@ export function DateNav({ date, basePath = "/" }: { date: string; basePath?: str
           type="date"
           value={date}
           onChange={(e) => e.target.value && goTo(e.target.value)}
-          className="h-9 rounded-md border border-slate-300 bg-white px-2 text-sm text-slate-700"
+          className="h-9 rounded-2xl border border-slate-300 bg-white px-2 text-sm text-slate-700"
           aria-label="Pick a date"
         />
         {!isToday && (
           <button
             type="button"
             onClick={() => goTo(todayInOfficeTz())}
-            className="h-9 rounded-md border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 active:bg-slate-100"
+            className="h-9 rounded-full border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 active:bg-slate-100"
           >
             Jump to today
           </button>

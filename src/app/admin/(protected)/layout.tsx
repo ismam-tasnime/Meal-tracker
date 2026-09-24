@@ -22,7 +22,7 @@ export default async function ProtectedAdminLayout({ children }: { children: Rea
 
     return (
       <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-4 text-center">
-        <h1 className="text-lg font-semibold text-slate-900">
+        <h1 className="text-lg font-semibold tracking-tight text-slate-900">
           {setupCompleted ? "Not authorized" : "Finish admin setup"}
         </h1>
         <p className="mt-2 text-sm text-slate-500">
@@ -48,7 +48,7 @@ export default async function ProtectedAdminLayout({ children }: { children: Rea
         <form action={signOut} className="mt-4">
           <button
             type="submit"
-            className="h-10 rounded-lg border border-slate-300 px-4 text-sm font-medium text-slate-700"
+            className="h-10 rounded-full border border-slate-300 px-4 text-sm font-medium text-slate-700"
           >
             Sign out
           </button>

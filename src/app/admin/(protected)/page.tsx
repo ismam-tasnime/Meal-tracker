@@ -19,12 +19,12 @@ export default async function AdminDashboardPage() {
   return (
     <div className="flex flex-col gap-4">
       <div>
-        <h1 className="text-lg font-bold text-slate-900">Dashboard</h1>
+        <h1 className="text-lg font-bold tracking-tight text-slate-900">Dashboard</h1>
         <p className="text-sm text-slate-500">{formatDisplayDate(todayInOfficeTz())}</p>
       </div>
 
       {loadError || !stats ? (
-        <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{loadError}</p>
+        <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{loadError}</p>
       ) : (
         <>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
@@ -47,13 +47,13 @@ export default async function AdminDashboardPage() {
           <div className="flex flex-wrap gap-2">
             <Link
               href="/admin/meals"
-              className="h-10 rounded-lg bg-indigo-600 px-4 text-sm font-semibold text-white flex items-center"
+              className="h-10 rounded-full bg-indigo-600 px-4 text-sm font-semibold text-white transition-colors hover:bg-indigo-700 flex items-center"
             >
               Edit today&rsquo;s meals
             </Link>
             <Link
               href="/admin/reports"
-              className="h-10 rounded-lg border border-slate-300 bg-white px-4 text-sm font-medium text-slate-700 flex items-center"
+              className="h-10 rounded-full border border-slate-300 bg-white px-4 text-sm font-medium text-slate-700 flex items-center"
             >
               View full report
             </Link>
