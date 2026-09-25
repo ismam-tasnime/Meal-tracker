@@ -35,6 +35,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           </div>
         </header>
         {children}
+        <footer className="mt-auto px-4 py-6 text-center text-xs text-slate-400">
+          Developed by <span className="font-medium text-slate-500">Romith</span>
+        </footer>
       </body>
     </html>
   );
