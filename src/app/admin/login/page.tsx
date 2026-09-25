@@ -15,7 +15,7 @@ export default async function ManagerLoginPage({
     <div className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center px-4 py-10">
       <div className="mb-6 text-center">
         <h1 className="text-xl font-bold tracking-tight text-slate-900">Mess Manager Sign In</h1>
-        <p className="mt-1 text-sm text-slate-500">Meal Manager — mess managers only.</p>
+        <p className="mt-1 text-sm text-slate-500">Meal Tracker — mess managers only.</p>
       </div>
       <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <LoginForm next={safeNext} />
