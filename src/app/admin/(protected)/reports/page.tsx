@@ -34,8 +34,7 @@ export default async function ManagerReportPage({
       <div>
         <h1 className="text-lg font-bold tracking-tight text-slate-900">Final Report</h1>
         <p className="text-sm text-slate-500">
-          {formatPeriodName(period)} ({formatPeriodRange(period)}). Bill = meal count × meal rate;
-          amount to be paid = bill − deposits.
+          {formatPeriodName(period)} ({formatPeriodRange(period)})
         </p>
       </div>
 

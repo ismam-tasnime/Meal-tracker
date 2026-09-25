@@ -5,7 +5,10 @@ import { useState, useTransition } from "react";
 import { setMealRate } from "@/lib/actions/mess";
 import { formatBDT } from "@/lib/utils/currency";
 
-/** Month-end meal rate: every employee's bill = their meal count × this rate. */
+/**
+ * Month-end meal rate. Until it's set (or after it's cleared by saving an
+ * empty box), bills everywhere show "—".
+ */
 export function MealRateForm({ current }: { current: number | null }) {
   const router = useRouter();
   const [value, setValue] = useState(current === null ? "" : String(current));
@@ -29,7 +32,11 @@ export function MealRateForm({ current }: { current: number | null }) {
     <form
       onSubmit={(e) => {
         e.preventDefault();
-        if (value.trim() !== "") save(Number(value));
+        if (value.trim() === "") {
+          if (current !== null) save(null);
+        } else {
+          save(Number(value));
+        }
       }}
       className="flex flex-col gap-2 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"
     >
@@ -38,7 +45,7 @@ export function MealRateForm({ current }: { current: number | null }) {
           Meal rate (৳ per meal count)
         </label>
         <span className="text-xs text-slate-500">
-          {current === null ? "Not set yet" : `Current: ${formatBDT(current)}`}
+          Current: {current === null ? "—" : formatBDT(current)}
         </span>
       </div>
       <div className="flex gap-2">
@@ -55,14 +62,17 @@ export function MealRateForm({ current }: { current: number | null }) {
         />
         <button
           type="submit"
-          disabled={isPending || value.trim() === "" || Number(value) === current}
+          disabled={
+            isPending ||
+            (value.trim() === "" ? current === null : !(Number(value) >= 0) || Number(value) === current)
+          }
           className="h-11 rounded-full bg-indigo-600 px-4 text-sm font-semibold text-white transition-colors hover:bg-indigo-700 disabled:opacity-50"
         >
-          {isPending ? "Saving…" : "Save rate"}
+          {isPending ? "Saving…" : value.trim() === "" && current !== null ? "Clear rate" : "Save rate"}
         </button>
       </div>
       <p className="text-xs text-slate-400">
-        Set this at month end. Each employee&rsquo;s bill = their meal count × meal rate.
+        Set this at month end. Empty the box and save to clear it.
       </p>
       {message && (
         <p

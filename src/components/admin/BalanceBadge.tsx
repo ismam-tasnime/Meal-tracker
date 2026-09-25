@@ -10,7 +10,7 @@ export function BalanceBadge({ balance }: { balance: number | null }) {
 
   switch (status.kind) {
     case "pending":
-      return <span className="text-xs text-slate-400">Set meal rate</span>;
+      return <span className="text-slate-400">—</span>;
     case "settled":
       return (
         <span className="inline-flex rounded-full bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-600">

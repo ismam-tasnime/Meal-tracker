@@ -7,6 +7,14 @@ import { balanceStatus, formatMealCount, formatPeriodName } from "@/lib/utils/me
 import { BalanceBadge } from "@/components/admin/BalanceBadge";
 import { EmployeeName } from "@/components/EmployeeName";
 
+/**
+ * Spreadsheet apps run cells starting with = + - @ as formulas; prefix text
+ * cells like that with an apostrophe so a name can never execute.
+ */
+function csvText(value: string): string {
+  return /^[=+\-@\t\r]/.test(value) ? `'${value}` : value;
+}
+
 function balanceLabel(balance: number | null): string {
   const status = balanceStatus(balance);
   switch (status.kind) {
@@ -52,7 +60,7 @@ export function BillSummaryTable({
     const csv = Papa.unparse(
       rows.map((r) => ({
         Token: r.token_no ?? "",
-        Employee: r.employee_name,
+        Employee: csvText(r.employee_name),
         Breakfasts: r.breakfast_count,
         Lunches: r.lunch_count,
         Dinners: r.dinner_count,
