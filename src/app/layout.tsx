@@ -10,7 +10,7 @@ const dmSans = DM_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Meal Manager",
+  title: "Meal Tracker",
   description: "Track daily breakfast, lunch, and dinner participation for the office.",
 };
 
@@ -28,7 +28,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
                 M
               </span>
               <span className="hidden text-base font-bold tracking-tight text-slate-900 sm:inline">
-                Meal Manager
+                Meal Tracker
               </span>
             </Link>
             <HeaderNav />

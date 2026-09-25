@@ -1,4 +1,4 @@
-# Meal Manager
+# Meal Tracker
 
 A mobile-first office meal management app with two panels:
 
