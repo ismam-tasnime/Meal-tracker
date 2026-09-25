@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { setMealRate } from "@/lib/actions/mess";
 import { formatBDT } from "@/lib/utils/currency";
@@ -10,7 +9,6 @@ import { formatBDT } from "@/lib/utils/currency";
  * empty box), bills everywhere show "—".
  */
 export function MealRateForm({ current }: { current: number | null }) {
-  const router = useRouter();
   const [value, setValue] = useState(current === null ? "" : String(current));
   const [message, setMessage] = useState<{ type: "ok" | "error"; text: string } | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -21,7 +19,6 @@ export function MealRateForm({ current }: { current: number | null }) {
       const result = await setMealRate(rate);
       if (result.ok) {
         setMessage({ type: "ok", text: rate === null ? "Meal rate cleared." : "Meal rate saved." });
-        router.refresh();
       } else {
         setMessage({ type: "error", text: result.error });
       }

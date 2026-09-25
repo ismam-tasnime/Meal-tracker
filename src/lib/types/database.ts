@@ -78,6 +78,19 @@ export type PeriodReportRow = {
   balance: number | null;
 };
 
+export type DashboardStatsRow = {
+  active_employees: number;
+  today_in_period: boolean;
+  today_breakfast: number;
+  today_lunch: number;
+  today_dinner: number;
+  meal_count: number;
+  total_deposit: number;
+  /** Null until the meal rate is set. */
+  total_bill: number | null;
+  total_due: number | null;
+};
+
 export type MealType = "breakfast" | "lunch" | "dinner";
 
 export type Database = {
@@ -93,7 +106,15 @@ export type Database = {
         Row: MealRecord;
         Insert: Partial<MealRecord> & { employee_id: string; meal_date: string };
         Update: Partial<MealRecord>;
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "meal_records_employee_id_fkey";
+            columns: ["employee_id"];
+            isOneToOne: false;
+            referencedRelation: "employees";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       meal_day_weights: {
         Row: MealDayWeights;
@@ -105,7 +126,15 @@ export type Database = {
         Row: Deposit;
         Insert: Partial<Deposit> & { period_id: string; employee_id: string; amount: number };
         Update: Partial<Deposit>;
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "deposits_employee_id_fkey";
+            columns: ["employee_id"];
+            isOneToOne: false;
+            referencedRelation: "employees";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       mess_periods: {
         Row: MessPeriod;
@@ -122,6 +151,10 @@ export type Database = {
     };
     Views: Record<string, never>;
     Functions: {
+      get_dashboard_stats: {
+        Args: { p_period_id: string; p_today: string };
+        Returns: DashboardStatsRow[];
+      };
       get_period_report: {
         Args: { p_period_id: string };
         Returns: PeriodReportRow[];

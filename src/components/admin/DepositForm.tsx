@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { addDeposit } from "@/lib/actions/mess";
 import type { Employee } from "@/lib/types/database";
@@ -15,7 +14,6 @@ export function DepositForm({
 }: {
   employees: Pick<Employee, "id" | "name" | "token_no">[];
 }) {
-  const router = useRouter();
   const [employeeId, setEmployeeId] = useState("");
   const [amount, setAmount] = useState("");
   const [depositedOn, setDepositedOn] = useState(todayInOfficeTz());
@@ -38,7 +36,6 @@ export function DepositForm({
         setMessage({ type: "ok", text: `Deposit of ৳${Number(amount)} recorded for ${name}.` });
         setAmount("");
         setNote("");
-        router.refresh();
       } else {
         setMessage({ type: "error", text: result.error });
       }

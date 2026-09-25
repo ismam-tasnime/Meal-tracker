@@ -19,6 +19,10 @@ async function requirePeriod() {
   return period;
 }
 
+/**
+ * Re-renders the current admin page in the same response as the action, so
+ * callers must NOT also call router.refresh() (that fetches it twice).
+ */
 function revalidateMoneyPages() {
   revalidatePath("/admin", "layout");
 }
@@ -62,7 +66,8 @@ export async function setDayWeights(dateStr: string, input: MealWeights): Promis
     return { ok: false, error: "Could not save meal counts." };
   }
 
-  revalidateMoneyPages();
+  // No revalidate: the Meal Status table re-prices itself locally, and every
+  // other page is dynamic, so it reads fresh weights on its next visit.
   return { ok: true };
 }
 

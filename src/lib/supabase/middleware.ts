@@ -28,9 +28,10 @@ export async function updateSession(request: NextRequest) {
     },
   });
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // getClaims() verifies the JWT locally (and refreshes an expiring session),
+  // instead of a network round trip to Supabase Auth on every request.
+  const { data } = await supabase.auth.getClaims();
+  const user = data?.claims?.sub ? data.claims : null;
 
   const { pathname } = request.nextUrl;
   const isAdminRoute = pathname.startsWith("/admin");

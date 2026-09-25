@@ -4,6 +4,7 @@ import { getMyPeriod } from "@/lib/data/periods";
 import { formatBDT } from "@/lib/utils/currency";
 import { formatDisplayDate, todayInOfficeTz } from "@/lib/utils/date";
 import { formatMealCount, formatPeriodRange } from "@/lib/utils/mess";
+import { LoadError } from "@/components/LoadError";
 
 export const dynamic = "force-dynamic";
 
@@ -18,7 +19,7 @@ export default async function ManagerDashboardPage() {
   try {
     stats = await getDashboardStats(period);
   } catch {
-    loadError = "Could not load dashboard stats. Please refresh the page.";
+    loadError = "Could not load dashboard stats.";
   }
 
   const range = formatPeriodRange(period);
@@ -31,7 +32,7 @@ export default async function ManagerDashboardPage() {
       </div>
 
       {loadError || !stats ? (
-        <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{loadError}</p>
+        <LoadError message={loadError ?? "Could not load this page."} />
       ) : (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           <StatCard label="Active employees" value={String(stats.totalEmployees)} />
@@ -60,7 +61,7 @@ export default async function ManagerDashboardPage() {
           />
           <StatCard
             label="Still due"
-            value={stats.periodBill === null ? "—" : formatBDT(stats.totalDue)}
+            value={stats.totalDue === null ? "—" : formatBDT(stats.totalDue)}
             hint="From all employees"
           />
         </div>

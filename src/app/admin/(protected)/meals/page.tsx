@@ -5,6 +5,7 @@ import { getDayWeights } from "@/lib/data/mess";
 import { getMyPeriod } from "@/lib/data/periods";
 import { isValidDateStr, todayInOfficeTz } from "@/lib/utils/date";
 import { formatPeriodRange, isDateInPeriod } from "@/lib/utils/mess";
+import { LoadError } from "@/components/LoadError";
 
 export const dynamic = "force-dynamic";
 
@@ -33,7 +34,7 @@ export default async function ManagerMealStatusPage({
     try {
       [rows, weights] = await Promise.all([getAdminMealSheet(date), getDayWeights(period.id, date)]);
     } catch {
-      loadError = "Could not load meal records. Please refresh the page.";
+      loadError = "Could not load meal records.";
     }
   }
 
@@ -55,7 +56,7 @@ export default async function ManagerMealStatusPage({
           it.
         </p>
       ) : loadError || !weights ? (
-        <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{loadError}</p>
+        <LoadError message={loadError ?? "Could not load this page."} />
       ) : (
         <MealStatusEditor
           key={date}

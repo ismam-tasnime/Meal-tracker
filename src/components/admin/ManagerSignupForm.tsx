@@ -35,7 +35,6 @@ export function ManagerSignupForm() {
         return;
       }
       router.replace("/admin");
-      router.refresh();
     });
   }
 

@@ -2,6 +2,7 @@ import { DateNav } from "@/components/public/DateNav";
 import { MealSheetTable } from "@/components/public/MealSheetTable";
 import { getMealSheet } from "@/lib/data/meals";
 import { isValidDateStr, todayInOfficeTz } from "@/lib/utils/date";
+import { LoadError } from "@/components/LoadError";
 
 export const dynamic = "force-dynamic";
 
@@ -19,7 +20,7 @@ export default async function PublicMealSheetPage({
     rows = await getMealSheet(date);
   } catch (err) {
     console.error("Failed to load meal sheet", err);
-    loadError = "Could not load the meal sheet. Please refresh the page.";
+    loadError = "Could not load the meal sheet.";
   }
 
   return (
@@ -38,9 +39,7 @@ export default async function PublicMealSheetPage({
       </div>
 
       {loadError ? (
-        <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-          {loadError}
-        </div>
+        <LoadError message={loadError} />
       ) : (
         <MealSheetTable key={date} date={date} initialRows={rows} />
       )}

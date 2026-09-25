@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { deleteDeposit } from "@/lib/actions/mess";
 import type { DepositWithEmployee } from "@/lib/data/mess";
@@ -9,7 +8,6 @@ import { formatDisplayDate } from "@/lib/utils/date";
 import { EmployeeName } from "@/components/EmployeeName";
 
 export function DepositList({ deposits }: { deposits: DepositWithEmployee[] }) {
-  const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -20,8 +18,8 @@ export function DepositList({ deposits }: { deposits: DepositWithEmployee[] }) {
     setError(null);
     startTransition(async () => {
       const result = await deleteDeposit(deposit.id);
-      if (result.ok) router.refresh();
-      else setError(result.error);
+      // The action already re-renders this page with fresh data.
+      if (!result.ok) setError(result.error);
     });
   }
 

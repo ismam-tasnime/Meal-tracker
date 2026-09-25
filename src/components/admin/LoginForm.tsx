@@ -17,8 +17,8 @@ export function LoginForm({ next }: { next: string }) {
     startTransition(async () => {
       const result = await signInWithPassword(username, password);
       if (result.ok) {
+        // replace() fetches the page fresh; no extra refresh() needed.
         router.replace(next);
-        router.refresh();
       } else {
         setError(result.error);
       }
