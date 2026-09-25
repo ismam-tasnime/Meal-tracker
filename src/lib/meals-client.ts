@@ -23,16 +23,23 @@ async function saveMeal(
   meal: MealType,
   value: boolean
 ): Promise<boolean> {
-  const patch: Partial<Record<MealType, boolean>> = { [meal]: value };
-  const client = await loadClient();
-  const { error } = await client
-    .from("meal_records")
-    .upsert(
-      { employee_id: employeeId, meal_date: dateStr, ...patch },
-      { onConflict: "employee_id,meal_date" }
-    );
-  if (error) console.error("saveMeal failed", error);
-  return !error;
+  // Any failure — network, config, or the database — must come back as
+  // `false`, never a thrown error, or the button would stay stuck on "…".
+  try {
+    const patch: Partial<Record<MealType, boolean>> = { [meal]: value };
+    const client = await loadClient();
+    const { error } = await client
+      .from("meal_records")
+      .upsert(
+        { employee_id: employeeId, meal_date: dateStr, ...patch },
+        { onConflict: "employee_id,meal_date" }
+      );
+    if (error) console.error("saveMeal failed", error);
+    return !error;
+  } catch (error) {
+    console.error("saveMeal failed", error);
+    return false;
+  }
 }
 
 type MealRow = { employeeId: string } & Record<MealType, boolean>;
@@ -49,7 +56,7 @@ export function useMealToggles<Row extends MealRow>(date: string, initialRows: R
 
   // Warm the client while the page is idle, so the first tap saves instantly.
   useEffect(() => {
-    const warm = () => void loadClient();
+    const warm = () => void loadClient().catch(() => {});
     if (typeof window.requestIdleCallback === "function") {
       const id = window.requestIdleCallback(warm);
       return () => window.cancelIdleCallback(id);
