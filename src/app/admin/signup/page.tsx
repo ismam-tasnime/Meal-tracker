@@ -1,6 +1,7 @@
 import { ManagerSignupForm } from "@/components/admin/ManagerSignupForm";
 
-export const dynamic = "force-dynamic";
+// No per-request data: prerendered once at build time and served from the
+// CDN instead of running a server function on every visit.
 
 export default function ManagerSignupPage() {
   return (

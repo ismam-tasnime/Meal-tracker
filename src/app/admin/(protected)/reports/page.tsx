@@ -1,4 +1,3 @@
-import { BillSummaryTable } from "@/components/admin/BillSummaryTable";
 import { MealRateForm } from "@/components/admin/MealRateForm";
 import { ReportFilters } from "@/components/admin/ReportFilters";
 import { getMyPeriod } from "@/lib/data/periods";
@@ -8,14 +7,9 @@ import { LoadError } from "@/components/LoadError";
 
 export const dynamic = "force-dynamic";
 
-export default async function ManagerReportPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ employee?: string }>;
-}) {
-  const params = await searchParams;
-  const employeeId = params.employee ?? "";
-
+export default async function ManagerReportPage() {
+  // The ?employee= filter is applied client-side by ReportFilters, so
+  // changing it doesn't re-run the report query.
   const period = await getMyPeriod().catch(() => null);
   if (!period) return null;
 
@@ -27,8 +21,6 @@ export default async function ManagerReportPage({
   } catch {
     loadError = "Could not load the report.";
   }
-
-  const filteredRows = employeeId ? rows.filter((r) => r.employee_id === employeeId) : rows;
 
   return (
     <div className="flex flex-col gap-4">
@@ -44,17 +36,7 @@ export default async function ManagerReportPage({
       {loadError ? (
         <LoadError message={loadError ?? "Could not load this page."} />
       ) : (
-        <>
-          <ReportFilters
-            employeeId={employeeId}
-            employees={rows.map((r) => ({
-              id: r.employee_id,
-              name: r.employee_name,
-              tokenNo: r.token_no,
-            }))}
-          />
-          <BillSummaryTable rows={filteredRows} period={period} showMealBreakdown allowExport />
-        </>
+        <ReportFilters rows={rows} period={period} />
       )}
     </div>
   );

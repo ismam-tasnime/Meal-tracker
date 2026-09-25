@@ -140,7 +140,16 @@ export type Database = {
         Row: MessPeriod;
         Insert: Partial<MessPeriod> & { start_date: string; end_date: string };
         Update: Partial<MessPeriod>;
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "mess_periods_manager_id_fkey";
+            columns: ["manager_id"];
+            // manager_id is unique: one account manages exactly one month.
+            isOneToOne: true;
+            referencedRelation: "admin_profiles";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       admin_profiles: {
         Row: AdminProfile;

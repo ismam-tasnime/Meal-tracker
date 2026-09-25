@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getAdminSession } from "@/lib/auth/session";
-import { countMealRecordsForEmployee } from "@/lib/data/employees";
+import { hasMealRecords } from "@/lib/data/employees";
 
 export type ActionResult = { ok: true } | { ok: false; error: string };
 
@@ -83,8 +83,7 @@ export async function setEmployeeActive(id: string, isActive: boolean): Promise<
 export async function deleteEmployee(id: string): Promise<ActionResult> {
   await requireAdmin();
 
-  const mealCount = await countMealRecordsForEmployee(id);
-  if (mealCount > 0) {
+  if (await hasMealRecords(id)) {
     return {
       ok: false,
       error: "This employee has meal history and can't be deleted. Deactivate them instead.",
