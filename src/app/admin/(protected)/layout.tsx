@@ -48,7 +48,7 @@ export default async function ProtectedAdminLayout({ children }: { children: Rea
         <form action={signOut} className="mt-4">
           <button
             type="submit"
-            className="h-10 rounded-full border border-slate-300 px-4 text-sm font-medium text-slate-700"
+            className="h-10 rounded-full border border-slate-300 px-4 text-sm font-semibold text-slate-700"
           >
             Sign out
           </button>

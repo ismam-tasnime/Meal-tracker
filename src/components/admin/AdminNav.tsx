@@ -16,7 +16,7 @@ const LINKS = [
 const ITEM =
   "flex h-9 shrink-0 items-center whitespace-nowrap rounded-lg px-2.5 text-sm transition-colors";
 const ITEM_IDLE = "text-slate-600 hover:bg-slate-100 hover:text-slate-900";
-const ITEM_ACTIVE = "bg-slate-100 font-medium text-slate-900";
+const ITEM_ACTIVE = "bg-slate-100 font-semibold text-slate-900";
 
 /**
  * Mess manager navigation. A plain, compact sidebar on desktop (links on
@@ -55,7 +55,7 @@ export function AdminNav({ accountName, periodRange }: { accountName: string; pe
 
       <div className="hidden border-t border-slate-200 px-3 py-3 sm:block">
         <div className="px-2.5 pb-2">
-          <p className="truncate text-sm font-medium text-slate-900">{accountName}</p>
+          <p className="truncate text-sm font-semibold text-slate-900">{accountName}</p>
           <p className="text-xs text-slate-500">{periodRange}</p>
         </div>
         <button

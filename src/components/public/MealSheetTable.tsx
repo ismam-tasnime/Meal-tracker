@@ -22,7 +22,7 @@ const SheetRow = memo(function SheetRow({ row, isMe, statuses, onToggle }: Sheet
     <tr className={["border-b border-slate-100 last:border-b-0", isMe ? "bg-indigo-50" : ""].join(" ")}>
       <td
         className={[
-          "sticky left-0 z-10 px-3 py-2 font-medium",
+          "sticky left-0 z-10 px-3 py-2 font-semibold",
           isMe ? "bg-indigo-50 text-indigo-900" : "bg-white text-slate-800",
         ].join(" ")}
       >

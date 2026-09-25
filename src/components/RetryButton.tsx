@@ -21,7 +21,7 @@ export function RetryButton({ onRetry, label = "Try again" }: { onRetry?: () => 
           onRetry?.();
         })
       }
-      className="h-10 rounded-full border border-slate-300 bg-white px-4 text-sm font-medium text-slate-700 disabled:opacity-60"
+      className="h-10 rounded-full border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-700 disabled:opacity-60"
     >
       {isPending ? "Retrying…" : label}
     </button>

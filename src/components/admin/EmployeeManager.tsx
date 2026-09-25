@@ -145,7 +145,7 @@ export function EmployeeManager({ initialEmployees: employees }: { initialEmploy
               ) : (
                 <span
                   className={[
-                    "flex-1 truncate text-sm font-medium",
+                    "flex-1 truncate text-sm font-semibold",
                     employee.is_active ? "text-slate-800" : "text-slate-400 line-through",
                   ].join(" ")}
                 >
@@ -154,7 +154,7 @@ export function EmployeeManager({ initialEmployees: employees }: { initialEmploy
               )}
 
               {!employee.is_active && (
-                <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-500">
+                <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-500">
                   Inactive
                 </span>
               )}
@@ -169,20 +169,20 @@ export function EmployeeManager({ initialEmployees: employees }: { initialEmploy
               ) : (
                 <button
                   onClick={() => startEdit(employee)}
-                  className="h-8 rounded-full border border-slate-200 px-2.5 text-xs font-medium text-slate-600"
+                  className="h-8 rounded-full border border-slate-200 px-2.5 text-xs font-semibold text-slate-600"
                 >
                   Edit
                 </button>
               )}
               <button
                 onClick={() => toggleActive(employee)}
-                className="h-8 rounded-full border border-slate-200 px-2.5 text-xs font-medium text-slate-600"
+                className="h-8 rounded-full border border-slate-200 px-2.5 text-xs font-semibold text-slate-600"
               >
                 {employee.is_active ? "Deactivate" : "Activate"}
               </button>
               <button
                 onClick={() => remove(employee)}
-                className="h-8 rounded-full border border-red-200 px-2.5 text-xs font-medium text-red-600"
+                className="h-8 rounded-full border border-red-200 px-2.5 text-xs font-semibold text-red-600"
               >
                 Remove
               </button>

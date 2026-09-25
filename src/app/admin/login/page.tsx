@@ -22,7 +22,7 @@ export default async function ManagerLoginPage({
 
         <p className="mt-4 border-t border-slate-100 pt-4 text-center text-xs text-slate-500">
           New mess manager?{" "}
-          <Link href="/admin/signup" className="font-medium text-indigo-600">
+          <Link href="/admin/signup" className="font-semibold text-indigo-600">
             Create your account
           </Link>
         </p>

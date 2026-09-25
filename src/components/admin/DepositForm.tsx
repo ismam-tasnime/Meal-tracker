@@ -51,7 +51,7 @@ export function DepositForm({
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div className="flex flex-col gap-1">
-          <label htmlFor="depositEmployee" className="text-xs font-medium text-slate-500">
+          <label htmlFor="depositEmployee" className="text-xs font-semibold text-slate-500">
             Employee name
           </label>
           <select
@@ -73,7 +73,7 @@ export function DepositForm({
         </div>
 
         <div className="flex flex-col gap-1">
-          <label htmlFor="depositAmount" className="text-xs font-medium text-slate-500">
+          <label htmlFor="depositAmount" className="text-xs font-semibold text-slate-500">
             Deposit amount (৳)
           </label>
           <input
@@ -90,7 +90,7 @@ export function DepositForm({
         </div>
 
         <div className="flex flex-col gap-1">
-          <label htmlFor="depositDate" className="text-xs font-medium text-slate-500">
+          <label htmlFor="depositDate" className="text-xs font-semibold text-slate-500">
             Date received
           </label>
           <input
@@ -103,7 +103,7 @@ export function DepositForm({
         </div>
 
         <div className="flex flex-col gap-1">
-          <label htmlFor="depositNote" className="text-xs font-medium text-slate-500">
+          <label htmlFor="depositNote" className="text-xs font-semibold text-slate-500">
             Note (optional)
           </label>
           <input

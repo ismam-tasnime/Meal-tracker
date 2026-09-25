@@ -23,14 +23,14 @@ export function BalanceBadge({ balance }: { balance: number | null }) {
           <span className="font-semibold tabular-nums text-emerald-700">
             {formatBDT(status.amount)}
           </span>
-          <span className="text-[11px] font-medium text-emerald-600">Remaining (refund)</span>
+          <span className="text-[11px] font-semibold text-emerald-600">Remaining (refund)</span>
         </span>
       );
     case "due":
       return (
         <span className="inline-flex flex-col items-end">
           <span className="font-semibold tabular-nums text-red-700">{formatBDT(status.amount)}</span>
-          <span className="text-[11px] font-medium text-red-600">Due (to pay)</span>
+          <span className="text-[11px] font-semibold text-red-600">Due (to pay)</span>
         </span>
       );
   }

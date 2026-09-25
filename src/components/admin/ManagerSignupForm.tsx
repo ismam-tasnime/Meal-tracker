@@ -41,7 +41,7 @@ export function ManagerSignupForm() {
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="username" className="text-sm font-medium text-slate-700">
+        <label htmlFor="username" className="text-sm font-semibold text-slate-700">
           Account name (month + year)
         </label>
         <input
@@ -62,7 +62,7 @@ export function ManagerSignupForm() {
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="password" className="text-sm font-medium text-slate-700">
+        <label htmlFor="password" className="text-sm font-semibold text-slate-700">
           Password
         </label>
         <input
@@ -79,7 +79,7 @@ export function ManagerSignupForm() {
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="confirmPassword" className="text-sm font-medium text-slate-700">
+        <label htmlFor="confirmPassword" className="text-sm font-semibold text-slate-700">
           Confirm password
         </label>
         <input
