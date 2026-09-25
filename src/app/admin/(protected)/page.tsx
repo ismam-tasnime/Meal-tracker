@@ -50,15 +50,19 @@ export default async function ManagerDashboardPage() {
           <StatCard label="Deposits received" value={formatBDT(stats.periodDeposits)} hint={range} />
           <StatCard
             label="Meal rate"
-            value={period.meal_rate === null ? "Not set" : formatBDT(period.meal_rate)}
+            value={period.meal_rate === null ? "—" : formatBDT(period.meal_rate)}
             hint="Set at month end"
           />
-          {stats.periodBill !== null && (
-            <>
-              <StatCard label="Total bill" value={formatBDT(stats.periodBill)} hint={range} />
-              <StatCard label="Still due" value={formatBDT(stats.totalDue)} hint="From all employees" />
-            </>
-          )}
+          <StatCard
+            label="Total bill"
+            value={stats.periodBill === null ? "—" : formatBDT(stats.periodBill)}
+            hint={range}
+          />
+          <StatCard
+            label="Still due"
+            value={stats.periodBill === null ? "—" : formatBDT(stats.totalDue)}
+            hint="From all employees"
+          />
         </div>
       )}
     </div>

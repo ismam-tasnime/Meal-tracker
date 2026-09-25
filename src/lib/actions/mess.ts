@@ -26,8 +26,16 @@ function revalidateMoneyPages() {
 const MAX_WEIGHT = 10;
 
 /** Sets the Breakfast/Lunch/Dinner meal counts for one date; applies to everyone who ate. */
-export async function setDayWeights(dateStr: string, weights: MealWeights): Promise<ActionResult> {
+export async function setDayWeights(dateStr: string, input: MealWeights): Promise<ActionResult> {
   const period = await requirePeriod();
+
+  // Columns are numeric(5,2); round explicitly so what's shown is what's billed.
+  const round2 = (v: number) => Math.round(v * 100) / 100;
+  const weights: MealWeights = {
+    breakfast: round2(input.breakfast),
+    lunch: round2(input.lunch),
+    dinner: round2(input.dinner),
+  };
 
   if (!isValidDateStr(dateStr) || !isDateInPeriod(dateStr, period)) {
     return { ok: false, error: "That date is outside your mess month." };

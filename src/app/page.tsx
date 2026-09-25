@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { DateNav } from "@/components/public/DateNav";
 import { MealSheetTable } from "@/components/public/MealSheetTable";
 import { getMealSheet } from "@/lib/data/meals";
@@ -45,12 +44,6 @@ export default async function PublicMealSheetPage({
       ) : (
         <MealSheetTable key={date} date={date} initialRows={rows} />
       )}
-
-      <footer className="mt-8 flex justify-center">
-        <Link href="/admin" className="text-xs text-slate-400 hover:text-slate-600">
-          Mess manager login
-        </Link>
-      </footer>
     </div>
   );
 }

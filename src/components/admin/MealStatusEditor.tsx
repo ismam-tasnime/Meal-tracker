@@ -54,10 +54,13 @@ export function MealStatusEditor({
   );
   const [isSaving, startSaving] = useTransition();
 
+  // Stored with 2 decimals, so round here too — otherwise the screen would
+  // show 1.333 while bills use 1.33.
+  const round2 = (v: string) => Math.round(Number(v) * 100) / 100;
   const draftWeights: MealWeights = {
-    breakfast: Number(draft.breakfast),
-    lunch: Number(draft.lunch),
-    dinner: Number(draft.dinner),
+    breakfast: round2(draft.breakfast),
+    lunch: round2(draft.lunch),
+    dinner: round2(draft.dinner),
   };
   const draftValid = MEALS.every(
     ({ key }) => draft[key].trim() !== "" && Number.isFinite(draftWeights[key]) && draftWeights[key] >= 0
@@ -134,7 +137,7 @@ export function MealStatusEditor({
                 inputMode="decimal"
                 min="0"
                 max="10"
-                step="0.05"
+                step="0.01"
                 value={draft[key]}
                 onChange={(e) => setDraft((prev) => ({ ...prev, [key]: e.target.value }))}
                 className="h-11 w-full rounded-xl border border-slate-300 px-3 text-center text-base font-semibold text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
