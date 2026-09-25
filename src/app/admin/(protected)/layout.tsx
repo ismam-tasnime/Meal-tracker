@@ -1,37 +1,50 @@
 import { redirect } from "next/navigation";
 import { getAdminSession } from "@/lib/auth/session";
-import { getMyPeriod } from "@/lib/data/periods";
 import { AdminNav } from "@/components/admin/AdminNav";
 import { signOut } from "@/lib/actions/auth";
+import { RetryButton } from "@/components/RetryButton";
 import { formatPeriodRange } from "@/lib/utils/mess";
 
 export const dynamic = "force-dynamic";
 
 export default async function ProtectedAdminLayout({ children }: { children: React.ReactNode }) {
-  const { user, isAdmin, profile } = await getAdminSession();
+  // One cached lookup for the whole request: pages reuse the same result.
+  let session: Awaited<ReturnType<typeof getAdminSession>> | null = null;
+  try {
+    session = await getAdminSession();
+  } catch (error) {
+    console.error("getAdminSession failed", error);
+  }
 
   // Defense in depth: the proxy (middleware) already redirects unauthenticated
   // visitors, but every server render re-checks here too.
-  if (!user) {
+  if (session && !session.user) {
     redirect("/admin/login");
   }
 
-  let period: Awaited<ReturnType<typeof getMyPeriod>> = null;
-  if (isAdmin) {
-    period = await getMyPeriod().catch(() => null);
-  }
+  const isAdmin = session?.isAdmin ?? false;
+  const profile = session?.profile ?? null;
+  const period = session?.period ?? null;
+
+  // null session = the lookup itself failed (network/DB), not "not a manager".
+  const loadFailed = session === null || (isAdmin && !period);
 
   if (!isAdmin || !period) {
     return (
       <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-4 text-center">
         <h1 className="text-lg font-semibold tracking-tight text-slate-900">
-          {isAdmin ? "Can’t load your mess month" : "Not a mess manager"}
+          {loadFailed ? "Can’t load your mess month" : "Not a mess manager"}
         </h1>
         <p className="mt-2 text-sm text-slate-500">
-          {isAdmin
-            ? "Please refresh the page in a moment."
+          {loadFailed
+            ? "The connection to the database failed. Check your internet and try again."
             : "This account isn’t set up as a mess manager. Sign out and sign in with your mess month, like “January2026”."}
         </p>
+        {loadFailed && (
+          <div className="mt-4">
+            <RetryButton />
+          </div>
+        )}
         <form action={signOut} className="mt-4">
           <button
             type="submit"

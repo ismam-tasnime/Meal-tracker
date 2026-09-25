@@ -1,6 +1,5 @@
 "use client";
 
-import Papa from "papaparse";
 import type { MessPeriod, PeriodReportRow } from "@/lib/types/database";
 import { formatBDT } from "@/lib/utils/currency";
 import { balanceStatus, formatMealCount, formatPeriodName } from "@/lib/utils/mess";
@@ -56,7 +55,10 @@ export function BillSummaryTable({
     { mealCount: 0, bill: 0, deposit: 0, due: 0, remaining: 0 }
   );
 
-  function exportCsv() {
+  async function exportCsv() {
+    // Loaded on demand: the CSV library is only needed when someone exports,
+    // so it stays out of the Expense Status / Report page bundles.
+    const { default: Papa } = await import("papaparse");
     const csv = Papa.unparse(
       rows.map((r) => ({
         Token: r.token_no ?? "",

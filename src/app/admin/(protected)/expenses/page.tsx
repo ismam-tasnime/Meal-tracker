@@ -2,10 +2,10 @@ import { BillSummaryTable } from "@/components/admin/BillSummaryTable";
 import { DepositForm } from "@/components/admin/DepositForm";
 import { DepositList } from "@/components/admin/DepositList";
 import { MealRateForm } from "@/components/admin/MealRateForm";
-import { listAllEmployees } from "@/lib/data/employees";
 import { listDeposits } from "@/lib/data/mess";
 import { getMyPeriod } from "@/lib/data/periods";
 import { getPeriodReport } from "@/lib/data/reports";
+import { LoadError } from "@/components/LoadError";
 
 export const dynamic = "force-dynamic";
 
@@ -15,17 +15,12 @@ export default async function ManagerExpenseStatusPage() {
 
   let rows: Awaited<ReturnType<typeof getPeriodReport>> = [];
   let deposits: Awaited<ReturnType<typeof listDeposits>> = [];
-  let employees: Awaited<ReturnType<typeof listAllEmployees>> = [];
   let loadError: string | null = null;
 
   try {
-    [rows, deposits, employees] = await Promise.all([
-      getPeriodReport(period.id),
-      listDeposits(period.id),
-      listAllEmployees(),
-    ]);
+    [rows, deposits] = await Promise.all([getPeriodReport(period.id), listDeposits(period.id)]);
   } catch {
-    loadError = "Could not load expense status. Please refresh the page.";
+    loadError = "Could not load expense status.";
   }
 
   return (
@@ -39,10 +34,15 @@ export default async function ManagerExpenseStatusPage() {
       </div>
 
       {loadError ? (
-        <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{loadError}</p>
+        <LoadError message={loadError ?? "Could not load this page."} />
       ) : (
         <>
-          <DepositForm employees={employees.filter((e) => e.is_active)} />
+          {/* The report already lists every active employee — no second fetch. */}
+          <DepositForm
+            employees={rows
+              .filter((r) => r.is_active)
+              .map((r) => ({ id: r.employee_id, name: r.employee_name, token_no: r.token_no }))}
+          />
           <MealRateForm current={period.meal_rate} />
 
           {period.meal_rate === null && (

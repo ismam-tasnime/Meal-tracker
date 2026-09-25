@@ -64,7 +64,7 @@ src/
     types/database.ts        Hand-written types mirroring the SQL schema
   proxy.ts                   Next.js 16 "Proxy" (formerly middleware) — session refresh + /admin gate
 supabase/
-  migrations/                 Run in order: 0001 schema … 0007 employee tokens
+  migrations/                 Run in order: 0001 schema … 0008 performance
 ```
 
 ## Database schema
@@ -173,6 +173,27 @@ Any Next.js host works (Vercel is the simplest). Set the two
 project settings, then deploy. In Supabase, add your production domain
 under Authentication → URL Configuration if you use email links (not
 required for the plain email/password flow used here).
+
+## Performance notes
+
+- **Region**: `vercel.json` pins the app's server functions to Tokyo
+  (`hnd1`), next to the Supabase project (`ap-northeast-1`). Every page makes
+  several database round trips, so keeping them in the same region matters
+  more than anything else.
+- **Auth**: the proxy and pages verify the session with `getClaims()` (local
+  JWT check) rather than a call to Supabase Auth, and the session lookup
+  (profile + mess month) is cached per request and fetched in parallel.
+- **Heavy lifting in Postgres**: the report (`get_period_report`) and the
+  dashboard (`get_dashboard_stats`) are aggregated in the database; the
+  browser only receives one row per employee / one summary row.
+- **Meal ON/OFF** is written straight from the browser to Supabase (RLS
+  allows it) and updates only that row on screen — no page reload, and
+  several taps save in parallel.
+- **No double fetches**: server actions that change data call
+  `revalidatePath`, which already re-renders the page; the UI never also
+  calls `router.refresh()`.
+- **RLS** uses `(select auth.uid())` so it's evaluated once per query, not
+  once per row.
 
 ## Notes / intentional design decisions
 

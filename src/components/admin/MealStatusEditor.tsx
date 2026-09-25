@@ -1,26 +1,65 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
-import { toggleMeal } from "@/lib/actions/meals";
+import { memo, useState, useTransition } from "react";
 import { setDayWeights } from "@/lib/actions/mess";
 import type { AdminMealSheetRow } from "@/lib/data/meals";
+import type { MealType } from "@/lib/types/database";
 import { MealToggleButton } from "@/components/public/MealToggleButton";
-import { DEFAULT_MEAL_WEIGHTS, formatMealCount, type MealWeights } from "@/lib/utils/mess";
 import { EmployeeName } from "@/components/EmployeeName";
-
-type CellStatus = "idle" | "saving" | "error";
-type MealKey = "breakfast" | "lunch" | "dinner";
-
-const MEALS: { key: MealKey; label: string }[] = [
-  { key: "breakfast", label: "Breakfast" },
-  { key: "lunch", label: "Lunch" },
-  { key: "dinner", label: "Dinner" },
-];
+import { MEALS, useMealToggles, type CellStatus } from "@/lib/meals-client";
+import { DEFAULT_MEAL_WEIGHTS, formatMealCount, type MealWeights } from "@/lib/utils/mess";
 
 function dayMealCount(row: AdminMealSheetRow, weights: MealWeights): number {
   return MEALS.reduce((sum, { key }) => sum + (row[key] ? weights[key] : 0), 0);
 }
+
+/** One employee's row. Memoised: tapping a meal re-renders only that row. */
+const StatusRow = memo(function StatusRow({
+  row,
+  weights,
+  statuses,
+  onToggle,
+}: {
+  row: AdminMealSheetRow;
+  weights: MealWeights;
+  statuses: [CellStatus, CellStatus, CellStatus];
+  onToggle: (employeeId: string, meal: MealType, current: boolean) => void;
+}) {
+  const count = formatMealCount(dayMealCount(row, weights));
+  return (
+    <tr className="border-b border-slate-100 last:border-b-0">
+      <td className="sticky left-0 z-10 bg-white px-3 py-2 font-medium text-slate-800">
+        <span className="flex items-center gap-1.5">
+          <EmployeeName name={row.employeeName} tokenNo={row.tokenNo} />
+          {!row.isActive && (
+            <span className="rounded-full bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-400">
+              Inactive
+            </span>
+          )}
+        </span>
+        <span className="block text-xs font-normal text-slate-500 sm:hidden">Meal count {count}</span>
+      </td>
+      {MEALS.map(({ key }, i) => (
+        <td key={key} className="px-2 py-2">
+          <MealToggleButton
+            label={key}
+            value={row[key]}
+            status={statuses[i]}
+            onToggle={() => onToggle(row.employeeId, key, row[key])}
+          />
+        </td>
+      ))}
+      <td className="hidden px-3 py-2 text-right font-semibold tabular-nums text-slate-800 sm:table-cell">
+        {count}
+      </td>
+    </tr>
+  );
+}, (a, b) =>
+  a.row === b.row &&
+  a.weights === b.weights &&
+  a.onToggle === b.onToggle &&
+  a.statuses.every((s, i) => s === b.statuses[i])
+);
 
 /**
  * The mess manager's view of one date: the date's meal counts at the top,
@@ -40,11 +79,10 @@ export function MealStatusEditor({
 }) {
   // Keyed by `date` from the parent, so this component fully remounts
   // (fresh state) whenever the selected date changes.
-  const router = useRouter();
-  const [rows, setRows] = useState(initialRows);
-  const [cellStatus, setCellStatus] = useState<Record<string, CellStatus>>({});
+  const { rows, cellStatus, toggle, hasError } = useMealToggles(date, initialRows);
   const [savedWeights, setSavedWeights] = useState(initialWeights);
-  const [draft, setDraft] = useState<Record<MealKey, string>>({
+  const [customised, setCustomised] = useState(weightsCustomised);
+  const [draft, setDraft] = useState<Record<MealType, string>>({
     breakfast: String(initialWeights.breakfast),
     lunch: String(initialWeights.lunch),
     dinner: String(initialWeights.dinner),
@@ -70,39 +108,21 @@ export function MealStatusEditor({
   function saveWeights(weights: MealWeights) {
     setWeightMessage(null);
     startSaving(async () => {
+      // The table below is local state, so no page reload is needed.
       const result = await setDayWeights(date, weights);
       if (result.ok) {
         setSavedWeights(weights);
+        setCustomised(true);
         setDraft({
           breakfast: String(weights.breakfast),
           lunch: String(weights.lunch),
           dinner: String(weights.dinner),
         });
         setWeightMessage({ type: "ok", text: "Meal counts saved for this date." });
-        router.refresh();
       } else {
         setWeightMessage({ type: "error", text: result.error });
       }
     });
-  }
-
-  async function handleToggle(employeeId: string, meal: MealKey, current: boolean) {
-    const key = `${employeeId}:${meal}`;
-    const next = !current;
-
-    setRows((prev) => prev.map((r) => (r.employeeId === employeeId ? { ...r, [meal]: next } : r)));
-    setCellStatus((prev) => ({ ...prev, [key]: "saving" }));
-
-    const result = await toggleMeal(employeeId, date, meal, next);
-
-    if (result.ok) {
-      setCellStatus((prev) => ({ ...prev, [key]: "idle" }));
-    } else {
-      setRows((prev) =>
-        prev.map((r) => (r.employeeId === employeeId ? { ...r, [meal]: current } : r))
-      );
-      setCellStatus((prev) => ({ ...prev, [key]: "error" }));
-    }
   }
 
   const onCounts = MEALS.map(({ key }) => rows.filter((r) => r[key]).length);
@@ -121,7 +141,7 @@ export function MealStatusEditor({
         <div className="flex flex-wrap items-baseline justify-between gap-2">
           <h2 className="text-sm font-semibold text-slate-700">Meal count for this date</h2>
           <span className="text-xs text-slate-400">
-            {weightsCustomised && !isDefault ? "Custom for this date" : "Default values"}
+            {customised && !isDefault ? "Custom for this date" : "Default values"}
           </span>
         </div>
 
@@ -183,6 +203,12 @@ export function MealStatusEditor({
         )}
       </form>
 
+      {hasError && (
+        <p role="alert" className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">
+          Couldn&rsquo;t save a meal (outlined in red). Check your connection and tap it again.
+        </p>
+      )}
+
       {rows.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-6 text-center text-sm text-slate-500">
           No employees yet.
@@ -206,34 +232,17 @@ export function MealStatusEditor({
             </thead>
             <tbody>
               {rows.map((row) => (
-                <tr key={row.employeeId} className="border-b border-slate-100 last:border-b-0">
-                  <td className="sticky left-0 z-10 bg-white px-3 py-2 font-medium text-slate-800">
-                    <span className="flex items-center gap-1.5">
-                      <EmployeeName name={row.employeeName} tokenNo={row.tokenNo} />
-                      {!row.isActive && (
-                        <span className="rounded-full bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-400">
-                          Inactive
-                        </span>
-                      )}
-                    </span>
-                    <span className="block text-xs font-normal text-slate-500 sm:hidden">
-                      Meal count {formatMealCount(dayMealCount(row, savedWeights))}
-                    </span>
-                  </td>
-                  {MEALS.map(({ key }) => (
-                    <td key={key} className="px-2 py-2">
-                      <MealToggleButton
-                        label={key}
-                        value={row[key]}
-                        status={cellStatus[`${row.employeeId}:${key}`] ?? "idle"}
-                        onToggle={() => handleToggle(row.employeeId, key, row[key])}
-                      />
-                    </td>
-                  ))}
-                  <td className="hidden px-3 py-2 text-right font-semibold tabular-nums text-slate-800 sm:table-cell">
-                    {formatMealCount(dayMealCount(row, savedWeights))}
-                  </td>
-                </tr>
+                <StatusRow
+                  key={row.employeeId}
+                  row={row}
+                  weights={savedWeights}
+                  statuses={[
+                    cellStatus[`${row.employeeId}:breakfast`] ?? "idle",
+                    cellStatus[`${row.employeeId}:lunch`] ?? "idle",
+                    cellStatus[`${row.employeeId}:dinner`] ?? "idle",
+                  ]}
+                  onToggle={toggle}
+                />
               ))}
             </tbody>
             <tfoot>

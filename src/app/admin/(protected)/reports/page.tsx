@@ -4,6 +4,7 @@ import { ReportFilters } from "@/components/admin/ReportFilters";
 import { getMyPeriod } from "@/lib/data/periods";
 import { getPeriodReport } from "@/lib/data/reports";
 import { formatPeriodName, formatPeriodRange } from "@/lib/utils/mess";
+import { LoadError } from "@/components/LoadError";
 
 export const dynamic = "force-dynamic";
 
@@ -24,7 +25,7 @@ export default async function ManagerReportPage({
   try {
     rows = await getPeriodReport(period.id);
   } catch {
-    loadError = "Could not load the report. Please refresh the page.";
+    loadError = "Could not load the report.";
   }
 
   const filteredRows = employeeId ? rows.filter((r) => r.employee_id === employeeId) : rows;
@@ -41,7 +42,7 @@ export default async function ManagerReportPage({
       <MealRateForm current={period.meal_rate} />
 
       {loadError ? (
-        <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{loadError}</p>
+        <LoadError message={loadError ?? "Could not load this page."} />
       ) : (
         <>
           <ReportFilters

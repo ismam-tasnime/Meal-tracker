@@ -28,28 +28,22 @@ export async function getDayWeights(
 
 export type DepositWithEmployee = Deposit & { employee_name: string; token_no: number | null };
 
-/** Every deposit recorded for the period, newest first. */
+/** Every deposit recorded for the period, newest first, with the employee's name in the same query. */
 export async function listDeposits(periodId: string): Promise<DepositWithEmployee[]> {
   const supabase = await createClient();
-  const [{ data: deposits, error }, { data: employees, error: employeesError }] =
-    await Promise.all([
-      supabase
-        .from("deposits")
-        .select("*")
-        .eq("period_id", periodId)
-        .order("deposited_on", { ascending: false })
-        .order("created_at", { ascending: false }),
-      supabase.from("employees").select("id, name, token_no"),
-    ]);
+  const { data, error } = await supabase
+    .from("deposits")
+    .select("*, employees(name, token_no)")
+    .eq("period_id", periodId)
+    .order("deposited_on", { ascending: false })
+    .order("created_at", { ascending: false });
 
   if (error) throw error;
-  if (employeesError) throw employeesError;
 
-  const employeeById = new Map((employees ?? []).map((e) => [e.id, e]));
-  return (deposits ?? []).map((d) => ({
+  return (data ?? []).map(({ employees, ...d }) => ({
     ...d,
     amount: Number(d.amount),
-    employee_name: employeeById.get(d.employee_id)?.name ?? "Unknown",
-    token_no: employeeById.get(d.employee_id)?.token_no ?? null,
+    employee_name: employees?.name ?? "Unknown",
+    token_no: employees?.token_no ?? null,
   }));
 }

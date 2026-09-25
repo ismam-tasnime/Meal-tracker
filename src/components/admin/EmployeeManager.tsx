@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
 import type { Employee } from "@/lib/types/database";
 import {
   createEmployee,
@@ -17,7 +16,6 @@ function parseToken(value: string): number | null {
 }
 
 export function EmployeeManager({ initialEmployees: employees }: { initialEmployees: Employee[] }) {
-  const router = useRouter();
   const [newName, setNewName] = useState("");
   const [newToken, setNewToken] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -35,7 +33,6 @@ export function EmployeeManager({ initialEmployees: employees }: { initialEmploy
       if (result.ok) {
         setNewName("");
         setNewToken("");
-        router.refresh();
       } else {
         setError(result.error);
       }
@@ -55,7 +52,6 @@ export function EmployeeManager({ initialEmployees: employees }: { initialEmploy
       const result = await updateEmployee(id, editingName, parseToken(editingToken));
       if (result.ok) {
         setEditingId(null);
-        router.refresh();
       } else {
         setError(result.error);
       }
@@ -66,7 +62,6 @@ export function EmployeeManager({ initialEmployees: employees }: { initialEmploy
     startTransition(async () => {
       const result = await setEmployeeActive(employee.id, !employee.is_active);
       if (result.ok) {
-        router.refresh();
       } else {
         setError(result.error);
       }
@@ -80,7 +75,6 @@ export function EmployeeManager({ initialEmployees: employees }: { initialEmploy
     startTransition(async () => {
       const result = await deleteEmployee(employee.id);
       if (result.ok) {
-        router.refresh();
       } else {
         setError(result.error);
       }

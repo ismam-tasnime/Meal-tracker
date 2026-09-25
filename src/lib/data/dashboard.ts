@@ -1,10 +1,7 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
-import { countActiveEmployees } from "@/lib/data/employees";
-import { getPeriodReport } from "@/lib/data/reports";
 import type { MessPeriod } from "@/lib/types/database";
 import { todayInOfficeTz } from "@/lib/utils/date";
-import { isDateInPeriod } from "@/lib/utils/mess";
 
 export type DashboardStats = {
   totalEmployees: number;
@@ -14,39 +11,33 @@ export type DashboardStats = {
   periodDeposits: number;
   /** Null until the meal rate is set. */
   periodBill: number | null;
-  totalDue: number;
+  totalDue: number | null;
 };
 
+const num = (v: unknown) => Number(v ?? 0);
+
+/** One round trip: the database aggregates everything into a single row. */
 export async function getDashboardStats(period: MessPeriod): Promise<DashboardStats> {
-  const today = todayInOfficeTz();
-  const includeToday = isDateInPeriod(today, period);
-
   const supabase = await createClient();
+  const { data, error } = await supabase
+    .rpc("get_dashboard_stats", { p_period_id: period.id, p_today: todayInOfficeTz() })
+    .maybeSingle();
 
-  const [totalEmployees, todayResult, rows] = await Promise.all([
-    countActiveEmployees(),
-    includeToday
-      ? supabase.from("meal_records").select("breakfast, lunch, dinner").eq("meal_date", today)
-      : null,
-    getPeriodReport(period.id),
-  ]);
-
-  if (todayResult?.error) throw todayResult.error;
-  const todayRecords = todayResult?.data ?? [];
-  const rateSet = period.meal_rate !== null;
+  if (error) throw error;
+  if (!data) throw new Error("Dashboard stats unavailable for this period.");
 
   return {
-    totalEmployees,
-    today: includeToday
+    totalEmployees: num(data.active_employees),
+    today: data.today_in_period
       ? {
-          breakfast: todayRecords.filter((r) => r.breakfast).length,
-          lunch: todayRecords.filter((r) => r.lunch).length,
-          dinner: todayRecords.filter((r) => r.dinner).length,
+          breakfast: num(data.today_breakfast),
+          lunch: num(data.today_lunch),
+          dinner: num(data.today_dinner),
         }
       : null,
-    periodMealCount: rows.reduce((sum, r) => sum + r.meal_count, 0),
-    periodDeposits: rows.reduce((sum, r) => sum + r.total_deposit, 0),
-    periodBill: rateSet ? rows.reduce((sum, r) => sum + (r.total_bill ?? 0), 0) : null,
-    totalDue: rows.reduce((sum, r) => sum + Math.max(0, -(r.balance ?? 0)), 0),
+    periodMealCount: num(data.meal_count),
+    periodDeposits: num(data.total_deposit),
+    periodBill: data.total_bill === null ? null : num(data.total_bill),
+    totalDue: data.total_due === null ? null : num(data.total_due),
   };
 }

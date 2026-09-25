@@ -1,5 +1,6 @@
 import { EmployeeManager } from "@/components/admin/EmployeeManager";
 import { listAllEmployees } from "@/lib/data/employees";
+import { LoadError } from "@/components/LoadError";
 
 export const dynamic = "force-dynamic";
 
@@ -10,7 +11,7 @@ export default async function AdminEmployeesPage() {
   try {
     employees = await listAllEmployees();
   } catch {
-    loadError = "Could not load employees. Please refresh the page.";
+    loadError = "Could not load employees.";
   }
 
   return (
@@ -24,7 +25,7 @@ export default async function AdminEmployeesPage() {
       </div>
 
       {loadError ? (
-        <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{loadError}</p>
+        <LoadError message={loadError ?? "Could not load this page."} />
       ) : (
         <EmployeeManager initialEmployees={employees} />
       )}
