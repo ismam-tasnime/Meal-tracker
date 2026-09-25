@@ -181,8 +181,26 @@ required for the plain email/password flow used here).
   several database round trips, so keeping them in the same region matters
   more than anything else.
 - **Auth**: the proxy and pages verify the session with `getClaims()` (local
-  JWT check) rather than a call to Supabase Auth, and the session lookup
-  (profile + mess month) is cached per request and fetched in parallel.
+  JWT check) rather than a call to Supabase Auth. That is only local when the
+  Supabase project uses **asymmetric JWT signing keys** (Project Settings →
+  JWT Keys). With the legacy shared secret, `getClaims()` silently falls
+  back to a network call to Supabase Auth, twice per admin page (proxy +
+  layout) — migrate the project to signing keys if admin pages feel slow.
+- **Session lookup**: the profile and its mess month come back in one query
+  (`admin_profiles` with `mess_periods` embedded), run in parallel with the
+  JWT check and cached per request, so layout, page, and server actions
+  share it.
+- **Meal sheets**: each employee's meal record for the day is embedded in
+  the employees query — one query for the public sheet, two (plus the
+  day's meal counts) for Meal Status. The public sheet uses a cookie-less
+  anon client, so a signed-in manager's session is never refreshed just to
+  render public data.
+- **Report filter** runs in the browser on rows the page already has; it
+  updates `?employee=` without re-running the report query.
+- **Narrow selects**: pages fetch only the columns they render (e.g. the
+  Employees and deposit lists).
+- **Static signup page**: `/admin/signup` has no per-request data, so it's
+  prerendered and served from the CDN.
 - **Heavy lifting in Postgres**: the report (`get_period_report`) and the
   dashboard (`get_dashboard_stats`) are aggregated in the database; the
   browser only receives one row per employee / one summary row.

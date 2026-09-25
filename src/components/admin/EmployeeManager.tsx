@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import type { Employee } from "@/lib/types/database";
+import type { EmployeeListItem as Employee } from "@/lib/data/employees";
 import {
   createEmployee,
   deleteEmployee,

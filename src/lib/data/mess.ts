@@ -26,14 +26,20 @@ export async function getDayWeights(
   };
 }
 
-export type DepositWithEmployee = Deposit & { employee_name: string; token_no: number | null };
+export type DepositWithEmployee = Pick<Deposit, "id" | "amount" | "deposited_on" | "note"> & {
+  employee_name: string;
+  token_no: number | null;
+};
 
-/** Every deposit recorded for the period, newest first, with the employee's name in the same query. */
+/**
+ * Every deposit recorded for the period, newest first, with the employee's
+ * name in the same query. Only the columns the deposit list shows.
+ */
 export async function listDeposits(periodId: string): Promise<DepositWithEmployee[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("deposits")
-    .select("*, employees(name, token_no)")
+    .select("id, amount, deposited_on, note, employees(name, token_no)")
     .eq("period_id", periodId)
     .order("deposited_on", { ascending: false })
     .order("created_at", { ascending: false });
