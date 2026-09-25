@@ -31,7 +31,7 @@ export function DateNav({ date, basePath = "/" }: { date: string; basePath?: str
         <button
           type="button"
           onClick={() => goTo(addDaysToDateStr(date, -1))}
-          className="flex h-11 items-center justify-center rounded-full border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 active:bg-slate-100"
+          className="flex h-11 items-center justify-center rounded-full border border-slate-300 bg-white px-3 text-sm font-semibold text-slate-700 active:bg-slate-100"
           aria-label="Previous day"
         >
           ← Prev
@@ -44,7 +44,7 @@ export function DateNav({ date, basePath = "/" }: { date: string; basePath?: str
           <span className="text-xs text-slate-500">
             {formatDayOfWeek(date)}
             {isToday && (
-              <span className="ml-1.5 rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-medium text-emerald-700">
+              <span className="ml-1.5 rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-semibold text-emerald-700">
                 Today
               </span>
             )}
@@ -54,7 +54,7 @@ export function DateNav({ date, basePath = "/" }: { date: string; basePath?: str
         <button
           type="button"
           onClick={() => goTo(addDaysToDateStr(date, 1))}
-          className="flex h-11 items-center justify-center rounded-full border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 active:bg-slate-100"
+          className="flex h-11 items-center justify-center rounded-full border border-slate-300 bg-white px-3 text-sm font-semibold text-slate-700 active:bg-slate-100"
           aria-label="Next day"
         >
           Next →
@@ -73,7 +73,7 @@ export function DateNav({ date, basePath = "/" }: { date: string; basePath?: str
           <button
             type="button"
             onClick={() => goTo(todayInOfficeTz())}
-            className="h-9 rounded-full border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 active:bg-slate-100"
+            className="h-9 rounded-full border border-slate-300 bg-white px-3 text-sm font-semibold text-slate-700 active:bg-slate-100"
           >
             Jump to today
           </button>

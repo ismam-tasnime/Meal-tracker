@@ -25,7 +25,7 @@ export function HeaderNav() {
             className={[
               "flex h-9 items-center whitespace-nowrap rounded-lg px-3 text-sm transition-colors",
               isActive
-                ? "bg-slate-100 font-medium text-slate-900"
+                ? "bg-slate-100 font-semibold text-slate-900"
                 : "text-slate-600 hover:bg-slate-100 hover:text-slate-900",
             ].join(" ")}
           >

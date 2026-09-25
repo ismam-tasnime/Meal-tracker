@@ -42,7 +42,7 @@ export function DepositList({ deposits }: { deposits: DepositWithEmployee[] }) {
         {deposits.map((d) => (
           <li key={d.id} className="flex items-center gap-3 px-3 py-2.5">
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium text-slate-800">
+              <p className="truncate text-sm font-semibold text-slate-800">
                 <EmployeeName name={d.employee_name} tokenNo={d.token_no} />
               </p>
               <p className="truncate text-xs text-slate-500">
@@ -56,7 +56,7 @@ export function DepositList({ deposits }: { deposits: DepositWithEmployee[] }) {
             <button
               onClick={() => remove(d)}
               disabled={isPending}
-              className="h-8 rounded-full border border-red-200 px-2.5 text-xs font-medium text-red-600 disabled:opacity-60"
+              className="h-8 rounded-full border border-red-200 px-2.5 text-xs font-semibold text-red-600 disabled:opacity-60"
             >
               Remove
             </button>

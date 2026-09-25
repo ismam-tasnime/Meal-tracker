@@ -28,16 +28,16 @@ const StatusRow = memo(function StatusRow({
   const count = formatMealCount(dayMealCount(row, weights));
   return (
     <tr className="border-b border-slate-100 last:border-b-0">
-      <td className="sticky left-0 z-10 bg-white px-3 py-2 font-medium text-slate-800">
+      <td className="sticky left-0 z-10 bg-white px-3 py-2 font-semibold text-slate-800">
         <span className="flex items-center gap-1.5">
           <EmployeeName name={row.employeeName} tokenNo={row.tokenNo} />
           {!row.isActive && (
-            <span className="rounded-full bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-400">
+            <span className="rounded-full bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-400">
               Inactive
             </span>
           )}
         </span>
-        <span className="block text-xs font-normal text-slate-500 sm:hidden">Meal count {count}</span>
+        <span className="block text-xs font-medium text-slate-500 sm:hidden">Meal count {count}</span>
       </td>
       {MEALS.map(({ key }, i) => (
         <td key={key} className="px-2 py-2">
@@ -148,7 +148,7 @@ export function MealStatusEditor({
         <div className="grid grid-cols-3 gap-2">
           {MEALS.map(({ key, label }) => (
             <div key={key} className="flex flex-col gap-1">
-              <label htmlFor={`weight-${key}`} className="text-xs font-medium text-slate-500">
+              <label htmlFor={`weight-${key}`} className="text-xs font-semibold text-slate-500">
                 {label}
               </label>
               <input
@@ -179,7 +179,7 @@ export function MealStatusEditor({
               type="button"
               disabled={isSaving}
               onClick={() => saveWeights(DEFAULT_MEAL_WEIGHTS)}
-              className="h-10 rounded-full border border-slate-300 bg-white px-4 text-sm font-medium text-slate-700 disabled:opacity-50"
+              className="h-10 rounded-full border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-700 disabled:opacity-50"
             >
               Reset to 0.75 / 1.25 / 1
             </button>
@@ -222,7 +222,7 @@ export function MealStatusEditor({
                 {MEALS.map(({ key, label }) => (
                   <th key={key} className="px-2 py-2.5 text-center font-semibold">
                     {label}
-                    <span className="block text-[10px] font-medium normal-case text-slate-400">
+                    <span className="block text-[10px] font-semibold normal-case text-slate-400">
                       × {formatMealCount(savedWeights[key])}
                     </span>
                   </th>
@@ -249,7 +249,7 @@ export function MealStatusEditor({
               <tr className="border-t border-slate-200 bg-slate-50 text-xs text-slate-600">
                 <td className="sticky left-0 z-10 bg-slate-50 px-3 py-2 font-semibold">
                   Total ON
-                  <span className="block font-normal sm:hidden">
+                  <span className="block font-medium sm:hidden">
                     Meal count {formatMealCount(dayTotal)}
                   </span>
                 </td>

@@ -28,7 +28,7 @@ export function ReportFilters({ rows, period }: { rows: PeriodReportRow[]; perio
   return (
     <>
       <div className="flex flex-col gap-1">
-        <label className="text-xs font-medium text-slate-500">Employee</label>
+        <label className="text-xs font-semibold text-slate-500">Employee</label>
         <select
           value={employeeId}
           onChange={(e) => updateParam("employee", e.target.value)}
