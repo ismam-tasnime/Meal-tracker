@@ -1,6 +1,7 @@
 import { DateNav } from "@/components/public/DateNav";
 import { MealStatusEditor } from "@/components/admin/MealStatusEditor";
-import { getAdminMealSheet } from "@/lib/data/meals";
+import { CutoffSettingsForm } from "@/components/admin/CutoffSettingsForm";
+import { getAdminMealSheet, getMealCutoffs } from "@/lib/data/meals";
 import { getDayWeights } from "@/lib/data/mess";
 import { getMyPeriod } from "@/lib/data/periods";
 import { isValidDateStr, todayInOfficeTz } from "@/lib/utils/date";
@@ -16,6 +17,8 @@ export default async function ManagerMealStatusPage({
 }) {
   const { date: rawDate } = await searchParams;
 
+  // Started now, awaited later: runs alongside the period and sheet lookups.
+  const cutoffsPromise = getMealCutoffs();
   const period = await getMyPeriod().catch(() => null);
   if (!period) return null;
 
@@ -37,6 +40,7 @@ export default async function ManagerMealStatusPage({
       loadError = "Could not load meal records.";
     }
   }
+  const cutoffs = await cutoffsPromise;
 
   return (
     <div className="flex flex-col gap-4">
@@ -44,9 +48,11 @@ export default async function ManagerMealStatusPage({
         <h1 className="text-lg font-bold tracking-tight text-slate-900">Meal Status</h1>
         <p className="text-sm text-slate-500">
           Pick a date to see who ate, set that date&rsquo;s meal counts, and fix any employee&rsquo;s
-          meal ON/OFF.
+          meal ON/OFF — any date, any time. Employee deadlines don&rsquo;t apply to you.
         </p>
       </div>
+
+      <CutoffSettingsForm current={cutoffs} />
 
       <DateNav date={date} basePath="/admin/meals" />
 

@@ -2,6 +2,7 @@ import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import { createPublicClient } from "@/lib/supabase/public";
 import type { MealType } from "@/lib/types/database";
+import { DEFAULT_MEAL_CUTOFFS, type MealCutoffs } from "@/lib/utils/cutoffs";
 
 export type MealSheetRow = {
   employeeId: string;
@@ -79,4 +80,31 @@ export async function getAdminMealSheet(dateStr: string): Promise<AdminMealSheet
     isActive: employee.is_active,
     ...mealsOf(employee.meal_records),
   }));
+}
+
+/**
+ * Employee meal deadlines ("HH:MM", office time). Public data, like the meal
+ * sheet. Falls back to the defaults if the row can't be read (e.g. before
+ * migration 0009 is run), so the Employee Panel never fails over it — the
+ * database trigger is what enforces the real times anyway.
+ */
+export async function getMealCutoffs(): Promise<MealCutoffs> {
+  try {
+    const { data, error } = await createPublicClient()
+      .from("meal_cutoffs")
+      .select("breakfast_cutoff, lunch_cutoff, dinner_cutoff")
+      .maybeSingle();
+    if (error) throw error;
+    if (!data) return DEFAULT_MEAL_CUTOFFS;
+
+    const hhmm = (t: string) => t.slice(0, 5);
+    return {
+      breakfast: hhmm(data.breakfast_cutoff),
+      lunch: hhmm(data.lunch_cutoff),
+      dinner: hhmm(data.dinner_cutoff),
+    };
+  } catch (error) {
+    console.error("Failed to load meal cut-offs; using defaults", error);
+    return DEFAULT_MEAL_CUTOFFS;
+  }
 }
