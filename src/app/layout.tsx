@@ -19,7 +19,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html lang="en" className={`${dmSans.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col bg-slate-50 text-slate-900">
         <header className="sticky top-0 z-30 border-b border-slate-200/70 bg-white/85 backdrop-blur">
-          <div className="flex h-14 w-full items-center justify-between gap-3 px-4">
+          <div className="flex h-14 w-full items-center justify-between gap-2 px-4">
             <Link href="/" className="flex shrink-0 items-center gap-2">
               <span
                 aria-hidden

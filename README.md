@@ -1,8 +1,11 @@
 # Meal Tracker
 
-A mobile-first office meal management app with two panels:
+A mobile-first office meal management app. The landing page (`/`) is a
+read-only board of today's meals for the cook: plate counts per meal and a
+tick beside everyone who is eating, with no buttons to press. It refreshes
+itself every minute. The header links to the two panels:
 
-- **Employee Panel** (`/`) — no login. Anyone with the link can see and
+- **Employee Panel** (`/employee`) — no login. Anyone with the link can see and
   toggle everyone's breakfast/lunch/dinner status for any date. No money
   ever appears here.
 - **Mess Manager Panel** (`/admin`) — one account per mess month, shared by
@@ -42,7 +45,8 @@ Stack: Next.js 16 (App Router, TypeScript), Tailwind CSS 4, Supabase
 ```
 src/
   app/
-    page.tsx                 Public meal sheet
+    page.tsx                 Landing page: today's read-only meal board (cook's view)
+    employee/page.tsx        Employee Panel: public meal sheet with ON/OFF toggles
     admin/
       login/page.tsx         Mess manager sign-in (public route)
       signup/page.tsx        Mess manager sign-up (public route)
@@ -53,7 +57,7 @@ src/
         reports/page.tsx      Final report + CSV export
         employees/page.tsx    Employee management (shared by all months)
   components/
-    public/                  Public panel UI (date nav, meal toggle, sheet table)
+    public/                  Public UI (meal board, date nav, meal toggle, sheet table)
     admin/                   Mess manager UI (nav, forms, tables)
   lib/
     supabase/                Browser/server Supabase clients + auth middleware helper
@@ -156,7 +160,8 @@ npm install
 npm run dev
 ```
 
-Open http://localhost:3000 for the Employee Panel and
+Open http://localhost:3000 for the meal board, http://localhost:3000/employee
+for the Employee Panel, and
 http://localhost:3000/admin for the mess manager panel.
 
 ## Build / lint
