@@ -70,6 +70,7 @@ src/
   proxy.ts                   Next.js 16 "Proxy" (formerly middleware) — session refresh + /admin gate
 supabase/
   migrations/                 Run in order: 0001 schema … 0009 meal deadlines
+  tests/meal_cutoffs_check.sql  Paste into the SQL Editor to verify meal deadlines (changes nothing)
 ```
 
 ## Database schema
@@ -136,6 +137,12 @@ to show 🔒 on locked meals, and re-checks every 15 seconds, so a meal locks
 on screen as its deadline passes without a reload. That on-screen clock
 follows the server's time, so a phone set to the wrong time still shows the
 right locks.
+
+To confirm the deadlines are enforced on your Supabase project, paste
+`supabase/tests/meal_cutoffs_check.sql` into the SQL Editor and run it: one
+row per check (employee vs. manager, before/after cut-off, previous/future
+days, midnight in Asia/Dhaka), all should say PASS. It changes nothing —
+every check is rolled back.
 
 ### Month-name logins
 
