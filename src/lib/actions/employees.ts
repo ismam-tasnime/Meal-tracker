@@ -37,6 +37,7 @@ export async function createEmployee(name: string, tokenNo: number | null): Prom
 
   revalidatePath("/admin/employees");
   revalidatePath("/");
+  revalidatePath("/employee");
   return { ok: true };
 }
 
@@ -60,6 +61,7 @@ export async function updateEmployee(
 
   revalidatePath("/admin/employees");
   revalidatePath("/");
+  revalidatePath("/employee");
   return { ok: true };
 }
 
@@ -72,6 +74,7 @@ export async function setEmployeeActive(id: string, isActive: boolean): Promise<
 
   revalidatePath("/admin/employees");
   revalidatePath("/");
+  revalidatePath("/employee");
   return { ok: true };
 }
 
@@ -106,5 +109,6 @@ export async function deleteEmployee(id: string): Promise<ActionResult> {
 
   revalidatePath("/admin/employees");
   revalidatePath("/");
+  revalidatePath("/employee");
   return { ok: true };
 }

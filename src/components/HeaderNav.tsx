@@ -4,19 +4,21 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const TABS = [
-  { href: "/", label: "Employee Panel" },
+  { href: "/employee", label: "Employee Panel" },
   { href: "/admin", label: "Mess Manager" },
 ];
 
-/** Top-level switch between the two panels, always visible in the header. */
+/**
+ * Top-level switch between the two panels, always visible in the header. The
+ * landing page ("/") is the read-only meal board, so neither tab is active there.
+ */
 export function HeaderNav() {
   const pathname = usePathname();
-  const inManager = pathname.startsWith("/admin");
 
   return (
     <nav className="flex items-center gap-1">
       {TABS.map((tab) => {
-        const isActive = tab.href === "/admin" ? inManager : !inManager;
+        const isActive = pathname.startsWith(tab.href);
         return (
           <Link
             key={tab.href}
