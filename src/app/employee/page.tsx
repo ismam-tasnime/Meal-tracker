@@ -1,6 +1,7 @@
 import { DateNav } from "@/components/public/DateNav";
 import { MealSheetTable } from "@/components/public/MealSheetTable";
-import { getMealSheet } from "@/lib/data/meals";
+import { getMealCutoffs, getMealSheet } from "@/lib/data/meals";
+import { DEFAULT_MEAL_CUTOFFS } from "@/lib/utils/cutoffs";
 import { isValidDateStr, todayInOfficeTz } from "@/lib/utils/date";
 import { LoadError } from "@/components/LoadError";
 
@@ -15,9 +16,11 @@ export default async function EmployeePanelPage({
   const date = isValidDateStr(rawDate) ? rawDate : todayInOfficeTz();
 
   let rows: Awaited<ReturnType<typeof getMealSheet>> = [];
+  let cutoffs = DEFAULT_MEAL_CUTOFFS;
   let loadError: string | null = null;
   try {
-    rows = await getMealSheet(date);
+    // getMealCutoffs never throws (falls back to defaults), so it can't fail the page.
+    [rows, cutoffs] = await Promise.all([getMealSheet(date), getMealCutoffs()]);
   } catch (err) {
     console.error("Failed to load meal sheet", err);
     loadError = "Could not load the meal sheet.";
@@ -41,7 +44,16 @@ export default async function EmployeePanelPage({
       {loadError ? (
         <LoadError message={loadError} />
       ) : (
-        <MealSheetTable key={date} date={date} initialRows={rows} />
+        <MealSheetTable
+          key={date}
+          date={date}
+          initialRows={rows}
+          cutoffs={cutoffs}
+          // Server Component, rendered once per request (force-dynamic): this
+          // is the request's time, which the sheet's lock clock follows.
+          // eslint-disable-next-line react-hooks/purity
+          serverNow={Date.now()}
+        />
       )}
     </div>
   );

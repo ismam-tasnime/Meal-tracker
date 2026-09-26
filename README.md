@@ -5,9 +5,9 @@ read-only board of today's meals for the cook: plate counts per meal and a
 tick beside everyone who is eating, with no buttons to press. It refreshes
 itself every minute. The header links to the two panels:
 
-- **Employee Panel** (`/employee`) — no login. Anyone with the link can see and
-  toggle everyone's breakfast/lunch/dinner status for any date. No money
-  ever appears here.
+- **Employee Panel** (`/employee`) — no login. Anyone with the link can see
+  everyone's breakfast/lunch/dinner status for any date and toggle it,
+  within the meal deadlines (see below). No money ever appears here.
 - **Mess Manager Panel** (`/admin`) — one account per mess month, shared by
   that month's team (~5 people). The mess runs from the 5th to the 4th of
   the next month (e.g. 5 Jan – 4 Feb). The team signs up once at
@@ -16,7 +16,8 @@ itself every minute. The header links to the two panels:
   team. Tabs:
   - **Meal Status** — pick a date, set that date's meal counts
     (Breakfast 0.75 / Lunch 1.25 / Dinner 1.00 by default), and see or fix
-    every employee's ON/OFF.
+    every employee's ON/OFF — any date, any time; the employee deadlines
+    don't apply here. Also where the employee meal deadlines are set.
   - **Expense Status** — record deposits (any number per employee, before
     or during the month, or none) and set the month-end meal rate.
   - **Report** — Employee → Meal Count → Total Bill → Total Deposit →
@@ -68,13 +69,15 @@ src/
     types/database.ts        Hand-written types mirroring the SQL schema
   proxy.ts                   Next.js 16 "Proxy" (formerly middleware) — session refresh + /admin gate
 supabase/
-  migrations/                 Run in order: 0001 schema … 0008 performance
+  migrations/                 Run in order: 0001 schema … 0009 meal deadlines
 ```
 
 ## Database schema
 
 - **employees** — `id, token_no, name, is_active, created_at, updated_at`. `token_no` is the office token number (TKN), unique when set; lists are ordered by it and it's shown beside every name, since several employees share a name.
 - **meal_records** — `id, employee_id, meal_date, breakfast, lunch, dinner, created_at, updated_at`, unique on `(employee_id, meal_date)`, indexed on both `employee_id` and `meal_date`
+- **meal_cutoffs** — one row: `breakfast_cutoff, lunch_cutoff, dinner_cutoff` (`time`, Bangladesh time) — the employee meal deadlines.
+- **`meal_lock_reason(date, meal, now)`** / **`enforce_meal_cutoffs()`** — the deadline rule and the `meal_records` trigger that enforces it for everyone but mess managers.
 - **admin_profiles** — `id` (references `auth.users`), `full_name` (e.g. "January2026"). A row here means "is a mess manager account".
 - **mess_periods** — `manager_id` (unique), `start_date, end_date` (end exclusive), `meal_rate` (null until set). Each account manages exactly one month. An exclusion constraint stops two periods from overlapping.
 - **meal_day_weights** — `period_id, meal_date, breakfast_weight, lunch_weight, dinner_weight`. One row per customised date; a missing row means the defaults 0.75 / 1.25 / 1.00. The date must be inside the period.
@@ -93,7 +96,8 @@ Enforced in Postgres, not just hidden in the UI:
 | Table | Public (anon) | Mess manager |
 |---|---|---|
 | `employees` | read only | full CRUD (shared) |
-| `meal_records` | read + write (by design — see below) | read + write; delete only inside own periods |
+| `meal_records` | read + write within the meal deadlines (see below) | read + write any date, any time; delete only inside own periods |
+| `meal_cutoffs` | read only | read + update (shared) |
 | `mess_periods` | **no access** | read own row; update only `meal_rate` |
 | `meal_day_weights` | **no access** | own period's dates only |
 | `deposits` | **no access** | own period only (add / remove) |
@@ -108,6 +112,30 @@ a URL or ID, or calling the Supabase API directly, returns nothing.
 is that any employee, without logging in, can toggle anyone's meal status.
 That table holds no financial data, so this carries no money/price
 exposure. Everything money-related is locked to the month that owns it.
+
+### Meal deadlines
+
+Employees (anyone not signed in as a mess manager) can change:
+
+| Date | Breakfast / Lunch / Dinner |
+|---|---|
+| Before today | 🔒 never |
+| Today | ✅ until that meal's deadline, 🔒 from the deadline on |
+| After today | ✅ always (the deadline applies once that day is today) |
+
+Mess managers can change any meal on any date at any time. Deadlines
+default to 08:00 / 11:00 / 17:00 and are set under Meal Status → Employee
+meal deadlines (one office-wide setting, table `meal_cutoffs`).
+
+Enforced in Postgres, not only on screen: the `enforce_meal_cutoffs`
+trigger on `meal_records` (migration 0009) rejects a locked change however
+it's sent — the app, or a hand-made Supabase/REST request. "Today" and the
+time are always Bangladesh time (`Asia/Dhaka`), never the server's or
+phone's. The Employee Panel mirrors the rule (`src/lib/utils/cutoffs.ts`)
+to show 🔒 on locked meals, and re-checks every 15 seconds, so a meal locks
+on screen as its deadline passes without a reload. That on-screen clock
+follows the server's time, so a phone set to the wrong time still shows the
+right locks.
 
 ### Month-name logins
 

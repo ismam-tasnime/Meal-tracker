@@ -7,6 +7,7 @@ import { getMyPeriod } from "@/lib/data/periods";
 import type { ActionResult } from "@/lib/actions/employees";
 import { isValidDateStr, todayInOfficeTz } from "@/lib/utils/date";
 import { isDateInPeriod, type MealWeights } from "@/lib/utils/mess";
+import type { MealCutoffs } from "@/lib/utils/cutoffs";
 
 // Every mutation here is scoped to the caller's own period, looked up from
 // their session — never taken from the request — and RLS rejects anything
@@ -138,5 +139,43 @@ export async function deleteDeposit(id: string): Promise<ActionResult> {
   if (error || !data?.length) return { ok: false, error: "Could not remove the deposit." };
 
   revalidateMoneyPages();
+  return { ok: true };
+}
+
+const HHMM = /^([01]\d|2[0-3]):[0-5]\d$/;
+
+/**
+ * Sets the employee meal deadlines. Office-wide (not per month), like the
+ * employee list, so any mess manager can change them; RLS allows only
+ * managers to update the row.
+ */
+export async function setMealCutoffs(input: MealCutoffs): Promise<ActionResult> {
+  const { isAdmin } = await getAdminSession();
+  if (!isAdmin) throw new Error("Not authorized.");
+
+  if (![input.breakfast, input.lunch, input.dinner].every((t) => HHMM.test(t))) {
+    return { ok: false, error: "Enter each time as HH:MM." };
+  }
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("meal_cutoffs")
+    .update({
+      breakfast_cutoff: input.breakfast,
+      lunch_cutoff: input.lunch,
+      dinner_cutoff: input.dinner,
+    })
+    .eq("id", true)
+    .select("id");
+
+  if (error || !data?.length) {
+    if (error) console.error("setMealCutoffs failed", error);
+    return {
+      ok: false,
+      error: error ? "Could not save the deadlines." : "Deadline settings are missing — run migration 0009.",
+    };
+  }
+
+  // The Employee Panel is dynamic, so it reads the new times on its next load.
   return { ok: true };
 }

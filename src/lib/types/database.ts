@@ -23,6 +23,15 @@ export type MealRecord = {
   updated_at: string;
 };
 
+/** The single row of employee meal deadlines (office time, "HH:MM:SS"). */
+export type MealCutoffsRow = {
+  id: boolean;
+  breakfast_cutoff: string;
+  lunch_cutoff: string;
+  dinner_cutoff: string;
+  updated_at: string;
+};
+
 export type AdminProfile = {
   id: string;
   full_name: string | null;
@@ -115,6 +124,12 @@ export type Database = {
             referencedColumns: ["id"];
           },
         ];
+      };
+      meal_cutoffs: {
+        Row: MealCutoffsRow;
+        Insert: Partial<MealCutoffsRow>;
+        Update: Partial<MealCutoffsRow>;
+        Relationships: [];
       };
       meal_day_weights: {
         Row: MealDayWeights;
