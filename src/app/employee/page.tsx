@@ -1,14 +1,15 @@
 import { redirect } from "next/navigation";
 import { DateNav } from "@/components/public/DateNav";
 import { MyMeals } from "@/components/employee/MyMeals";
-import { MyBill } from "@/components/employee/MyBill";
+import { MyMonth } from "@/components/employee/MyMonth";
 import { EmployeeName } from "@/components/EmployeeName";
 import { LoadError } from "@/components/LoadError";
 import { RetryButton } from "@/components/RetryButton";
 import { getEmployeeSession, type EmployeeSession } from "@/lib/auth/employee-session";
-import { signOutEmployee } from "@/lib/actions/employee-auth";
+import { EmployeeSignOutButton } from "@/components/employee/EmployeeSignOutButton";
 import { getMealCutoffs } from "@/lib/data/meals";
-import { getMyMeals, getMyStatement } from "@/lib/data/statement";
+import { getMyMeals, getMyMonthMeals, getMyStatement } from "@/lib/data/statement";
+import { formatCutoff } from "@/lib/utils/cutoffs";
 import { isValidDateStr, todayInOfficeTz } from "@/lib/utils/date";
 import { messMonthOf, parseMessMonthParam } from "@/lib/utils/mess";
 
@@ -57,14 +58,9 @@ export default async function EmployeePanelPage({
             <RetryButton />
           </div>
         )}
-        <form action={signOutEmployee} className="mt-4">
-          <button
-            type="submit"
-            className="h-10 rounded-full border border-slate-300 px-4 text-sm font-semibold text-slate-700"
-          >
-            Sign out
-          </button>
-        </form>
+        <div className="mt-4">
+          <EmployeeSignOutButton className="h-10 rounded-full border border-slate-300 px-4 text-sm font-semibold text-slate-700" />
+        </div>
       </div>
     );
   }
@@ -72,18 +68,24 @@ export default async function EmployeePanelPage({
   let loadError: string | null = null;
   let meals: Awaited<ReturnType<typeof getMyMeals>> | null = null;
   let statement: Awaited<ReturnType<typeof getMyStatement>> = null;
+  let monthDays: Awaited<ReturnType<typeof getMyMonthMeals>> = [];
   // getMealCutoffs never throws (falls back to defaults), so it can't fail the page.
   const cutoffsPromise = getMealCutoffs();
   try {
-    [meals, statement] = await Promise.all([
+    [meals, statement, monthDays] = await Promise.all([
       getMyMeals(employee.id, date),
       getMyStatement(month),
+      getMyMonthMeals(month),
     ]);
   } catch (err) {
     console.error("Failed to load the Employee Panel", err);
     loadError = "Could not load your meals.";
   }
   const cutoffs = await cutoffsPromise;
+  // Server Component, rendered once per request (force-dynamic): this is the
+  // request's time, which the on-screen lock clock follows.
+  // eslint-disable-next-line react-hooks/purity
+  const serverNow = Date.now();
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6 px-4 py-5 sm:py-8">
@@ -94,14 +96,7 @@ export default async function EmployeePanelPage({
           </h1>
           <p className="text-xs text-slate-500">{employee.phone}</p>
         </div>
-        <form action={signOutEmployee}>
-          <button
-            type="submit"
-            className="h-9 shrink-0 rounded-full border border-slate-300 px-3 text-sm font-semibold text-slate-700"
-          >
-            Sign out
-          </button>
-        </form>
+        <EmployeeSignOutButton className="h-9 shrink-0 rounded-full border border-slate-300 px-3 text-sm font-semibold text-slate-700" />
       </header>
 
       {loadError || !meals ? (
@@ -111,7 +106,13 @@ export default async function EmployeePanelPage({
           <section className="flex flex-col gap-3">
             <div>
               <h2 className="text-base font-bold text-slate-900">My meals</h2>
-              <p className="text-xs text-slate-500">Tap a meal to switch it ON or OFF. Saves instantly.</p>
+              <p className="text-xs text-slate-500">
+                Tap a meal to switch it ON or OFF. Saves instantly. Past days can&rsquo;t be changed.
+              </p>
+              <p className="mt-1 text-xs text-slate-500">
+                Deadlines (set by the mess manager): Breakfast {formatCutoff(cutoffs.breakfast)} ·
+                Lunch {formatCutoff(cutoffs.lunch)} · Dinner {formatCutoff(cutoffs.dinner)}
+              </p>
             </div>
             <DateNav date={date} basePath="/employee" />
             <MyMeals
@@ -120,18 +121,20 @@ export default async function EmployeePanelPage({
               date={date}
               initial={meals}
               cutoffs={cutoffs}
-              // Server Component, rendered once per request (force-dynamic): this
-              // is the request's time, which the lock clock follows.
-              // eslint-disable-next-line react-hooks/purity
-              serverNow={Date.now()}
+              serverNow={serverNow}
             />
           </section>
 
           {statement && (
-            <section className="flex flex-col gap-3">
-              <h2 className="text-base font-bold text-slate-900">My bill</h2>
-              <MyBill month={month} statement={statement} date={date} />
-            </section>
+            <MyMonth
+              employeeId={employee.id}
+              month={month}
+              date={date}
+              statement={statement}
+              days={monthDays}
+              cutoffs={cutoffs}
+              serverNow={serverNow}
+            />
           )}
         </>
       )}

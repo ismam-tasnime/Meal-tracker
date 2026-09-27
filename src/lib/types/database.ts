@@ -44,6 +44,17 @@ export type MyStatementRow = {
   deposits: { amount: number; deposited_on: string; note: string | null }[];
 };
 
+/** One day of the signed-in employee's meals, with that day's meal counts. */
+export type MyMealDayRow = {
+  meal_date: string;
+  breakfast: boolean;
+  lunch: boolean;
+  dinner: boolean;
+  breakfast_weight: number;
+  lunch_weight: number;
+  dinner_weight: number;
+};
+
 export type MealRecord = {
   id: string;
   employee_id: string;
@@ -245,6 +256,10 @@ export type Database = {
       reset_employee_login: {
         Args: { p_employee_id: string };
         Returns: boolean;
+      };
+      get_my_meal_days: {
+        Args: { p_start: string };
+        Returns: MyMealDayRow[];
       };
       get_my_statement: {
         Args: { p_start: string };
