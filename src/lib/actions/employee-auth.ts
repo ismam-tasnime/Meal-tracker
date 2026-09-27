@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import type { EmployeeSignupStatus } from "@/lib/types/database";
 import { PHONE_HINT, employeeAccountEmail, normalizePhone } from "@/lib/utils/phone";
 import type { AuthResult } from "@/lib/actions/auth";
+import { AUTH_BUSY_MESSAGE, isAuthRateLimited } from "@/lib/auth/errors";
 
 const STATUS_ERRORS: Record<Exclude<EmployeeSignupStatus, "ok">, string> = {
   not_found:
@@ -23,6 +24,7 @@ export async function signInEmployee(phoneInput: string, password: string): Prom
     email: employeeAccountEmail(phone),
     password,
   });
+  if (isAuthRateLimited(error)) return { ok: false, error: AUTH_BUSY_MESSAGE };
   if (error) return { ok: false, error: "Wrong phone number or password." };
 
   // Idempotent. Finishes linking an account whose signup got interrupted
@@ -67,6 +69,7 @@ export async function signUpEmployee(phoneInput: string, password: string): Prom
     password,
   });
 
+  if (isAuthRateLimited(error)) return { ok: false, error: AUTH_BUSY_MESSAGE };
   if (error) {
     if (error.code === "user_already_exists" || /already registered/i.test(error.message)) {
       return { ok: false, error: STATUS_ERRORS.taken };
