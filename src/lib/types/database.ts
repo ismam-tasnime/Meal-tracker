@@ -12,6 +12,38 @@ export type Employee = {
   updated_at: string;
 };
 
+/**
+ * An employee's phone number and, once they've signed up, their login.
+ * Readable only by mess managers and by the employee themself.
+ */
+export type EmployeeAccount = {
+  employee_id: string;
+  /** "01XXXXXXXXX" */
+  phone: string;
+  /** Null until the employee signs up. */
+  user_id: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+/** Answers from employee_signup_status() / register_employee(). */
+export type EmployeeSignupStatus = "ok" | "not_found" | "inactive" | "taken";
+
+/** One employee's bill for one mess month (get_my_statement). */
+export type MyStatementRow = {
+  /** False when no mess manager has signed up for that month yet. */
+  period_exists: boolean;
+  meal_rate: number | null;
+  breakfast_count: number;
+  lunch_count: number;
+  dinner_count: number;
+  meal_count: number;
+  total_bill: number | null;
+  total_deposit: number;
+  balance: number | null;
+  deposits: { amount: number; deposited_on: string; note: string | null }[];
+};
+
 export type MealRecord = {
   id: string;
   employee_id: string;
@@ -111,6 +143,21 @@ export type Database = {
         Update: Partial<Employee>;
         Relationships: [];
       };
+      employee_accounts: {
+        Row: EmployeeAccount;
+        Insert: { employee_id: string; phone: string };
+        Update: { phone?: string };
+        Relationships: [
+          {
+            foreignKeyName: "employee_accounts_employee_id_fkey";
+            columns: ["employee_id"];
+            // employee_id is the primary key: at most one account per employee.
+            isOneToOne: true;
+            referencedRelation: "employees";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       meal_records: {
         Row: MealRecord;
         Insert: Partial<MealRecord> & { employee_id: string; meal_date: string };
@@ -186,6 +233,22 @@ export type Database = {
       register_mess_manager: {
         Args: Record<string, never>;
         Returns: boolean;
+      };
+      employee_signup_status: {
+        Args: { p_phone: string };
+        Returns: EmployeeSignupStatus;
+      };
+      register_employee: {
+        Args: Record<string, never>;
+        Returns: EmployeeSignupStatus;
+      };
+      reset_employee_login: {
+        Args: { p_employee_id: string };
+        Returns: boolean;
+      };
+      get_my_statement: {
+        Args: { p_start: string };
+        Returns: MyStatementRow[];
       };
     };
   };

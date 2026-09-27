@@ -26,9 +26,10 @@ function mealsOf(records: DayRecord[] | null | undefined): DayRecord {
 }
 
 /**
- * The public meal sheet for a single date: every active employee, merged
- * with their meal_records row for that date (defaulting all meals to OFF
- * when no row exists yet). Read-only, no prices — safe for the public panel.
+ * The meal board for a single date: every active employee, merged with
+ * their meal_records row for that date (defaulting all meals to OFF when no
+ * row exists yet). Read-only, no prices or phone numbers — safe to show
+ * publicly.
  *
  * One query: the date's meal_records are embedded per employee (filtering
  * the embedded rows, not the employees), so only active employees' records
@@ -84,7 +85,7 @@ export async function getAdminMealSheet(dateStr: string): Promise<AdminMealSheet
 
 /**
  * Employee meal deadlines ("HH:MM", office time). Public data, like the meal
- * sheet. Falls back to the defaults if the row can't be read (e.g. before
+ * board. Falls back to the defaults if the row can't be read (e.g. before
  * migration 0009 is run), so the Employee Panel never fails over it — the
  * database trigger is what enforces the real times anyway.
  */

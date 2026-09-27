@@ -5,9 +5,12 @@ read-only board of today's meals for the cook: plate counts per meal and a
 tick beside everyone who is eating, with no buttons to press. It refreshes
 itself every minute. The header links to the two panels:
 
-- **Employee Panel** (`/employee`) — no login. Anyone with the link can see
-  everyone's breakfast/lunch/dinner status for any date and toggle it,
-  within the meal deadlines (see below). No money ever appears here.
+- **Employee Panel** (`/employee`) — each employee signs in with their own
+  phone number and password, and sees only their own things: their
+  breakfast/lunch/dinner ON/OFF for any date (changeable within the meal
+  deadlines, see below) and their own bill for any mess month — meal count,
+  meal rate, total bill, deposits, and amount to be paid. Nobody can change
+  anyone else's meals. See [Employee accounts](#employee-accounts).
 - **Mess Manager Panel** (`/admin`) — one account per mess month, shared by
   that month's team (~5 people). The mess runs from the 5th to the 4th of
   the next month (e.g. 5 Jan – 4 Feb). The team signs up once at
@@ -22,7 +25,8 @@ itself every minute. The header links to the two panels:
     or during the month, or none) and set the month-end meal rate.
   - **Report** — Employee → Meal Count → Total Bill → Total Deposit →
     Amount to be Paid, with CSV export.
-  - **Employees** — shared employee list (add, rename, deactivate).
+  - **Employees** — shared employee list (add, rename, deactivate), each
+    employee's phone number, and a **Reset login** button.
 
 ## How the money works
 
@@ -47,7 +51,10 @@ Stack: Next.js 16 (App Router, TypeScript), Tailwind CSS 4, Supabase
 src/
   app/
     page.tsx                 Landing page: today's read-only meal board (cook's view)
-    employee/page.tsx        Employee Panel: public meal sheet with ON/OFF toggles
+    employee/
+      page.tsx               Employee Panel: my meals (ON/OFF) + my bill, signed-in employees only
+      login/page.tsx         Employee sign-in (phone + password, public route)
+      signup/page.tsx        Employee sign-up (public route)
     admin/
       login/page.tsx         Mess manager sign-in (public route)
       signup/page.tsx        Mess manager sign-up (public route)
@@ -58,24 +65,28 @@ src/
         reports/page.tsx      Final report + CSV export
         employees/page.tsx    Employee management (shared by all months)
   components/
-    public/                  Public UI (meal board, date nav, meal toggle, sheet table)
+    public/                  Shared UI (meal board, date nav, meal toggle)
+    employee/                Employee Panel UI (sign-in form, my meals, my bill)
     admin/                   Mess manager UI (nav, forms, tables)
   lib/
     supabase/                Browser/server Supabase clients + auth middleware helper
     data/                    Read-only data fetching (server-only)
     actions/                 "use server" mutations (meals, mess money, employees, auth)
-    auth/                    Mess manager session/role resolution
-    utils/                   Date (Asia/Dhaka), mess month (5th–5th), and currency (BDT) helpers
+    auth/                    Mess manager / employee session resolution
+    utils/                   Date (Asia/Dhaka), mess month (5th–5th), currency (BDT), and phone helpers
     types/database.ts        Hand-written types mirroring the SQL schema
-  proxy.ts                   Next.js 16 "Proxy" (formerly middleware) — session refresh + /admin gate
+  proxy.ts                   Next.js 16 "Proxy" (formerly middleware) — session refresh + /admin and /employee gates
 supabase/
-  migrations/                 Run in order: 0001 schema … 0009 meal deadlines
+  migrations/                 Run in order: 0001 schema … 0010 employee accounts
   tests/meal_cutoffs_check.sql  Paste into the SQL Editor to verify meal deadlines (changes nothing)
 ```
 
 ## Database schema
 
 - **employees** — `id, token_no, name, is_active, created_at, updated_at`. `token_no` is the office token number (TKN), unique when set; lists are ordered by it and it's shown beside every name, since several employees share a name.
+- **employee_accounts** — `employee_id` (primary key), `phone` (unique, `01XXXXXXXXX`), `user_id` (the login, null until the employee signs up). Kept apart from `employees` because that table is public and phone numbers aren't.
+- **`register_employee()`** / **`employee_signup_status(phone)`** / **`reset_employee_login(employee_id)`** — link a new login to the employee with its phone number; check a number before signup; delete an employee's login (managers only).
+- **`get_my_statement(month_start)`** — the signed-in employee's own meal count, bill, deposits and balance for one mess month. Answers only for the caller.
 - **meal_records** — `id, employee_id, meal_date, breakfast, lunch, dinner, created_at, updated_at`, unique on `(employee_id, meal_date)`, indexed on both `employee_id` and `meal_date`
 - **meal_cutoffs** — one row: `breakfast_cutoff, lunch_cutoff, dinner_cutoff` (`time`, Bangladesh time) — the employee meal deadlines.
 - **`meal_lock_reason(date, meal, now)`** / **`enforce_meal_cutoffs()`** — the deadline rule and the `meal_records` trigger that enforces it for everyone but mess managers.
@@ -94,29 +105,30 @@ See `supabase/migrations/` for the full, commented definitions.
 
 Enforced in Postgres, not just hidden in the UI:
 
-| Table | Public (anon) | Mess manager |
-|---|---|---|
-| `employees` | read only | full CRUD (shared) |
-| `meal_records` | read + write within the meal deadlines (see below) | read + write any date, any time; delete only inside own periods |
-| `meal_cutoffs` | read only | read + update (shared) |
-| `mess_periods` | **no access** | read own row; update only `meal_rate` |
-| `meal_day_weights` | **no access** | own period's dates only |
-| `deposits` | **no access** | own period only (add / remove) |
-| `admin_profiles` | no access | read own row only |
+| Table | Public (anon) | Employee (signed in) | Mess manager |
+|---|---|---|---|
+| `employees` | read only | read only | full CRUD (shared) |
+| `employee_accounts` | **no access** | read own row | read all; add / change phone numbers |
+| `meal_records` | read only | read; write **own** row within the meal deadlines | read + write any date, any time; delete only inside own periods |
+| `meal_cutoffs` | read only | read only | read + update (shared) |
+| `mess_periods` | **no access** | **no access** (own bill via `get_my_statement`) | read own row; update only `meal_rate` |
+| `meal_day_weights` | **no access** | **no access** (own bill via `get_my_statement`) | own period's dates only |
+| `deposits` | **no access** | **no access** (own deposits via `get_my_statement`) | own period only (add / remove) |
+| `admin_profiles` | no access | no access | read own row only |
 
 Month accounts can't see each other's periods, meal counts, deposits,
 meal rate, reports, or profiles — January2026 and February2026 each see
 only their own month. This is enforced by RLS in the database, so changing
 a URL or ID, or calling the Supabase API directly, returns nothing.
 
-`meal_records` is intentionally publicly writable: the product requirement
-is that any employee, without logging in, can toggle anyone's meal status.
-That table holds no financial data, so this carries no money/price
-exposure. Everything money-related is locked to the month that owns it.
+Nobody signed out can change a meal: `meal_records` is readable by anyone
+(the cook's board needs it) but writable only by a signed-in employee for
+their own row, or by a mess manager. An employee can't see anyone else's
+bill or deposits, or anyone's phone number.
 
 ### Meal deadlines
 
-Employees (anyone not signed in as a mess manager) can change:
+Employees (signed in to the Employee Panel) can change their own meals:
 
 | Date | Breakfast / Lunch / Dinner |
 |---|---|
@@ -143,6 +155,37 @@ To confirm the deadlines are enforced on your Supabase project, paste
 row per check (employee vs. manager, before/after cut-off, previous/future
 days, midnight in Asia/Dhaka), all should say PASS. It changes nothing —
 every check is rolled back.
+
+### Employee accounts
+
+1. The mess manager adds the employee's phone number under **Employees**
+   (when adding them, or with **Edit**). Bangladesh mobile numbers only;
+   `+880 1712-345678`, `8801712345678` and `01712345678` are all accepted
+   and saved as `01712345678`.
+2. The employee opens `/employee/signup`, enters that number and a password
+   (at least 6 characters), and is signed straight in. Signup only works
+   for a number on the employee list, only for an active employee, and
+   only once per number.
+3. After that they sign in at `/employee/login` with the number and
+   password.
+
+Like the month logins below, each phone number maps to a fixed internal
+login address — `01712345678` → `emp-01712345678@mess-manager.app`
+(`employeeAccountEmail()` in `src/lib/utils/phone.ts`). Nobody types or
+sees it, and no mail or SMS is ever sent.
+
+**Forgotten password, or the wrong person signed up with a number**: the
+manager presses **Reset login** beside the employee. That deletes the
+login (not the employee, meals, or deposits), and the employee signs up
+again with a new password. A number that has signed up can't be changed or
+removed until its login is reset.
+
+**Deactivated employees** can't sign up, and if already signed up they can
+still sign in but can't change meals or see their bill until reactivated.
+
+Signup checks the number first (`employee_signup_status`), which tells a
+signed-out visitor whether a number is on the employee list — the same
+thing the signup error message has to say anyway.
 
 ### Month-name logins
 
@@ -174,9 +217,9 @@ these RLS policies plus the user's session.
    If you use the Supabase CLI instead: `supabase link` then
    `supabase db push`.
 3. **Turn off email confirmation**: Supabase Dashboard → Authentication →
-   Sign In / Providers → Email → **Confirm email** off. Month logins use
-   internal addresses that can't receive mail, so signup fails while this
-   is on.
+   Sign In / Providers → Email → **Confirm email** off. Month and employee
+   logins use internal addresses that can't receive mail, so signup fails
+   while this is on.
 4. **Each monthly team signs up once** — visit `/admin/signup`, enter the
    account name (e.g. `January2026`) and a password, and share them with the
    team.
@@ -196,7 +239,7 @@ npm run dev
 ```
 
 Open http://localhost:3000 for the meal board, http://localhost:3000/employee
-for the Employee Panel, and
+for the Employee Panel (sign-in required), and
 http://localhost:3000/admin for the mess manager panel.
 
 ## Build / lint
@@ -231,8 +274,8 @@ required for the plain email/password flow used here).
   JWT check and cached per request, so layout, page, and server actions
   share it.
 - **Meal sheets**: each employee's meal record for the day is embedded in
-  the employees query — one query for the public sheet, two (plus the
-  day's meal counts) for Meal Status. The public sheet uses a cookie-less
+  the employees query — one query for the meal board, two (plus the
+  day's meal counts) for Meal Status. The meal board uses a cookie-less
   anon client, so a signed-in manager's session is never refreshed just to
   render public data.
 - **Report filter** runs in the browser on rows the page already has; it
@@ -257,10 +300,6 @@ required for the plain email/password flow used here).
 
 - **Timezone**: all "today" logic uses Asia/Dhaka regardless of server or
   visitor location, so the office's calendar day is always correct.
-- **Identifying your own row**: since the public panel has no login, each
-  device can locally remember "which employee am I" (stored only in that
-  browser's `localStorage`) to highlight your row. This is a convenience,
-  not an identity system — anyone can still edit anyone's row, by design.
 - **Employee deletion**: an employee can only be hard-deleted if they have
   no meal history and no deposits (to protect billing records). Otherwise,
   deactivate them — they disappear from the Employee Panel but stay in any
@@ -273,5 +312,6 @@ required for the plain email/password flow used here).
 - [ ] Create the Supabase project and run the migrations above
 - [ ] Turn off "Confirm email" in Supabase Authentication settings
 - [ ] Each monthly team signs up once at `/admin/signup` (account name = month, e.g. `January2026`)
-- [ ] Add real employees via `/admin/employees`
+- [ ] Add real employees, with their phone numbers, via `/admin/employees`
+- [ ] Ask each employee to sign up once at `/employee/signup`
 - [ ] Set `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY` in your deployment host

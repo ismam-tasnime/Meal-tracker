@@ -3,12 +3,18 @@ import { NextResponse, type NextRequest } from "next/server";
 import type { Database } from "@/lib/types/database";
 import { supabaseAnonKey, supabaseUrl } from "@/lib/supabase/env";
 
+const PANELS = [
+  { base: "/admin", publicRoutes: ["/admin/login", "/admin/signup"] },
+  { base: "/employee", publicRoutes: ["/employee/login", "/employee/signup"] },
+];
+
 /**
  * Refreshes the Supabase auth session on every request and gates access to
- * /admin/*. This only checks that a session exists — the actual admin-role
- * check (is the signed-in user in admin_profiles?) happens again, server
- * side, in src/app/admin/layout.tsx via RLS. Middleware alone must never be
- * trusted as the sole authorization boundary.
+ * /admin/* and /employee/*. This only checks that a session exists — the
+ * actual role check (is the signed-in user a mess manager / a linked
+ * employee?) happens again, server side, in each panel's page or layout via
+ * RLS. Middleware alone must never be trusted as the sole authorization
+ * boundary.
  */
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });
@@ -34,18 +40,21 @@ export async function updateSession(request: NextRequest) {
   const user = data?.claims?.sub ? data.claims : null;
 
   const { pathname } = request.nextUrl;
-  const isAdminRoute = pathname.startsWith("/admin");
-  // Reachable without a session: sign-in and mess manager signup.
-  const isPublicAdminRoute = pathname === "/admin/login" || pathname === "/admin/signup";
 
-  if (isAdminRoute && !isPublicAdminRoute && !user) {
-    const loginUrl = new URL("/admin/login", request.url);
-    loginUrl.searchParams.set("next", pathname);
-    return NextResponse.redirect(loginUrl);
-  }
+  // Each panel has its own sign-in; everything else under it needs a session.
+  for (const panel of PANELS) {
+    if (pathname !== panel.base && !pathname.startsWith(`${panel.base}/`)) continue;
+    const isPublicRoute = panel.publicRoutes.includes(pathname);
 
-  if (isPublicAdminRoute && user) {
-    return NextResponse.redirect(new URL("/admin", request.url));
+    if (!isPublicRoute && !user) {
+      const loginUrl = new URL(`${panel.base}/login`, request.url);
+      loginUrl.searchParams.set("next", pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+
+    if (isPublicRoute && user) {
+      return NextResponse.redirect(new URL(panel.base, request.url));
+    }
   }
 
   return response;

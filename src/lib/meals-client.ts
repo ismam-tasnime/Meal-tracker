@@ -15,8 +15,9 @@ export type CellStatus = "idle" | "saving" | "error";
 type SaveResult = "ok" | "locked" | "error";
 
 /**
- * Saves one meal ON/OFF straight from the browser to Supabase (RLS allows
- * anyone to write meal_records, by design). Skipping the app server saves a
+ * Saves one meal ON/OFF straight from the browser to Supabase, as the
+ * signed-in user: RLS lets an employee write only their own row and a mess
+ * manager anyone's (0010_employee_accounts.sql). Skipping the app server saves a
  * network hop, and unlike Server Actions — which Next.js runs one at a time
  * per tab — several taps in a row are saved in parallel. Only the one
  * column that changed is written.
