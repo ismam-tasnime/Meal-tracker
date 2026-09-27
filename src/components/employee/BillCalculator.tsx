@@ -1,22 +1,25 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { dummyRateKey } from "@/lib/dummy-rate";
 import { formatBDT } from "@/lib/utils/currency";
 import { balanceStatus, formatMealCount } from "@/lib/utils/mess";
-
-const DUMMY_RATE_KEY = "office-meal:dummy-meal-rate";
 
 /**
  * "What would my bill be at this meal rate?" — for the weeks before the mess
  * manager publishes the real rate. The dummy rate lives only in this
- * browser: it is never saved to the database, and it neither reads nor
- * changes the mess manager's meal rate.
+ * browser, under this employee's own key (see src/lib/dummy-rate.ts): it is
+ * never sent to the server or saved to the database, no other employee can
+ * see it, and it neither reads nor changes the mess manager's meal rate.
  */
 export function BillCalculator({
+  employeeId,
   mealCount,
   totalDeposit,
   ratePublished,
 }: {
+  /** Whose rate this is: each employee's is remembered separately. */
+  employeeId: string;
   /** Weighted meal count for the month. */
   mealCount: number;
   totalDeposit: number;
@@ -30,16 +33,16 @@ export function BillCalculator({
     // an effect also keeps server/client hydration output identical.
     try {
       // eslint-disable-next-line react-hooks/set-state-in-effect
-      setInput(localStorage.getItem(DUMMY_RATE_KEY) ?? "");
+      setInput(localStorage.getItem(dummyRateKey(employeeId)) ?? "");
     } catch {
       // localStorage unavailable (private browsing) — the rate just won't be remembered.
     }
-  }, []);
+  }, [employeeId]);
 
   function change(value: string) {
     setInput(value);
     try {
-      localStorage.setItem(DUMMY_RATE_KEY, value);
+      localStorage.setItem(dummyRateKey(employeeId), value);
     } catch {
       // ignore
     }
@@ -69,8 +72,9 @@ export function BillCalculator({
       </label>
       <p className="mt-0.5 text-xs text-slate-500">
         The mess manager hasn&rsquo;t published this month&rsquo;s meal rate yet. Try a rate to see
-        what your bill would be. Only you see this — it isn&rsquo;t saved anywhere and doesn&rsquo;t
-        change the real meal rate.
+        what your bill would be. Only you can see it: it stays on this phone under your account,
+        is never sent to anyone, is erased when you sign out, and doesn&rsquo;t change the real
+        meal rate.
       </p>
       <div className="mt-3 flex h-11 items-center rounded-xl border border-slate-300 bg-white px-3 focus-within:border-indigo-500 focus-within:ring-1 focus-within:ring-indigo-500">
         <span aria-hidden className="text-sm font-semibold text-slate-400">

@@ -18,8 +18,11 @@ itself every minute. The header links to the two panels:
   - **Bill calculator** — until the mess manager publishes the month's meal
     rate, a **Dummy meal rate** box: type any rate to see the bill it would
     give (meal count × rate) and what they'd pay or get back. The dummy
-    rate stays in that browser only — it is never saved to the database and
-    has no connection to the manager's rate. The manager's meal rate itself
+    rate never leaves the employee's phone: it isn't sent to the server or
+    saved in the database, and has no connection to the manager's rate. The
+    phone remembers it under that employee's own account (so on a shared
+    phone another employee never sees it), and signing out erases it
+    (`src/lib/dummy-rate.ts`). The manager's meal rate itself
     is never shown in the Employee Panel; once it is published, the
     calculator is replaced by a note to ask the mess manager for the final
     bill.

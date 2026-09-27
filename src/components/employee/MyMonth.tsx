@@ -21,6 +21,7 @@ import {
  * meal rate is never shown here; only whether it has been published.
  */
 export function MyMonth({
+  employeeId,
   month,
   date,
   statement,
@@ -28,6 +29,7 @@ export function MyMonth({
   cutoffs,
   serverNow,
 }: {
+  employeeId: string;
   month: MessMonth;
   statement: MyStatementRow;
   days: MonthMealDay[];
@@ -100,6 +102,7 @@ export function MyMonth({
 
       <h3 className="mt-1 text-sm font-bold text-slate-900">Bill calculator</h3>
       <BillCalculator
+        employeeId={employeeId}
         mealCount={statement.meal_count}
         totalDeposit={statement.total_deposit}
         // Only whether a rate exists — its value never reaches the Employee Panel.

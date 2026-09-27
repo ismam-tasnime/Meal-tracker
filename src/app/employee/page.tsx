@@ -6,7 +6,7 @@ import { EmployeeName } from "@/components/EmployeeName";
 import { LoadError } from "@/components/LoadError";
 import { RetryButton } from "@/components/RetryButton";
 import { getEmployeeSession, type EmployeeSession } from "@/lib/auth/employee-session";
-import { signOutEmployee } from "@/lib/actions/employee-auth";
+import { EmployeeSignOutButton } from "@/components/employee/EmployeeSignOutButton";
 import { getMealCutoffs } from "@/lib/data/meals";
 import { getMyMeals, getMyMonthMeals, getMyStatement } from "@/lib/data/statement";
 import { formatCutoff } from "@/lib/utils/cutoffs";
@@ -58,14 +58,9 @@ export default async function EmployeePanelPage({
             <RetryButton />
           </div>
         )}
-        <form action={signOutEmployee} className="mt-4">
-          <button
-            type="submit"
-            className="h-10 rounded-full border border-slate-300 px-4 text-sm font-semibold text-slate-700"
-          >
-            Sign out
-          </button>
-        </form>
+        <div className="mt-4">
+          <EmployeeSignOutButton className="h-10 rounded-full border border-slate-300 px-4 text-sm font-semibold text-slate-700" />
+        </div>
       </div>
     );
   }
@@ -101,14 +96,7 @@ export default async function EmployeePanelPage({
           </h1>
           <p className="text-xs text-slate-500">{employee.phone}</p>
         </div>
-        <form action={signOutEmployee}>
-          <button
-            type="submit"
-            className="h-9 shrink-0 rounded-full border border-slate-300 px-3 text-sm font-semibold text-slate-700"
-          >
-            Sign out
-          </button>
-        </form>
+        <EmployeeSignOutButton className="h-9 shrink-0 rounded-full border border-slate-300 px-3 text-sm font-semibold text-slate-700" />
       </header>
 
       {loadError || !meals ? (
@@ -139,6 +127,7 @@ export default async function EmployeePanelPage({
 
           {statement && (
             <MyMonth
+              employeeId={employee.id}
               month={month}
               date={date}
               statement={statement}
