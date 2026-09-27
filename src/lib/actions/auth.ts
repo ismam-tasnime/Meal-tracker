@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { AUTH_BUSY_MESSAGE, isAuthRateLimited } from "@/lib/auth/errors";
 import { formatMessMonthName, messAccountEmail, parseMessMonthName } from "@/lib/utils/mess";
 
 export type AuthResult = { ok: true } | { ok: false; error: string };
@@ -19,6 +20,7 @@ export async function signInWithPassword(username: string, password: string): Pr
     password,
   });
 
+  if (isAuthRateLimited(error)) return { ok: false, error: AUTH_BUSY_MESSAGE };
   if (error) {
     return { ok: false, error: "Wrong account name or password." };
   }
@@ -58,6 +60,7 @@ export async function signUpMessManager(username: string, password: string): Pro
     password,
   });
 
+  if (isAuthRateLimited(error)) return { ok: false, error: AUTH_BUSY_MESSAGE };
   if (error) {
     if (error.code === "user_already_exists" || /already registered/i.test(error.message)) {
       return { ok: false, error: `${name} already has a mess manager. Sign in instead.` };

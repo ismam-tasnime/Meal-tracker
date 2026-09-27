@@ -203,6 +203,15 @@ Signup checks the number first (`employee_signup_status`), which tells a
 signed-out visitor whether a number is on the employee list — the same
 thing the signup error message has to say anyway.
 
+**Many people signing in at once**: Supabase Auth limits how many
+sign-ins it accepts per server address, and every sign-in here comes from
+the app's server. The project's limits are raised to **200 per 5 minutes**
+for sign-ups/sign-ins and for token refreshes (Supabase Dashboard →
+Authentication → Rate Limits), enough for the whole office at once. If the
+limit is still hit, the sign-in and sign-up forms say "Too many people are
+signing in right now. Please wait a minute and try again." instead of a
+wrong-password error (`src/lib/auth/errors.ts`).
+
 ### Month-name logins
 
 Supabase Auth logs in by email, so each month username maps to a fixed
