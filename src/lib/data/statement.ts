@@ -1,5 +1,6 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
+import type { MonthMealDay } from "@/lib/past-meals";
 import type { MyStatementRow } from "@/lib/types/database";
 import { messMonthRange, type MessMonth } from "@/lib/utils/mess";
 
@@ -34,28 +35,32 @@ export async function getMyStatement(month: MessMonth): Promise<MyStatementRow |
   };
 }
 
-export type MonthMealDay = { date: string; breakfast: boolean; lunch: boolean; dinner: boolean };
+export type { MonthMealDay } from "@/lib/past-meals";
 
 /**
- * Every date in the mess month on which the employee has at least one meal
- * ON, oldest first — the dates behind their breakfast / lunch / dinner
- * counts. Same range and records as get_my_statement, so the counts agree.
+ * Every date in the mess month on which the signed-in employee has at least
+ * one meal ON, oldest first, with that day's meal counts (weights). The
+ * Employee Panel works out which of them are already past.
  */
-export async function getMyMonthMeals(employeeId: string, month: MessMonth): Promise<MonthMealDay[]> {
-  const { start_date, end_date } = messMonthRange(month);
+export async function getMyMonthMeals(month: MessMonth): Promise<MonthMealDay[]> {
   const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("meal_records")
-    .select("meal_date, breakfast, lunch, dinner")
-    .eq("employee_id", employeeId)
-    .gte("meal_date", start_date)
-    .lt("meal_date", end_date)
-    .order("meal_date", { ascending: true });
+  const { data, error } = await supabase.rpc("get_my_meal_days", {
+    p_start: messMonthRange(month).start_date,
+  });
 
   if (error) throw error;
-  return (data ?? [])
-    .filter((r) => r.breakfast || r.lunch || r.dinner)
-    .map((r) => ({ date: r.meal_date, breakfast: r.breakfast, lunch: r.lunch, dinner: r.dinner }));
+  return (data ?? []).map((r) => ({
+    date: r.meal_date,
+    breakfast: r.breakfast,
+    lunch: r.lunch,
+    dinner: r.dinner,
+    // Postgres numerics can arrive as strings; normalise.
+    weights: {
+      breakfast: Number(r.breakfast_weight),
+      lunch: Number(r.lunch_weight),
+      dinner: Number(r.dinner_weight),
+    },
+  }));
 }
 
 /** The employee's own ON/OFF for one date (all OFF when there's no record yet). */

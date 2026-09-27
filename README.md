@@ -12,20 +12,20 @@ itself every minute. The header links to the two panels:
     changeable within the meal deadlines (see below). Past days are locked,
     and the deadlines are shown but only a mess manager can change them.
   - **Meals I had** — for any mess month, how many breakfasts, lunches and
-    dinners they have; tapping one lists the dates (read-only, 🔒 on past
-    meals). Includes upcoming meals already switched ON, as the bill does.
+    dinners they have already had; tapping one lists the dates (read-only,
+    🔒). Past meals only: a meal counts once its day is over or today's
+    deadline has passed, so upcoming meals switched ON don't count yet.
   - **My deposit** — the month's total and each deposit.
-  - **Bill calculator** — until the mess manager publishes the month's meal
-    rate, a **Dummy meal rate** box: type any rate to see the bill it would
-    give (meal count × rate) and what they'd pay or get back. The dummy
+  - **Bill calculator** — a **Dummy meal rate** box: type any rate to see
+    the bill it would give for their past meals (meal count × rate) and what
+    they'd pay or get back against their deposit. The dummy
     rate never leaves the employee's phone: it isn't sent to the server or
     saved in the database, and has no connection to the manager's rate. The
     phone remembers it under that employee's own account (so on a shared
     phone another employee never sees it), and signing out erases it
-    (`src/lib/dummy-rate.ts`). The manager's meal rate itself
-    is never shown in the Employee Panel; once it is published, the
-    calculator is replaced by a note to ask the mess manager for the final
-    bill.
+    (`src/lib/dummy-rate.ts`). The mess manager's real meal rate and bill
+    are never shown in the Employee Panel, before or after the manager sets
+    them.
 - **Mess Manager Panel** (`/admin`) — one account per mess month, shared by
   that month's team (~5 people). The mess runs from the 5th to the 4th of
   the next month (e.g. 5 Jan – 4 Feb). The team signs up once at
@@ -92,7 +92,7 @@ src/
     types/database.ts        Hand-written types mirroring the SQL schema
   proxy.ts                   Next.js 16 "Proxy" (formerly middleware) — session refresh + /admin and /employee gates
 supabase/
-  migrations/                 Run in order: 0001 schema … 0010 employee accounts
+  migrations/                 Run in order: 0001 schema … 0011 employee meal days
   tests/meal_cutoffs_check.sql  Paste into the SQL Editor to verify meal deadlines (changes nothing)
 ```
 
@@ -101,7 +101,8 @@ supabase/
 - **employees** — `id, token_no, name, is_active, created_at, updated_at`. `token_no` is the office token number (TKN), unique when set; lists are ordered by it and it's shown beside every name, since several employees share a name.
 - **employee_accounts** — `employee_id` (primary key), `phone` (unique, `01XXXXXXXXX`), `user_id` (the login, null until the employee signs up). Kept apart from `employees` because that table is public and phone numbers aren't.
 - **`register_employee()`** / **`employee_signup_status(phone)`** / **`reset_employee_login(employee_id)`** — link a new login to the employee with its phone number; check a number before signup; delete an employee's login (managers only).
-- **`get_my_statement(month_start)`** — the signed-in employee's own meal count, bill, deposits and balance for one mess month. Answers only for the caller.
+- **`get_my_statement(month_start)`** — the signed-in employee's own deposits (and month totals) for one mess month. Answers only for the caller.
+- **`get_my_meal_days(month_start)`** — the signed-in employee's own meals for one mess month, day by day, with each day's meal counts, so the Employee Panel can count past meals only. Answers only for the caller.
 - **meal_records** — `id, employee_id, meal_date, breakfast, lunch, dinner, created_at, updated_at`, unique on `(employee_id, meal_date)`, indexed on both `employee_id` and `meal_date`
 - **meal_cutoffs** — one row: `breakfast_cutoff, lunch_cutoff, dinner_cutoff` (`time`, Bangladesh time) — the employee meal deadlines.
 - **`meal_lock_reason(date, meal, now)`** / **`enforce_meal_cutoffs()`** — the deadline rule and the `meal_records` trigger that enforces it for everyone but mess managers.

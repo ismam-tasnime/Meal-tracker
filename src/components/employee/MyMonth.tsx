@@ -16,9 +16,9 @@ import {
 } from "@/lib/utils/mess";
 
 /**
- * One mess month of the employee's own record: meal counts (tap for the
- * dates), deposits, and the dummy-rate bill calculator. The mess manager's
- * meal rate is never shown here; only whether it has been published.
+ * One mess month of the employee's own record: past meal counts (tap for
+ * the dates), deposits, and the dummy-rate bill calculator. The mess
+ * manager's meal rate and bill are never shown here.
  */
 export function MyMonth({
   employeeId,
@@ -70,7 +70,6 @@ export function MyMonth({
         // Remount per month so an open date list doesn't carry over.
         key={messMonthParam(month)}
         days={days}
-        mealCount={statement.meal_count}
         cutoffs={cutoffs}
         serverNow={serverNow}
       />
@@ -103,10 +102,10 @@ export function MyMonth({
       <h3 className="mt-1 text-sm font-bold text-slate-900">Bill calculator</h3>
       <BillCalculator
         employeeId={employeeId}
-        mealCount={statement.meal_count}
+        days={days}
+        cutoffs={cutoffs}
+        serverNow={serverNow}
         totalDeposit={statement.total_deposit}
-        // Only whether a rate exists — its value never reaches the Employee Panel.
-        ratePublished={statement.meal_rate !== null}
       />
 
       {!statement.period_exists && (

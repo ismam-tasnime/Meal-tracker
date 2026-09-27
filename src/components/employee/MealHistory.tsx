@@ -2,44 +2,34 @@
 
 import { format } from "date-fns";
 import { useState } from "react";
-import type { MonthMealDay } from "@/lib/data/statement";
 import type { MealType } from "@/lib/types/database";
 import { MEALS, useOfficeClock } from "@/lib/meals-client";
-import { mealLockReason, type MealCutoffs } from "@/lib/utils/cutoffs";
+import { pastMeals, type MonthMealDay } from "@/lib/past-meals";
+import type { MealCutoffs } from "@/lib/utils/cutoffs";
 import { parseDateStr } from "@/lib/utils/date";
 import { formatMealCount } from "@/lib/utils/mess";
 
 /**
- * How many breakfasts, lunches and dinners the employee has in the month.
- * Tapping one lists the dates. The list is read-only: past meals can't be
- * changed, and upcoming ones are changed in "My meals" above.
+ * How many breakfasts, lunches and dinners the employee has had in the
+ * month — past meals only (day over, or today's deadline passed). Tapping
+ * one lists the dates, read-only: past meals can't be changed.
  */
 export function MealHistory({
   days,
-  mealCount,
   cutoffs,
   serverNow,
 }: {
   days: MonthMealDay[];
-  /** Weighted meal count for the month (get_my_statement). */
-  mealCount: number;
   cutoffs: MealCutoffs;
   /** Server time (epoch ms) when the page was rendered. */
   serverNow: number;
 }) {
   const [open, setOpen] = useState<MealType | null>(null);
+  // Live clock: a meal joins the count as soon as its deadline passes.
   const clock = useOfficeClock(serverNow);
+  const { dates, mealCount } = pastMeals(days, cutoffs, clock);
 
-  const datesOf = (meal: MealType) => days.filter((d) => d[meal]).map((d) => d.date);
-  // Still changeable (future, or today before the deadline) = upcoming.
-  const isUpcoming = (date: string, meal: MealType) =>
-    mealLockReason(date, meal, cutoffs, clock) === null;
-  const upcomingTotal = MEALS.reduce(
-    (sum, { key }) => sum + datesOf(key).filter((date) => isUpcoming(date, key)).length,
-    0
-  );
-
-  const openDates = open ? datesOf(open) : [];
+  const openDates = open ? dates[open] : [];
   const openLabel = MEALS.find((m) => m.key === open)?.label ?? "";
 
   return (
@@ -62,7 +52,7 @@ export function MealHistory({
               ].join(" ")}
             >
               <span className="text-2xl font-bold tabular-nums leading-tight">
-                {datesOf(key).length}
+                {dates[key].length}
               </span>
               <span className={["text-xs font-semibold", isOpen ? "text-indigo-100" : "text-slate-500"].join(" ")}>
                 {label}
@@ -85,28 +75,19 @@ export function MealHistory({
             <p className="text-sm text-slate-500">No {openLabel.toLowerCase()} this month.</p>
           ) : (
             <ul className="flex flex-wrap gap-1.5">
-              {openDates.map((date) => {
-                const upcoming = isUpcoming(date, open);
-                return (
-                  <li
-                    key={date}
-                    className={[
-                      "flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-semibold",
-                      upcoming
-                        ? "bg-white text-indigo-700 ring-1 ring-inset ring-indigo-200"
-                        : "bg-white text-slate-700 ring-1 ring-inset ring-slate-200",
-                    ].join(" ")}
-                  >
-                    {!upcoming && <span aria-hidden>🔒</span>}
-                    {format(parseDateStr(date), "EEE d MMM")}
-                    {upcoming && <span className="font-medium text-indigo-500">· upcoming</span>}
-                  </li>
-                );
-              })}
+              {openDates.map((date) => (
+                <li
+                  key={date}
+                  className="flex items-center gap-1 rounded-lg bg-white px-2 py-1 text-xs font-semibold text-slate-700 ring-1 ring-inset ring-slate-200"
+                >
+                  <span aria-hidden>🔒</span>
+                  {format(parseDateStr(date), "EEE d MMM")}
+                </li>
+              ))}
             </ul>
           )}
           <p className="mt-2 text-[11px] text-slate-400">
-            🔒 Past meals can&rsquo;t be changed. Upcoming meals can be changed in My meals above.
+            🔒 Past meals can&rsquo;t be changed.
           </p>
         </div>
       )}
@@ -116,9 +97,8 @@ export function MealHistory({
         <span className="font-bold tabular-nums text-slate-900">{formatMealCount(mealCount)}</span>
       </div>
       <p className="mt-1 text-[11px] text-slate-400">
-        Breakfast 0.75 · Lunch 1.25 · Dinner 1 each, unless the mess manager changed a day.
-        {upcomingTotal > 0 &&
-          ` Includes ${upcomingTotal} upcoming meal${upcomingTotal === 1 ? "" : "s"}.`}
+        Past meals only. Breakfast 0.75 · Lunch 1.25 · Dinner 1 each, unless the mess manager
+        changed a day.
       </p>
     </div>
   );

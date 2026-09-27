@@ -75,7 +75,7 @@ export default async function EmployeePanelPage({
     [meals, statement, monthDays] = await Promise.all([
       getMyMeals(employee.id, date),
       getMyStatement(month),
-      getMyMonthMeals(employee.id, month),
+      getMyMonthMeals(month),
     ]);
   } catch (err) {
     console.error("Failed to load the Employee Panel", err);

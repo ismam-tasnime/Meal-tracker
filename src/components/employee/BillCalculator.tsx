@@ -2,31 +2,37 @@
 
 import { useEffect, useState } from "react";
 import { dummyRateKey } from "@/lib/dummy-rate";
+import { useOfficeClock } from "@/lib/meals-client";
+import { pastMeals, type MonthMealDay } from "@/lib/past-meals";
+import type { MealCutoffs } from "@/lib/utils/cutoffs";
 import { formatBDT } from "@/lib/utils/currency";
 import { balanceStatus, formatMealCount } from "@/lib/utils/mess";
 
 /**
- * "What would my bill be at this meal rate?" — for the weeks before the mess
- * manager publishes the real rate. The dummy rate lives only in this
+ * "What would my bill be at this meal rate?" — using the employee's past
+ * meals and their own made-up rate. The mess manager's real meal rate and
+ * bill are never shown in the Employee Panel. The dummy rate lives only in this
  * browser, under this employee's own key (see src/lib/dummy-rate.ts): it is
  * never sent to the server or saved to the database, no other employee can
  * see it, and it neither reads nor changes the mess manager's meal rate.
  */
 export function BillCalculator({
   employeeId,
-  mealCount,
+  days,
+  cutoffs,
+  serverNow,
   totalDeposit,
-  ratePublished,
 }: {
   /** Whose rate this is: each employee's is remembered separately. */
   employeeId: string;
-  /** Weighted meal count for the month. */
-  mealCount: number;
+  days: MonthMealDay[];
+  cutoffs: MealCutoffs;
+  /** Server time (epoch ms) when the page was rendered. */
+  serverNow: number;
   totalDeposit: number;
-  /** Once the mess manager has set the month's rate, the calculator is hidden. */
-  ratePublished: boolean;
 }) {
   const [input, setInput] = useState("");
+  const { mealCount } = pastMeals(days, cutoffs, useOfficeClock(serverNow));
 
   useEffect(() => {
     // Bridges from an external system (localStorage) on mount; deferring to
@@ -48,18 +54,6 @@ export function BillCalculator({
     }
   }
 
-  if (ratePublished) {
-    return (
-      <div className="rounded-2xl border border-slate-200 bg-white p-4 text-sm shadow-sm">
-        <p className="font-semibold text-slate-900">Meal rate published</p>
-        <p className="mt-1 text-slate-500">
-          The mess manager has set this month&rsquo;s meal rate. Please ask the mess manager for
-          your final bill.
-        </p>
-      </div>
-    );
-  }
-
   const parsed = input.trim() === "" ? NaN : Number(input);
   const rate = Number.isFinite(parsed) && parsed >= 0 ? parsed : null;
   const bill = rate === null ? null : Math.round(mealCount * rate * 100) / 100;
@@ -71,8 +65,7 @@ export function BillCalculator({
         Dummy meal rate
       </label>
       <p className="mt-0.5 text-xs text-slate-500">
-        The mess manager hasn&rsquo;t published this month&rsquo;s meal rate yet. Try a rate to see
-        what your bill would be. Only you can see it: it stays on this phone under your account,
+        Try a meal rate to see what your bill for your past meals would be. Only you can see it: it stays on this phone under your account,
         is never sent to anyone, is erased when you sign out, and doesn&rsquo;t change the real
         meal rate.
       </p>

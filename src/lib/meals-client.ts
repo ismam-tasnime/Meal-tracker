@@ -56,14 +56,9 @@ type MealRow = { employeeId: string } & Record<MealType, boolean>;
  * Local, optimistic meal-sheet state for one date: a tap updates the row
  * immediately, saves in the background, and rolls back (marking the cell
  * red) if the save fails. `toggle` is stable, so memoised rows only
- * re-render when their own data changes. `onSaved` (optional, keep it
- * stable) runs after each successful save.
+ * re-render when their own data changes.
  */
-export function useMealToggles<Row extends MealRow>(
-  date: string,
-  initialRows: Row[],
-  onSaved?: () => void
-) {
+export function useMealToggles<Row extends MealRow>(date: string, initialRows: Row[]) {
   const [rows, setRows] = useState(initialRows);
   const [cellStatus, setCellStatus] = useState<Record<string, CellStatus>>({});
   const [lockRejected, setLockRejected] = useState(false);
@@ -96,9 +91,8 @@ export function useMealToggles<Row extends MealRow>(
       if (result !== "ok") setValue(current);
       if (result === "locked") setLockRejected(true);
       setCellStatus((prev) => ({ ...prev, [key]: result === "error" ? "error" : "idle" }));
-      if (result === "ok") onSaved?.();
     },
-    [date, onSaved]
+    [date]
   );
 
   const hasError = Object.values(cellStatus).includes("error");

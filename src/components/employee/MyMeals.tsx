@@ -1,7 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useMemo } from "react";
 import { MealToggleButton } from "@/components/public/MealToggleButton";
 import { LockNotice } from "@/components/employee/LockNotice";
 import { MEALS, useMealToggles, useOfficeClock } from "@/lib/meals-client";
@@ -29,22 +28,7 @@ export function MyMeals({
 }) {
   // Keyed by `date` from the parent, so this remounts with fresh state per date.
   const initialRows = useMemo(() => [{ employeeId, ...initial }], [employeeId, initial]);
-
-  // The month summary below counts upcoming meals too, so re-render the page
-  // once the taps settle (one refresh for several quick taps).
-  const router = useRouter();
-  const refreshTimer = useRef<number | undefined>(undefined);
-  const onSaved = useCallback(() => {
-    window.clearTimeout(refreshTimer.current);
-    refreshTimer.current = window.setTimeout(() => router.refresh(), 800);
-  }, [router]);
-  useEffect(() => () => window.clearTimeout(refreshTimer.current), []);
-
-  const { rows, cellStatus, toggle, hasError, lockRejected } = useMealToggles(
-    date,
-    initialRows,
-    onSaved
-  );
+  const { rows, cellStatus, toggle, hasError, lockRejected } = useMealToggles(date, initialRows);
   const clock = useOfficeClock(serverNow);
   const reasons = MEALS.map(({ key }) => mealLockReason(date, key, cutoffs, clock));
   const row = rows[0];
