@@ -35,8 +35,19 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           </div>
         </header>
         {children}
-        <footer className="mt-auto px-4 py-6 text-center text-xs text-slate-400">
-          Developed by <span className="font-semibold text-slate-500">Romith</span>
+        <footer className="mt-auto px-4 pb-6 pt-8">
+          <p className="mx-auto flex w-fit items-center gap-2 rounded-full bg-white/80 py-1.5 pl-1.5 pr-4 text-xs text-slate-500 shadow-sm ring-1 ring-indigo-100 backdrop-blur">
+            <span
+              aria-hidden
+              className="flex h-6 w-6 items-center justify-center rounded-full bg-linear-to-br from-indigo-500 to-emerald-400 text-[11px] font-bold text-white shadow-sm"
+            >
+              R
+            </span>
+            <span>Developed by</span>
+            <span className="bg-linear-to-r from-indigo-600 via-violet-500 to-emerald-500 bg-clip-text text-sm font-bold tracking-tight text-transparent">
+              Romith
+            </span>
+          </p>
         </footer>
       </body>
     </html>
