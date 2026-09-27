@@ -2,7 +2,6 @@ import { redirect } from "next/navigation";
 import { DateNav } from "@/components/public/DateNav";
 import { MyMeals } from "@/components/employee/MyMeals";
 import { MyMonth } from "@/components/employee/MyMonth";
-import { EmployeeName } from "@/components/EmployeeName";
 import { LoadError } from "@/components/LoadError";
 import { RetryButton } from "@/components/RetryButton";
 import { getEmployeeSession, type EmployeeSession } from "@/lib/auth/employee-session";
@@ -89,12 +88,29 @@ export default async function EmployeePanelPage({
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6 px-4 py-5 sm:py-8">
-      <header className="flex items-center justify-between gap-3">
-        <div className="min-w-0">
-          <h1 className="text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">
-            <EmployeeName name={employee.name} tokenNo={employee.token_no} />
+      <header className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
+        {/* The token number as a soft tile; the name's first letter if there's no token. */}
+        <div className="flex h-14 w-14 shrink-0 flex-col items-center justify-center rounded-2xl bg-linear-to-br from-indigo-50 to-emerald-50 ring-1 ring-inset ring-indigo-100">
+          {employee.token_no !== null ? (
+            <>
+              <span className="text-[9px] font-semibold uppercase tracking-wider text-indigo-400">
+                Token
+              </span>
+              <span className="text-lg font-bold leading-tight tabular-nums text-indigo-700">
+                {employee.token_no}
+              </span>
+            </>
+          ) : (
+            <span className="text-xl font-bold text-indigo-600">
+              {employee.name.trim().charAt(0).toUpperCase()}
+            </span>
+          )}
+        </div>
+        <div className="min-w-0 flex-1">
+          <h1 className="truncate text-lg font-bold tracking-tight text-slate-900 sm:text-xl">
+            {employee.name}
           </h1>
-          <p className="text-xs text-slate-500">{employee.phone}</p>
+          <p className="text-xs tabular-nums text-slate-500">{employee.phone}</p>
         </div>
         <EmployeeSignOutButton className="h-9 shrink-0 rounded-full border border-slate-300 px-3 text-sm font-semibold text-slate-700" />
       </header>

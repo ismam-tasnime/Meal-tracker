@@ -20,12 +20,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-full flex flex-col bg-slate-50 text-slate-900">
         <header className="sticky top-0 z-30 border-b border-slate-200/70 bg-white/85 backdrop-blur">
           <div className="flex h-14 w-full items-center justify-between gap-2 px-4">
-            <Link href="/" className="flex shrink-0 items-center gap-2">
+            <Link href="/" aria-label="Meal Tracker home" className="flex shrink-0 items-center gap-2.5">
               <span
                 aria-hidden
-                className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-600 text-sm font-bold text-white"
+                className="relative flex h-10 w-10 items-center justify-center rounded-2xl bg-linear-to-br from-indigo-500 via-indigo-600 to-emerald-500 text-lg font-extrabold text-white shadow-md shadow-indigo-500/30 ring-1 ring-inset ring-white/30 transition-transform active:scale-95"
               >
                 M
+                <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-white/80" />
               </span>
               <span className="hidden text-base font-bold tracking-tight text-slate-900 sm:inline">
                 Meal Tracker
