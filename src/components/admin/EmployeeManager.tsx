@@ -5,6 +5,7 @@ import type { EmployeeListItem as Employee } from "@/lib/data/employees";
 import {
   createEmployee,
   deleteEmployee,
+  resetEmployeeLogin,
   setEmployeeActive,
   updateEmployee,
 } from "@/lib/actions/employees";
@@ -18,21 +19,26 @@ function parseToken(value: string): number | null {
 export function EmployeeManager({ initialEmployees: employees }: { initialEmployees: Employee[] }) {
   const [newName, setNewName] = useState("");
   const [newToken, setNewToken] = useState("");
+  const [newPhone, setNewPhone] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState("");
   const [editingToken, setEditingToken] = useState("");
+  const [editingPhone, setEditingPhone] = useState("");
+  const [notice, setNotice] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
   function handleAdd(e: React.FormEvent) {
     e.preventDefault();
     if (!newName.trim()) return;
     setError(null);
+    setNotice(null);
     startTransition(async () => {
-      const result = await createEmployee(newName, parseToken(newToken));
+      const result = await createEmployee(newName, parseToken(newToken), newPhone);
       if (result.ok) {
         setNewName("");
         setNewToken("");
+        setNewPhone("");
       } else {
         setError(result.error);
       }
@@ -43,13 +49,15 @@ export function EmployeeManager({ initialEmployees: employees }: { initialEmploy
     setEditingId(employee.id);
     setEditingName(employee.name);
     setEditingToken(employee.token_no === null ? "" : String(employee.token_no));
+    setEditingPhone(employee.phone ?? "");
   }
 
   function saveEdit(id: string) {
     if (!editingName.trim()) return;
     setError(null);
+    setNotice(null);
     startTransition(async () => {
-      const result = await updateEmployee(id, editingName, parseToken(editingToken));
+      const result = await updateEmployee(id, editingName, parseToken(editingToken), editingPhone);
       if (result.ok) {
         setEditingId(null);
       } else {
@@ -81,9 +89,29 @@ export function EmployeeManager({ initialEmployees: employees }: { initialEmploy
     });
   }
 
+  function resetLogin(employee: Employee) {
+    if (
+      !confirm(
+        `Reset ${employee.name}'s login? They'll need to sign up again with ${employee.phone} and a new password. Their meals and deposits stay.`
+      )
+    ) {
+      return;
+    }
+    setError(null);
+    setNotice(null);
+    startTransition(async () => {
+      const result = await resetEmployeeLogin(employee.id);
+      if (result.ok) {
+        setNotice(`${employee.name} can now sign up again at /employee/signup.`);
+      } else {
+        setError(result.error);
+      }
+    });
+  }
+
   return (
     <div className="flex flex-col gap-4">
-      <form onSubmit={handleAdd} className="flex gap-2">
+      <form onSubmit={handleAdd} className="flex flex-wrap gap-2">
         <input
           value={newToken}
           onChange={(e) => setNewToken(e.target.value)}
@@ -101,6 +129,15 @@ export function EmployeeManager({ initialEmployees: employees }: { initialEmploy
           placeholder="New employee name"
           className="h-10 min-w-0 flex-1 rounded-xl border border-slate-300 px-3 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
         />
+        <input
+          value={newPhone}
+          onChange={(e) => setNewPhone(e.target.value)}
+          placeholder="Phone (01712345678)"
+          aria-label="Phone number"
+          type="tel"
+          inputMode="tel"
+          className="h-10 w-full rounded-xl border border-slate-300 px-3 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 sm:w-48"
+        />
         <button
           type="submit"
           disabled={isPending || !newName.trim()}
@@ -110,18 +147,28 @@ export function EmployeeManager({ initialEmployees: employees }: { initialEmploy
         </button>
       </form>
 
+      <p className="-mt-2 text-xs text-slate-500">
+        An employee can sign up at <span className="font-semibold">/employee/signup</span> once
+        you&rsquo;ve added their phone number.
+      </p>
+
       {error && (
         <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700" role="alert">
           {error}
+        </p>
+      )}
+      {notice && (
+        <p className="rounded-xl bg-emerald-50 px-3 py-2 text-sm text-emerald-800" role="status">
+          {notice}
         </p>
       )}
 
       <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
         <ul className="divide-y divide-slate-100">
           {employees.map((employee) => (
-            <li key={employee.id} className="flex items-center gap-2 px-3 py-2.5">
+            <li key={employee.id} className="flex flex-col gap-2 px-3 py-2.5 sm:flex-row sm:items-center">
               {editingId === employee.id ? (
-                <>
+                <div className="flex min-w-0 flex-1 flex-wrap gap-2">
                   <input
                     value={editingToken}
                     onChange={(e) => setEditingToken(e.target.value)}
@@ -137,55 +184,81 @@ export function EmployeeManager({ initialEmployees: employees }: { initialEmploy
                   <input
                     value={editingName}
                     onChange={(e) => setEditingName(e.target.value)}
+                    aria-label="Name"
                     autoFocus
                     className="h-9 min-w-0 flex-1 rounded-xl border border-slate-300 px-2 text-sm"
                     onKeyDown={(e) => e.key === "Enter" && saveEdit(employee.id)}
                   />
-                </>
+                  <input
+                    value={editingPhone}
+                    onChange={(e) => setEditingPhone(e.target.value)}
+                    placeholder="Phone"
+                    aria-label="Phone number"
+                    type="tel"
+                    inputMode="tel"
+                    className="h-9 w-full rounded-xl border border-slate-300 px-2 text-sm sm:w-36"
+                    onKeyDown={(e) => e.key === "Enter" && saveEdit(employee.id)}
+                  />
+                </div>
               ) : (
-                <span
-                  className={[
-                    "flex-1 truncate text-sm font-semibold",
-                    employee.is_active ? "text-slate-800" : "text-slate-400 line-through",
-                  ].join(" ")}
-                >
-                  <EmployeeName name={employee.name} tokenNo={employee.token_no} />
-                </span>
+                <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+                  <span className="flex min-w-0 items-center gap-2">
+                    <span
+                      className={[
+                        "truncate text-sm font-semibold",
+                        employee.is_active ? "text-slate-800" : "text-slate-400 line-through",
+                      ].join(" ")}
+                    >
+                      <EmployeeName name={employee.name} tokenNo={employee.token_no} />
+                    </span>
+                    {!employee.is_active && (
+                      <span className="shrink-0 rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-500">
+                        Inactive
+                      </span>
+                    )}
+                  </span>
+                  <LoginStatus phone={employee.phone} hasLogin={employee.hasLogin} />
+                </div>
               )}
 
-              {!employee.is_active && (
-                <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-500">
-                  Inactive
-                </span>
-              )}
-
-              {editingId === employee.id ? (
+              <div className="flex flex-wrap gap-1.5">
+                {editingId === employee.id ? (
+                  <button
+                    onClick={() => saveEdit(employee.id)}
+                    disabled={isPending}
+                    className="h-8 rounded-full bg-indigo-600 px-2.5 text-xs font-semibold text-white transition-colors hover:bg-indigo-700 disabled:opacity-60"
+                  >
+                    Save
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => startEdit(employee)}
+                    className="h-8 rounded-full border border-slate-200 px-2.5 text-xs font-semibold text-slate-600"
+                  >
+                    Edit
+                  </button>
+                )}
+                {employee.phone && (
+                  <button
+                    onClick={() => resetLogin(employee)}
+                    className="h-8 rounded-full border border-amber-200 px-2.5 text-xs font-semibold text-amber-700"
+                  >
+                    Reset login
+                  </button>
+                )}
                 <button
-                  onClick={() => saveEdit(employee.id)}
-                  className="h-8 rounded-full bg-indigo-600 px-2.5 text-xs font-semibold text-white transition-colors hover:bg-indigo-700"
-                >
-                  Save
-                </button>
-              ) : (
-                <button
-                  onClick={() => startEdit(employee)}
+                  onClick={() => toggleActive(employee)}
                   className="h-8 rounded-full border border-slate-200 px-2.5 text-xs font-semibold text-slate-600"
                 >
-                  Edit
+                  {employee.is_active ? "Deactivate" : "Activate"}
                 </button>
-              )}
-              <button
-                onClick={() => toggleActive(employee)}
-                className="h-8 rounded-full border border-slate-200 px-2.5 text-xs font-semibold text-slate-600"
-              >
-                {employee.is_active ? "Deactivate" : "Activate"}
-              </button>
-              <button
-                onClick={() => remove(employee)}
-                className="h-8 rounded-full border border-red-200 px-2.5 text-xs font-semibold text-red-600"
-              >
-                Remove
-              </button>
+                <button
+                  onClick={() => remove(employee)}
+                  className="h-8 rounded-full border border-red-200 px-2.5 text-xs font-semibold text-red-600"
+                >
+                  Remove
+                </button>
+              </div>
             </li>
           ))}
           {employees.length === 0 && (
@@ -196,5 +269,26 @@ export function EmployeeManager({ initialEmployees: employees }: { initialEmploy
         </ul>
       </div>
     </div>
+  );
+}
+
+/** The phone number the employee signs up with, and whether they have. */
+function LoginStatus({ phone, hasLogin }: { phone: string | null; hasLogin: boolean }) {
+  if (!phone) {
+    return <span className="text-xs text-amber-700">No phone number — can&rsquo;t sign up yet</span>;
+  }
+  return (
+    <span className="flex items-center gap-1.5 text-xs text-slate-500">
+      <span className="tabular-nums">{phone}</span>
+      {hasLogin ? (
+        <span className="rounded-full bg-emerald-50 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700">
+          Signed up
+        </span>
+      ) : (
+        <span className="rounded-full bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-500">
+          Not signed up
+        </span>
+      )}
+    </span>
   );
 }

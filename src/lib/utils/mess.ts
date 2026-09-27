@@ -32,6 +32,33 @@ export function messMonthRange({ year, month }: MessMonth): PeriodRange {
   };
 }
 
+/** The mess month a date (YYYY-MM-DD) falls in: 4 Feb is still January's month. */
+export function messMonthOf(dateStr: string): MessMonth {
+  const [year, month, day] = dateStr.split("-").map(Number);
+  if (day >= MESS_START_DAY) return { year, month };
+  return month === 1 ? { year: year - 1, month: 12 } : { year, month: month - 1 };
+}
+
+/** The month before/after (delta = -1 / 1). */
+export function shiftMessMonth({ year, month }: MessMonth, delta: number): MessMonth {
+  const index = year * 12 + (month - 1) + delta;
+  return { year: Math.floor(index / 12), month: (index % 12) + 1 };
+}
+
+/** "2026-09" — how a mess month appears in a URL. */
+export function messMonthParam({ year, month }: MessMonth): string {
+  return `${year}-${String(month).padStart(2, "0")}`;
+}
+
+export function parseMessMonthParam(value: string | undefined): MessMonth | null {
+  const match = value?.match(/^(\d{4})-(\d{2})$/);
+  if (!match) return null;
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  if (month < 1 || month > 12 || year < 2000 || year > 2100) return null;
+  return { year, month };
+}
+
 /** "January2026" — the account name for a mess month. */
 export function formatMessMonthName({ year, month }: MessMonth): string {
   return `${MONTH_NAMES[month - 1]}${year}`;

@@ -7,9 +7,11 @@
 -- and cut-off times it sets up), and the helper is a pg_temp function that
 -- disappears when the session ends.
 --
--- Employee checks write as the `anon` role — exactly what the Employee Panel
--- or a hand-made REST call uses. Manager checks write as `authenticated`
--- with an existing mess manager's id (skipped if there is none yet).
+-- Employee checks write as `authenticated` with a throwaway login linked to
+-- the test employee (migration 0010) — exactly what the Employee Panel or a
+-- hand-made REST call uses. Manager checks write as `authenticated` with an
+-- existing mess manager's id (skipped if there is none yet). Signed-out
+-- (`anon`) writes and writes to someone else's meals must be refused.
 -- "Before cut-off" / "after cut-off" are forced by setting the cut-off to
 -- 23:59:59.999999 / 00:00, so the result doesn't depend on when you run it.
 
@@ -21,6 +23,8 @@ declare
   v_today date := (now() at time zone 'Asia/Dhaka')::date;
   v_manager uuid := (select id from public.admin_profiles limit 1);
   v_emp uuid := gen_random_uuid();
+  v_other uuid := gen_random_uuid();
+  v_login uuid := gen_random_uuid();
   v_open constant time := '23:59:59.999999';
   v_shut constant time := '00:00';
   c record;
@@ -41,29 +45,43 @@ begin
     return;
   end if;
 
+  check_no := 9;
+  check_name := 'Migration 0010 installed (employee_accounts)';
+  expected := 'yes';
+  got := case when to_regclass('public.employee_accounts') is not null then 'yes' else 'no' end;
+  result := case when got = expected then 'PASS' else 'FAIL' end;
+  return next;
+  if got <> 'yes' then
+    return;
+  end if;
+
   for c in
     select * from (values
       -- n, name, role, cut-off for every meal, sql ($1 = employee, $2 = today), expected
-      (1,  'Employee edits yesterday breakfast', 'anon', v_open,
+      (1,  'Employee edits yesterday breakfast', 'employee', v_open,
            'insert into public.meal_records (employee_id, meal_date, breakfast) values ($1, $2 - 1, false) on conflict (employee_id, meal_date) do update set breakfast = excluded.breakfast', 'REJECT'),
-      (2,  'Employee edits yesterday lunch', 'anon', v_open,
+      (2,  'Employee edits yesterday lunch', 'employee', v_open,
            'insert into public.meal_records (employee_id, meal_date, lunch) values ($1, $2 - 1, false) on conflict (employee_id, meal_date) do update set lunch = excluded.lunch', 'REJECT'),
-      (3,  'Employee edits today breakfast before cut-off', 'anon', v_open,
+      (3,  'Employee edits today breakfast before cut-off', 'employee', v_open,
            'insert into public.meal_records (employee_id, meal_date, breakfast) values ($1, $2, true) on conflict (employee_id, meal_date) do update set breakfast = excluded.breakfast', 'ALLOW'),
-      (4,  'Employee edits today breakfast after cut-off', 'anon', v_shut,
+      (4,  'Employee edits today breakfast after cut-off', 'employee', v_shut,
            'insert into public.meal_records (employee_id, meal_date, breakfast) values ($1, $2, false) on conflict (employee_id, meal_date) do update set breakfast = excluded.breakfast', 'REJECT'),
-      (5,  'Employee edits today lunch before cut-off', 'anon', v_open,
+      (5,  'Employee edits today lunch before cut-off', 'employee', v_open,
            'insert into public.meal_records (employee_id, meal_date, lunch) values ($1, $2, true) on conflict (employee_id, meal_date) do update set lunch = excluded.lunch', 'ALLOW'),
-      (6,  'Employee edits today lunch after cut-off', 'anon', v_shut,
+      (6,  'Employee edits today lunch after cut-off', 'employee', v_shut,
            'insert into public.meal_records (employee_id, meal_date, lunch) values ($1, $2, false) on conflict (employee_id, meal_date) do update set lunch = excluded.lunch', 'REJECT'),
-      (7,  'Employee edits tomorrow breakfast (today locked)', 'anon', v_shut,
+      (7,  'Employee edits tomorrow breakfast (today locked)', 'employee', v_shut,
            'insert into public.meal_records (employee_id, meal_date, breakfast) values ($1, $2 + 1, true) on conflict (employee_id, meal_date) do update set breakfast = excluded.breakfast', 'ALLOW'),
-      (8,  'Employee edits tomorrow lunch (today locked)', 'anon', v_shut,
+      (8,  'Employee edits tomorrow lunch (today locked)', 'employee', v_shut,
            'insert into public.meal_records (employee_id, meal_date, lunch) values ($1, $2 + 1, true) on conflict (employee_id, meal_date) do update set lunch = excluded.lunch', 'ALLOW'),
-      (10, 'Direct API update of today after cut-off', 'anon', v_shut,
+      (10, 'Direct API update of today after cut-off', 'employee', v_shut,
            'update public.meal_records set lunch = false where employee_id = $1 and meal_date = $2', 'REJECT'),
-      (11, 'Direct API update of a previous date', 'anon', v_open,
+      (11, 'Direct API update of a previous date', 'employee', v_open,
            'update public.meal_records set lunch = false where employee_id = $1 and meal_date = $2 - 1', 'REJECT'),
+      (15, 'Signed out: edit tomorrow', 'anon', v_open,
+           'insert into public.meal_records (employee_id, meal_date, lunch) values ($1, $2 + 1, true) on conflict (employee_id, meal_date) do update set lunch = excluded.lunch', 'REJECT'),
+      (16, 'Employee edits someone else''s tomorrow', 'employee', v_open,
+           'insert into public.meal_records (employee_id, meal_date, lunch) values ($3, $2 + 1, true) on conflict (employee_id, meal_date) do update set lunch = excluded.lunch', 'REJECT'),
       (12, 'Mess Manager edits previous date', 'authenticated', v_shut,
            'update public.meal_records set lunch = false where employee_id = $1 and meal_date = $2 - 1', 'ALLOW'),
       (13, 'Mess Manager edits today after cut-off', 'authenticated', v_shut,
@@ -85,7 +103,13 @@ begin
 
     begin
       -- Fixtures: a throwaway employee with every meal ON yesterday and today.
-      insert into public.employees (id, name) values (v_emp, 'zz cut-off check (rolled back)');
+      insert into public.employees (id, name) values
+        (v_emp, 'zz cut-off check (rolled back)'),
+        (v_other, 'zz cut-off check other (rolled back)');
+      insert into auth.users (id, email, aud, role)
+      values (v_login, 'emp-01700000000@mess-manager.app', 'authenticated', 'authenticated');
+      insert into public.employee_accounts (employee_id, phone, user_id)
+      values (v_emp, '01700000000', v_login);
       insert into public.meal_records (employee_id, meal_date, breakfast, lunch, dinner)
       values (v_emp, v_today - 1, true, true, true), (v_emp, v_today, true, true, true);
       update public.meal_cutoffs
@@ -94,10 +118,14 @@ begin
       if c.role = 'authenticated' then
         perform set_config('request.jwt.claims',
           json_build_object('sub', v_manager, 'role', 'authenticated')::text, true);
+      elsif c.role = 'employee' then
+        perform set_config('request.jwt.claims',
+          json_build_object('sub', v_login, 'role', 'authenticated')::text, true);
       end if;
-      execute format('set local role %I', c.role);
+      execute format('set local role %I',
+        case c.role when 'employee' then 'authenticated' else c.role end);
 
-      execute c.sql using v_emp, v_today;
+      execute c.sql using v_emp, v_today, v_other;
       raise exception using errcode = 'P0T01', message = 'ALLOW';
     exception when others then
       -- Everything above, fixtures included, is rolled back here.
