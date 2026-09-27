@@ -6,11 +6,23 @@ tick beside everyone who is eating, with no buttons to press. It refreshes
 itself every minute. The header links to the two panels:
 
 - **Employee Panel** (`/employee`) — each employee signs in with their own
-  phone number and password, and sees only their own things: their
-  breakfast/lunch/dinner ON/OFF for any date (changeable within the meal
-  deadlines, see below) and their own bill for any mess month — meal count,
-  meal rate, total bill, deposits, and amount to be paid. Nobody can change
-  anyone else's meals. See [Employee accounts](#employee-accounts).
+  phone number and password, and sees only their own things. Nobody can
+  change anyone else's meals. See [Employee accounts](#employee-accounts).
+  - **My meals** — their breakfast/lunch/dinner ON/OFF for any date,
+    changeable within the meal deadlines (see below). Past days are locked,
+    and the deadlines are shown but only a mess manager can change them.
+  - **Meals I had** — for any mess month, how many breakfasts, lunches and
+    dinners they have; tapping one lists the dates (read-only, 🔒 on past
+    meals). Includes upcoming meals already switched ON, as the bill does.
+  - **My deposit** — the month's total and each deposit.
+  - **Bill calculator** — until the mess manager publishes the month's meal
+    rate, a **Dummy meal rate** box: type any rate to see the bill it would
+    give (meal count × rate) and what they'd pay or get back. The dummy
+    rate stays in that browser only — it is never saved to the database and
+    has no connection to the manager's rate. The manager's meal rate itself
+    is never shown in the Employee Panel; once it is published, the
+    calculator is replaced by a note to ask the mess manager for the final
+    bill.
 - **Mess Manager Panel** (`/admin`) — one account per mess month, shared by
   that month's team (~5 people). The mess runs from the 5th to the 4th of
   the next month (e.g. 5 Jan – 4 Feb). The team signs up once at

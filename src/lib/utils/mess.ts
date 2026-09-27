@@ -59,6 +59,11 @@ export function parseMessMonthParam(value: string | undefined): MessMonth | null
   return { year, month };
 }
 
+/** "January 2026" — a mess month as a heading. */
+export function formatMessMonthTitle({ year, month }: MessMonth): string {
+  return `${MONTH_NAMES[month - 1]} ${year}`;
+}
+
 /** "January2026" — the account name for a mess month. */
 export function formatMessMonthName({ year, month }: MessMonth): string {
   return `${MONTH_NAMES[month - 1]}${year}`;

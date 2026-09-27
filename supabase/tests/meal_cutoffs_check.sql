@@ -29,6 +29,7 @@ declare
   v_shut constant time := '00:00';
   c record;
   v_got text;
+  v_rows int;
 begin
   check_no := 0;
   check_name := 'Migration 0009 installed (trigger on meal_records)';
@@ -136,6 +137,31 @@ begin
     result := case when split_part(v_got, ':', 1) = c.expected then 'PASS' else 'FAIL' end;
     return next;
   end loop;
+
+  -- Only mess managers may change the deadlines. RLS doesn't raise on an
+  -- update it filters out, it just changes nothing, so count the rows.
+  check_no := 17;
+  check_name := 'Employee changes the meal deadlines';
+  expected := 'REJECT';
+  begin
+    insert into public.employees (id, name) values (v_emp, 'zz cut-off check (rolled back)');
+    insert into auth.users (id, email, aud, role)
+    values (v_login, 'emp-01700000000@mess-manager.app', 'authenticated', 'authenticated');
+    insert into public.employee_accounts (employee_id, phone, user_id)
+    values (v_emp, '01700000000', v_login);
+    perform set_config('request.jwt.claims',
+      json_build_object('sub', v_login, 'role', 'authenticated')::text, true);
+    set local role authenticated;
+    update public.meal_cutoffs set lunch_cutoff = '12:34' where id;
+    get diagnostics v_rows = row_count;
+    raise exception using errcode = 'P0T01',
+      message = case when v_rows = 0 then 'REJECT: no rows changed' else 'ALLOW' end;
+  exception when others then
+    v_got := case when sqlstate = 'P0T01' then sqlerrm else 'REJECT: ' || sqlerrm end;
+  end;
+  got := v_got;
+  result := case when split_part(v_got, ':', 1) = expected then 'PASS' else 'FAIL' end;
+  return next;
 
   -- The rule itself at exact Bangladesh clock times, around the deadlines and
   -- midnight (Asia/Dhaka is UTC+6), using the cut-offs currently saved.
