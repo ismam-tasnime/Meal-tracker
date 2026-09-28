@@ -1,8 +1,10 @@
 import { StatCard } from "@/components/admin/StatCard";
 import { getDashboardStats } from "@/lib/data/dashboard";
+import { listGuestDays } from "@/lib/data/guests";
 import { getMyPeriod } from "@/lib/data/periods";
 import { formatBDT } from "@/lib/utils/currency";
 import { formatDisplayDate, todayInOfficeTz } from "@/lib/utils/date";
+import { guestBill, totalGuests } from "@/lib/utils/guests";
 import { formatMealCount, formatPeriodRange } from "@/lib/utils/mess";
 import { LoadError } from "@/components/LoadError";
 
@@ -16,11 +18,23 @@ export default async function ManagerDashboardPage() {
   const period = await getMyPeriod().catch(() => null);
   if (!period) return null;
 
+  // The Guest tab's Total Bill to Collect, worked out the same way. Runs
+  // alongside the stats; null when guests can't be loaded, which leaves the
+  // rest of the dashboard as it is.
+  const guestBillPromise = listGuestDays(period.id).then(
+    (days) => guestBill(totalGuests(days)).total,
+    (error) => {
+      console.error("Failed to load guest meals", error);
+      return null;
+    }
+  );
+
   try {
     stats = await getDashboardStats(period);
   } catch {
     loadError = "Could not load dashboard stats.";
   }
+  const guestBillTotal = await guestBillPromise;
 
   const range = formatPeriodRange(period);
 
@@ -71,6 +85,11 @@ export default async function ManagerDashboardPage() {
             label="Still due"
             value={stats.totalDue === null ? "—" : formatBDT(stats.totalDue)}
             hint="From all employees"
+          />
+          <StatCard
+            label="Guest bill to collect"
+            value={guestBillTotal === null ? "—" : formatBDT(guestBillTotal)}
+            hint={guestBillTotal === null ? "Couldn’t load guests" : `From the office · ${range}`}
           />
         </div>
       )}

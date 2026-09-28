@@ -47,8 +47,9 @@ itself every minute. The header links to the two panels:
     Lunch ৳150, Dinner ৳150 per guest — and every bill is worked out as you
     type: each meal's guest bill (guests × rate) and the date's total. Below
     are the month's dates with guests (tap one to edit it) and the **Total
-    Bill to Collect** for the month, meal by meal. Saving a date again
-    overwrites it; there's never a second record for the same date + meal.
+    Bill to Collect** for the month, meal by meal (also on the Dashboard, as
+    "Guest bill to collect"). Saving a date again overwrites it; there's
+    never a second record for the same date + meal.
     The Employee Panel never shows guests; the cook's meal board shows
     today's guest counts (never bills).
   - **Expense Status** — record deposits (any number per employee, before
