@@ -31,7 +31,11 @@ export default async function ManagerReportPage() {
         </p>
       </div>
 
-      <MealRateForm current={period.meal_rate} />
+      <MealRateForm
+        current={period.meal_rate}
+        published={period.published_meal_rate ?? null}
+        publishedAt={period.rate_published_at ?? null}
+      />
 
       {loadError ? (
         <LoadError message={loadError ?? "Could not load this page."} />

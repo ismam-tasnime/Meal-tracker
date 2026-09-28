@@ -43,12 +43,16 @@ export default async function ManagerExpenseStatusPage() {
               .filter((r) => r.is_active)
               .map((r) => ({ id: r.employee_id, name: r.employee_name, token_no: r.token_no }))}
           />
-          <MealRateForm current={period.meal_rate} />
+          <MealRateForm
+            current={period.meal_rate}
+            published={period.published_meal_rate ?? null}
+            publishedAt={period.rate_published_at ?? null}
+          />
 
           {period.meal_rate === null && (
             <p className="rounded-xl bg-amber-50 px-3 py-2 text-sm text-amber-800">
-              Bills appear once you set the meal rate above. Meal counts and deposits are already
-              up to date.
+              Bills appear once you test a meal rate above. Meal counts and deposits are already
+              up to date. Employees see a rate and bill only after you publish.
             </p>
           )}
 
