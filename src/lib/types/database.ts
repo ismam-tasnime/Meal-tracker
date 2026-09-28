@@ -135,6 +135,42 @@ export type Deposit = {
   created_at: string;
 };
 
+/**
+ * Guests declared for one date (0014): one row per date, a count per meal.
+ * No row = no guests. Bills are never stored — see src/lib/utils/guests.ts.
+ */
+export type GuestMeal = {
+  meal_date: string; // YYYY-MM-DD, primary key
+  period_id: string;
+  breakfast_guests: number;
+  lunch_guests: number;
+  dinner_guests: number;
+  updated_at: string;
+};
+
+/** Today's guest counts for the cook's meal board (get_today_guest_meals). */
+export type TodayGuestMealsRow = Pick<
+  GuestMeal,
+  "meal_date" | "breakfast_guests" | "lunch_guests" | "dinner_guests"
+>;
+
+/** One spending entry (0014). Any number per date. */
+export type SpendingRecord = {
+  id: string;
+  period_id: string;
+  spent_on: string; // YYYY-MM-DD
+  person_name: string;
+  amount: number;
+  created_at: string;
+  updated_at: string;
+};
+
+/** The month's spending, added up by the database (get_spending_total). */
+export type SpendingTotalRow = {
+  entry_count: number;
+  total_amount: number;
+};
+
 export type PeriodReportRow = {
   employee_id: string;
   token_no: number | null;
@@ -237,6 +273,19 @@ export type Database = {
           },
         ];
       };
+      guest_meals: {
+        Row: GuestMeal;
+        Insert: Partial<GuestMeal> & { meal_date: string; period_id: string };
+        Update: Partial<GuestMeal>;
+        Relationships: [];
+      };
+      spending_records: {
+        Row: SpendingRecord;
+        // Only these columns are granted to managers (0014).
+        Insert: Pick<SpendingRecord, "period_id" | "spent_on" | "person_name" | "amount">;
+        Update: Partial<Pick<SpendingRecord, "spent_on" | "person_name" | "amount">>;
+        Relationships: [];
+      };
       mess_periods: {
         Row: MessPeriod;
         Insert: Partial<MessPeriod> & { start_date: string; end_date: string };
@@ -292,6 +341,14 @@ export type Database = {
       get_my_statement: {
         Args: { p_start: string };
         Returns: MyStatementRow[];
+      };
+      get_today_guest_meals: {
+        Args: Record<string, never>;
+        Returns: TodayGuestMealsRow[];
+      };
+      get_spending_total: {
+        Args: { p_period_id: string };
+        Returns: SpendingTotalRow[];
       };
     };
   };

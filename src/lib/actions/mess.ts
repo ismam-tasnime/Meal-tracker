@@ -5,9 +5,24 @@ import { createClient } from "@/lib/supabase/server";
 import { getAdminSession } from "@/lib/auth/session";
 import { getMyPeriod } from "@/lib/data/periods";
 import type { ActionResult } from "@/lib/actions/employees";
+import { isMissingFromDatabase } from "@/lib/supabase/errors";
 import { isValidDateStr, todayInOfficeTz } from "@/lib/utils/date";
-import { cleanMenuItem, isDateInPeriod, type DayMenu, type MealWeights } from "@/lib/utils/mess";
+import {
+  cleanMenuItem,
+  formatPeriodRange,
+  isDateInPeriod,
+  type DayMenu,
+  type MealWeights,
+  type PeriodRange,
+} from "@/lib/utils/mess";
 import type { MealCutoffs } from "@/lib/utils/cutoffs";
+import { MAX_GUESTS, hasGuests, isValidGuestCount, type GuestCounts } from "@/lib/utils/guests";
+import {
+  MAX_SPENDING_AMOUNT,
+  cleanPersonName,
+  isValidSpendingAmount,
+  roundAmount,
+} from "@/lib/utils/spending";
 
 // Every mutation here is scoped to the caller's own period, looked up from
 // their session — never taken from the request — and RLS rejects anything
@@ -256,4 +271,187 @@ export async function setMealCutoffs(input: MealCutoffs): Promise<ActionResult> 
 
   // The Employee Panel is dynamic, so it reads the new times on its next load.
   return { ok: true };
+}
+
+const GUESTS_NOT_SET_UP = "Guest meals aren’t set up yet — run migration 0014.";
+const SPENDING_NOT_SET_UP = "Spending isn’t set up yet — run migration 0014.";
+
+/**
+ * Declares how many guests eat each meal on one date. The office pays for
+ * them at fixed rates, and every bill is worked out from these counts
+ * (src/lib/utils/guests.ts). One record per date, so saving a date again
+ * overwrites its counts; all three at 0 removes the date's record, like the
+ * menu.
+ */
+export async function setGuestMeals(dateStr: string, input: GuestCounts): Promise<ActionResult> {
+  const period = await requirePeriod();
+
+  if (!isValidDateStr(dateStr) || !isDateInPeriod(dateStr, period)) {
+    return { ok: false, error: "That date is outside your mess month." };
+  }
+  const counts: GuestCounts = {
+    breakfast: Number(input?.breakfast),
+    lunch: Number(input?.lunch),
+    dinner: Number(input?.dinner),
+  };
+  if (![counts.breakfast, counts.lunch, counts.dinner].every(isValidGuestCount)) {
+    return {
+      ok: false,
+      error: `Guests must be whole numbers from 0 to ${MAX_GUESTS.toLocaleString("en-US")}.`,
+    };
+  }
+
+  const supabase = await createClient();
+  const { error } = hasGuests(counts)
+    ? await supabase.from("guest_meals").upsert(
+        {
+          meal_date: dateStr,
+          period_id: period.id,
+          breakfast_guests: counts.breakfast,
+          lunch_guests: counts.lunch,
+          dinner_guests: counts.dinner,
+        },
+        { onConflict: "meal_date" }
+      )
+    : await supabase
+        .from("guest_meals")
+        .delete()
+        .eq("meal_date", dateStr)
+        .eq("period_id", period.id);
+
+  if (error) {
+    console.error("setGuestMeals failed", error);
+    return {
+      ok: false,
+      error: isMissingFromDatabase(error) ? GUESTS_NOT_SET_UP : "Could not save the guests.",
+    };
+  }
+
+  // Re-renders the month's list and Total Bill to Collect from the database.
+  // The cook's board is dynamic, so it shows the new counts on its next load.
+  revalidateMoneyPages();
+  return { ok: true };
+}
+
+export type SpendingInput = { spentOn: string; personName: string; amount: number };
+
+type SpendingRow = { spent_on: string; person_name: string; amount: number };
+
+/** One spending entry, tidied and checked against the mess month. */
+function checkSpending(
+  input: SpendingInput,
+  period: PeriodRange
+): { ok: true; row: SpendingRow } | { ok: false; error: string } {
+  const spentOn = String(input?.spentOn ?? "");
+  if (!isValidDateStr(spentOn) || !isDateInPeriod(spentOn, period)) {
+    return { ok: false, error: `Pick a date inside your mess month (${formatPeriodRange(period)}).` };
+  }
+  const personName = cleanPersonName(String(input?.personName ?? ""));
+  if (!personName) return { ok: false, error: "Enter who spent the money." };
+  const amount = roundAmount(Number(input?.amount));
+  if (!isValidSpendingAmount(amount)) {
+    return {
+      ok: false,
+      error:
+        amount > MAX_SPENDING_AMOUNT ? "That amount is too large." : "Spending must be more than zero.",
+    };
+  }
+  return { ok: true, row: { spent_on: spentOn, person_name: personName, amount } };
+}
+
+/** Records one spending entry. Any number are allowed per date. */
+export async function addSpending(input: SpendingInput): Promise<ActionResult> {
+  const period = await requirePeriod();
+  const checked = checkSpending(input, period);
+  if (!checked.ok) return checked;
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("spending_records")
+    .insert({ period_id: period.id, ...checked.row });
+
+  if (error) {
+    console.error("addSpending failed", error);
+    return {
+      ok: false,
+      error: isMissingFromDatabase(error) ? SPENDING_NOT_SET_UP : "Could not save the spending.",
+    };
+  }
+
+  revalidateMoneyPages();
+  return { ok: true };
+}
+
+/** Corrects the date, name, or amount of one of this month's entries. */
+export async function updateSpending(id: string, input: SpendingInput): Promise<ActionResult> {
+  const period = await requirePeriod();
+  const checked = checkSpending(input, period);
+  if (!checked.ok) return checked;
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("spending_records")
+    .update(checked.row)
+    .eq("id", id)
+    .eq("period_id", period.id)
+    .select("id");
+
+  if (error || !data?.length) {
+    if (error) console.error("updateSpending failed", error);
+    return { ok: false, error: "Could not save the spending. It may have been deleted." };
+  }
+
+  revalidateMoneyPages();
+  return { ok: true };
+}
+
+export async function deleteSpending(id: string): Promise<ActionResult> {
+  const period = await requirePeriod();
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("spending_records")
+    .delete()
+    .eq("id", id)
+    .eq("period_id", period.id)
+    .select("id");
+
+  if (error || !data?.length) {
+    if (error) console.error("deleteSpending failed", error);
+    return { ok: false, error: "Could not delete the spending." };
+  }
+
+  revalidateMoneyPages();
+  return { ok: true };
+}
+
+export type SpendingTotalResult =
+  | { ok: true; total: number; entries: number }
+  | { ok: false; error: string };
+
+/**
+ * "Sum Spending": the database adds up every entry recorded for this mess
+ * month right now (get_spending_total, 0014). Nothing is stored, so the
+ * total always matches the entries, including ones another team member
+ * just added.
+ */
+export async function sumSpending(): Promise<SpendingTotalResult> {
+  const period = await requirePeriod();
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .rpc("get_spending_total", { p_period_id: period.id })
+    .single();
+
+  if (error || !data) {
+    if (error) console.error("sumSpending failed", error);
+    return {
+      ok: false,
+      error:
+        error && isMissingFromDatabase(error) ? SPENDING_NOT_SET_UP : "Could not add up the spending.",
+    };
+  }
+
+  // Postgres numerics can arrive as strings; normalise.
+  return { ok: true, total: Number(data.total_amount), entries: Number(data.entry_count) };
 }

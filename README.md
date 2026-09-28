@@ -2,7 +2,10 @@
 
 A mobile-first office meal management app. The landing page (`/`) is a
 read-only board of today's meals for the cook: plate counts per meal and a
-tick beside everyone who is eating, with no buttons to press. It refreshes
+tick beside everyone who is eating, with no buttons to press. When the mess
+manager has declared guests for today, each meal also shows its guests
+separately (never mixed into the employee count) and the total to prepare,
+e.g. Lunch: 175 employee meals · 100 guests · 275 to prepare. It refreshes
 itself every minute. The header links to the two panels:
 
 - **Employee Panel** (`/employee`) — each employee signs in with their own
@@ -38,6 +41,16 @@ itself every minute. The header links to the two panels:
     (Breakfast 0.75 / Lunch 1.25 / Dinner 1.00 by default), and see or fix
     every employee's ON/OFF — any date, any time; the employee deadlines
     don't apply here. Also where the employee meal deadlines are set.
+  - **Guest** — pick a date (inside the mess month) and enter how many
+    guests eat breakfast, lunch and dinner (any number, 0–10,000 per meal).
+    Guests are paid for by the office at fixed rates — Breakfast ৳60,
+    Lunch ৳150, Dinner ৳150 per guest — and every bill is worked out as you
+    type: each meal's guest bill (guests × rate) and the date's total. Below
+    are the month's dates with guests (tap one to edit it) and the **Total
+    Bill to Collect** for the month, meal by meal. Saving a date again
+    overwrites it; there's never a second record for the same date + meal.
+    The Employee Panel never shows guests; the cook's meal board shows
+    today's guest counts (never bills).
   - **Expense Status** — record deposits (any number per employee, before
     or during the month, or none) and the meal rate, with two buttons:
     **Test meal rate** re-bills the manager's own pages only (try as many
@@ -45,6 +58,13 @@ itself every minute. The header links to the two panels:
     to every employee's panel with their bill and due/refund. Testing again
     after publishing doesn't change what employees see until the next
     publish (migration 0013).
+  - **Spend** — the mess's spending: a table of Date · Person/Name · Total
+    Spending with only the entries recorded (no blank dates). **+ Add
+    Spending** opens a form (date, name, amount); any number of entries per
+    date. Tap an entry to edit or delete it. **Sum Spending** has the
+    database add up every entry of the mess month: **TOTAL MONTHLY
+    SPENDING**. Dates must be inside the mess month, so months never mix.
+    Employees never see spending.
   - **Report** — Employee → Meal Count → Total Bill → Total Deposit →
     Amount to be Paid, with CSV export.
   - **Employees** — shared employee list (add, rename, deactivate), each
@@ -63,6 +83,18 @@ balance            = total deposit − total bill
 Meal counts are stored once per date (`meal_day_weights`), not per
 employee, so changing a date's lunch count instantly updates everyone who
 had lunch that day.
+
+Guests and spending are separate from the employees' bills:
+
+```
+guest bill (one date)  = breakfast guests × 60 + lunch guests × 150 + dinner guests × 150
+total bill to collect  = the same over every date of the mess month (paid by the office)
+total monthly spending = sum of every spending entry in the mess month
+```
+
+Only the guest counts and the individual spending entries are stored;
+every bill and total is calculated from them when shown, so they can't go
+stale. The guest rates are `GUEST_MEAL_RATES` in `src/lib/utils/guests.ts`.
 
 Stack: Next.js 16 (App Router, TypeScript), Tailwind CSS 4, Supabase
 (Postgres + Auth + Row Level Security).
@@ -83,7 +115,9 @@ src/
       (protected)/           Everything below requires a mess manager session
         page.tsx              Dashboard for your mess month
         meals/page.tsx        Meal Status: per-date meal counts + employee ON/OFF
+        guests/page.tsx       Guest: per-date guest counts, bills, month's Total Bill to Collect
         expenses/page.tsx     Expense Status: deposits + meal rate + balances
+        spending/page.tsx     Spend: spending entries + Sum Spending
         reports/page.tsx      Final report + CSV export
         employees/page.tsx    Employee management (shared by all months)
   components/
@@ -95,12 +129,13 @@ src/
     data/                    Read-only data fetching (server-only)
     actions/                 "use server" mutations (meals, mess money, employees, auth)
     auth/                    Mess manager / employee session resolution
-    utils/                   Date (Asia/Dhaka), mess month (5th–5th), currency (BDT), and phone helpers
+    utils/                   Date (Asia/Dhaka), mess month (5th–5th), currency (BDT), phone, guest-bill and spending helpers
     types/database.ts        Hand-written types mirroring the SQL schema
   proxy.ts                   Next.js 16 "Proxy" (formerly middleware) — session refresh + /admin and /employee gates
 supabase/
-  migrations/                 Run in order: 0001 schema … 0013 published meal rate
+  migrations/                 Run in order: 0001 schema … 0014 guest meals and spending
   tests/meal_cutoffs_check.sql  Paste into the SQL Editor to verify meal deadlines (changes nothing)
+  tests/guest_spending_check.sql  Same, for guest meals and spending (changes nothing)
 ```
 
 ## Database schema
@@ -117,6 +152,10 @@ supabase/
 - **mess_periods** — `manager_id` (unique), `start_date, end_date` (end exclusive), `meal_rate` (null until set). Each account manages exactly one month. An exclusion constraint stops two periods from overlapping.
 - **meal_day_weights** — `period_id, meal_date, breakfast_weight, lunch_weight, dinner_weight`. One row per customised date; a missing row means the defaults 0.75 / 1.25 / 1.00. The date must be inside the period.
 - **deposits** — `period_id, employee_id, amount (> 0), deposited_on, note`. Any number per employee. An employee with deposits can't be hard-deleted (deactivate instead).
+- **guest_meals** — `meal_date` (primary key), `period_id, breakfast_guests, lunch_guests, dinner_guests` (whole numbers 0–10,000), `updated_at`. One row per date, so a date + meal has exactly one guest count; no row means no guests. The date must be inside the period. No bills are stored.
+- **spending_records** — `id, period_id, spent_on, person_name (1–80 chars), amount (> 0), created_at, updated_at`. Any number per date. The date must be inside the period; managers can change only the date, name and amount, never move an entry to another month.
+- **`get_today_guest_meals()`** — today's three guest counts (Asia/Dhaka) for the cook's public meal board, and nothing else: no other date, no bills.
+- **`get_spending_total(period_id)`** — "Sum Spending": the number of entries and their total, added up from the rows. Zero for a period the caller doesn't own.
 - **`register_mess_manager()`** — run right after signup. Reads the month from the caller's own login address and creates their profile and period, so an account can only ever manage the month in its own username.
 - **`get_period_report(period_id)`** — per employee: meal counts, weighted meal count, bill, total deposit, balance. Lists active employees plus anyone who ate or deposited that month (so people who joined or left mid-month are included). Returns nothing for a period the caller doesn't own.
 - **`private.owns_period()` / `private.date_in_period()`** — RLS helpers: is this period the caller's, and is this date inside it?
@@ -137,12 +176,15 @@ Enforced in Postgres, not just hidden in the UI:
 | `mess_periods` | **no access** | **no access** (own bill via `get_my_statement`) | read own row; update only `meal_rate` |
 | `meal_day_weights` | **no access** | **no access** (own bill via `get_my_statement`) | own period's dates only |
 | `deposits` | **no access** | **no access** (own deposits via `get_my_statement`) | own period only (add / remove) |
+| `guest_meals` | **no access** (the meal board gets today's counts via `get_today_guest_meals`) | **no access** | own period's dates only (add / change / remove) |
+| `spending_records` | **no access** | **no access** | own period's dates only (add / change / remove) |
 | `admin_profiles` | no access | no access | read own row only |
 
 Month accounts can't see each other's periods, meal counts, deposits,
-meal rate, reports, or profiles — January2026 and February2026 each see
-only their own month. This is enforced by RLS in the database, so changing
-a URL or ID, or calling the Supabase API directly, returns nothing.
+meal rate, guests, spending, reports, or profiles — January2026 and
+February2026 each see only their own month. This is enforced by RLS in the
+database, so changing a URL or ID, or calling the Supabase API directly,
+returns nothing.
 
 Nobody signed out can change a meal: `meal_records` is readable by anyone
 (the cook's board needs it) but writable only by a signed-in employee for
@@ -178,6 +220,13 @@ To confirm the deadlines are enforced on your Supabase project, paste
 row per check (employee vs. manager, before/after cut-off, previous/future
 days, midnight in Asia/Dhaka), all should say PASS. It changes nothing —
 every check is rolled back.
+
+`supabase/tests/guest_spending_check.sql` does the same for guest meals
+and spending (migration 0014): 1 / 100 / 150 guests, several meals on one
+date, no second record for a date, dates outside the month refused, several
+spending entries per date, the month total (3,000 + 2,500 + 1,200 + 4,000 =
+10,700), edits and deletes, months kept apart, and employees, other months'
+managers and signed-out visitors refused. All should say PASS.
 
 ### Employee accounts
 
@@ -341,7 +390,7 @@ required for the plain email/password flow used here).
 
 ## Still to configure before going live
 
-- [ ] Create the Supabase project and run the migrations above
+- [ ] Create the Supabase project and run the migrations above (for guests and spending: `0014_guest_meals_spending.sql`)
 - [ ] Turn off "Confirm email" in Supabase Authentication settings
 - [ ] Each monthly team signs up once at `/admin/signup` (account name = month, e.g. `January2026`)
 - [ ] Add real employees, with their phone numbers, via `/admin/employees`

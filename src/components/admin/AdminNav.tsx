@@ -8,7 +8,9 @@ import { signOut } from "@/lib/actions/auth";
 const LINKS = [
   { href: "/admin", label: "Dashboard", exact: true },
   { href: "/admin/meals", label: "Meal Status" },
+  { href: "/admin/guests", label: "Guest" },
   { href: "/admin/expenses", label: "Expense Status" },
+  { href: "/admin/spending", label: "Spend" },
   { href: "/admin/reports", label: "Report" },
   { href: "/admin/employees", label: "Employees" },
 ];
