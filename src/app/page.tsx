@@ -1,5 +1,6 @@
 import { AutoRefresh } from "@/components/public/AutoRefresh";
 import { MealBoard } from "@/components/public/MealBoard";
+import { getTodayGuests } from "@/lib/data/guests";
 import { getMealSheet } from "@/lib/data/meals";
 import { formatDayOfWeek, formatDisplayDate, todayInOfficeTz } from "@/lib/utils/date";
 import { LoadError } from "@/components/LoadError";
@@ -8,11 +9,15 @@ export const dynamic = "force-dynamic";
 
 /**
  * Landing page: today's meals, read-only. Built for the cook — plate counts
- * and ticks only, no buttons. Employees change meals in the Employee Panel.
+ * and ticks only, no buttons. Employees change meals in the Employee Panel;
+ * the mess manager declares guests, which show under each meal.
  */
 export default async function MealBoardPage() {
   const date = todayInOfficeTz();
 
+  // Never throws (null when it can't load), so it can't fail the page. Runs
+  // alongside the meal sheet.
+  const guestsPromise = getTodayGuests(date);
   let rows: Awaited<ReturnType<typeof getMealSheet>> = [];
   let loadError: string | null = null;
   try {
@@ -21,6 +26,7 @@ export default async function MealBoardPage() {
     console.error("Failed to load meal sheet", err);
     loadError = "Could not load today's meals.";
   }
+  const guests = await guestsPromise;
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col px-4 py-5 sm:py-8">
@@ -37,7 +43,7 @@ export default async function MealBoardPage() {
         </p>
       </header>
 
-      {loadError ? <LoadError message={loadError} /> : <MealBoard rows={rows} />}
+      {loadError ? <LoadError message={loadError} /> : <MealBoard rows={rows} guests={guests} />}
     </div>
   );
 }

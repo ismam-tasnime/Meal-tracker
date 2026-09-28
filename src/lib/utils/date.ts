@@ -34,6 +34,11 @@ export function formatDisplayDate(dateStr: string): string {
   return format(parseDateStr(dateStr), "d MMMM yyyy");
 }
 
+/** "28 Sep" */
+export function formatShortDate(dateStr: string): string {
+  return format(parseDateStr(dateStr), "d MMM");
+}
+
 /** "5 Oct 2026, 3:40 PM" — a timestamp in office time, same on server and browser. */
 export function formatOfficeDateTime(iso: string): string {
   return format(toZonedTime(new Date(iso), OFFICE_TIMEZONE), "d MMM yyyy, h:mm a");
