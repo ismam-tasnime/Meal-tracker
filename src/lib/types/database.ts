@@ -33,7 +33,10 @@ export type EmployeeSignupStatus = "ok" | "not_found" | "inactive" | "taken";
 export type MyStatementRow = {
   /** False when no mess manager has signed up for that month yet. */
   period_exists: boolean;
+  /** The PUBLISHED meal rate; null until the mess manager publishes one. */
   meal_rate: number | null;
+  /** When the rate was last published (ISO timestamp); null if not published. */
+  rate_published_at: string | null;
   breakfast_count: number;
   lunch_count: number;
   dinner_count: number;
@@ -100,8 +103,15 @@ export type MessPeriod = {
   manager_id: string;
   start_date: string; // YYYY-MM-DD, inclusive
   end_date: string; // YYYY-MM-DD, exclusive
-  /** Month-end meal rate (BDT per meal count); null until the team sets it. */
+  /**
+   * The rate the manager is testing (BDT per meal count). Bills on the
+   * manager's own pages use it; employees never see it. Null until set.
+   */
   meal_rate: number | null;
+  /** The rate employees see with their bill; null until published. */
+  published_meal_rate: number | null;
+  /** When published_meal_rate was last set (set by the database). */
+  rate_published_at: string | null;
   created_at: string;
 };
 

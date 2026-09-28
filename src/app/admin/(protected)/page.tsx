@@ -52,7 +52,15 @@ export default async function ManagerDashboardPage() {
           <StatCard
             label="Meal rate"
             value={period.meal_rate === null ? "—" : formatBDT(period.meal_rate)}
-            hint="Set at month end"
+            hint={
+              period.published_meal_rate == null
+                ? period.meal_rate === null
+                  ? "Not set yet"
+                  : "Testing — not published"
+                : Number(period.published_meal_rate) === Number(period.meal_rate)
+                  ? "Published to employees"
+                  : `Testing · published ${formatBDT(period.published_meal_rate)}`
+            }
           />
           <StatCard
             label="Total bill"

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { BillCalculator } from "@/components/employee/BillCalculator";
 import { MealHistory } from "@/components/employee/MealHistory";
+import { PublishedBill } from "@/components/employee/PublishedBill";
 import type { MonthMealDay } from "@/lib/data/statement";
 import type { MyStatementRow } from "@/lib/types/database";
 import { formatBDT } from "@/lib/utils/currency";
@@ -17,8 +18,9 @@ import {
 
 /**
  * One mess month of the employee's own record: past meal counts (tap for
- * the dates), deposits, and the dummy-rate bill calculator. The mess
- * manager's meal rate and bill are never shown here.
+ * the dates), deposits, the published bill, and the dummy-rate bill
+ * calculator. Only a PUBLISHED meal rate is shown here, never one the mess
+ * manager is testing.
  */
 export function MyMonth({
   employeeId,
@@ -98,6 +100,9 @@ export function MyMonth({
           </ul>
         )}
       </div>
+
+      <h3 className="mt-1 text-sm font-bold text-slate-900">My bill</h3>
+      <PublishedBill statement={statement} />
 
       <h3 className="mt-1 text-sm font-bold text-slate-900">Bill calculator</h3>
       <BillCalculator

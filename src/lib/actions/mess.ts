@@ -113,7 +113,10 @@ export async function setDayMenu(dateStr: string, input: DayMenu): Promise<Actio
   return { ok: true };
 }
 
-/** Sets (or clears, with null) the month-end meal rate. */
+/**
+ * "Test meal rate": sets (or clears, with null) the rate the manager's own
+ * pages bill with. Employees never see it — see publishMealRate.
+ */
 export async function setMealRate(rate: number | null): Promise<ActionResult> {
   const period = await requirePeriod();
 
@@ -132,6 +135,40 @@ export async function setMealRate(rate: number | null): Promise<ActionResult> {
     return { ok: false, error: "Could not save the meal rate." };
   }
 
+  revalidateMoneyPages();
+  return { ok: true };
+}
+
+/**
+ * "Publish meal rate": every employee's panel now shows this rate with
+ * their bill, deposit, and due/refund. The manager's pages switch to it
+ * too. null unpublishes (employees see no rate again). The database stamps
+ * rate_published_at (0013_published_meal_rate.sql).
+ */
+export async function publishMealRate(rate: number | null): Promise<ActionResult> {
+  const period = await requirePeriod();
+
+  if (rate !== null && (!Number.isFinite(rate) || rate < 0)) {
+    return { ok: false, error: "Meal rate must be zero or a positive number." };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("mess_periods")
+    .update(rate === null ? { published_meal_rate: null } : { meal_rate: rate, published_meal_rate: rate })
+    .eq("id", period.id);
+
+  if (error) {
+    console.error("publishMealRate failed", error);
+    return {
+      ok: false,
+      error: /published_meal_rate/.test(error.message ?? "")
+        ? "Publishing isn’t set up yet — run migration 0013."
+        : "Could not publish the meal rate.",
+    };
+  }
+
+  // The Employee Panel is dynamic, so employees see it on their next load.
   revalidateMoneyPages();
   return { ok: true };
 }

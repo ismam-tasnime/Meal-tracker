@@ -10,8 +10,8 @@ import { balanceStatus, formatMealCount } from "@/lib/utils/mess";
 
 /**
  * "What would my bill be at this meal rate?" — using the employee's past
- * meals and their own made-up rate. The mess manager's real meal rate and
- * bill are never shown in the Employee Panel. The dummy rate lives only in this
+ * meals and their own made-up rate. The real bill appears separately
+ * (PublishedBill) once the mess manager publishes the rate. The dummy rate lives only in this
  * browser, under this employee's own key (see src/lib/dummy-rate.ts): it is
  * never sent to the server or saved to the database, no other employee can
  * see it, and it neither reads nor changes the mess manager's meal rate.

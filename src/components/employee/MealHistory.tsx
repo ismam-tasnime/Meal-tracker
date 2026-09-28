@@ -92,14 +92,18 @@ export function MealHistory({
         </div>
       )}
 
+      <p className="mt-3 rounded-xl bg-indigo-50 px-3 py-2 text-center text-xs leading-relaxed text-indigo-900 ring-1 ring-inset ring-indigo-100">
+        Your meal count uses the default meal counts:{" "}
+        <strong>Breakfast 0.75 · Lunch 1.25 · Dinner 1</strong>. The mess manager can increase the
+        meal count for a day with a special meal — if that happens, your meal count increases
+        automatically.
+      </p>
+
       <div className="mt-3 flex items-baseline justify-between border-t border-slate-100 pt-3 text-sm">
-        <span className="text-slate-500">Meal count</span>
+        <span className="text-slate-500">Total meal count</span>
         <span className="font-bold tabular-nums text-slate-900">{formatMealCount(mealCount)}</span>
       </div>
-      <p className="mt-1 text-[11px] text-slate-400">
-        Past meals only. Breakfast 0.75 · Lunch 1.25 · Dinner 1 each, unless the mess manager
-        changed a day.
-      </p>
+      <p className="mt-1 text-[11px] text-slate-400">Past meals only.</p>
     </div>
   );
 }

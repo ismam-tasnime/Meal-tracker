@@ -23,9 +23,11 @@ itself every minute. The header links to the two panels:
     saved in the database, and has no connection to the manager's rate. The
     phone remembers it under that employee's own account (so on a shared
     phone another employee never sees it), and signing out erases it
-    (`src/lib/dummy-rate.ts`). The mess manager's real meal rate and bill
-    are never shown in the Employee Panel, before or after the manager sets
-    them.
+    (`src/lib/dummy-rate.ts`).
+  - **My bill** — once the mess manager **publishes** the meal rate, a
+    "The meal rate has been published" message with the rate, their total
+    bill, what they've paid, and their due or refund. A rate the manager is
+    only testing is never shown here.
 - **Mess Manager Panel** (`/admin`) — one account per mess month, shared by
   that month's team (~5 people). The mess runs from the 5th to the 4th of
   the next month (e.g. 5 Jan – 4 Feb). The team signs up once at
@@ -37,7 +39,12 @@ itself every minute. The header links to the two panels:
     every employee's ON/OFF — any date, any time; the employee deadlines
     don't apply here. Also where the employee meal deadlines are set.
   - **Expense Status** — record deposits (any number per employee, before
-    or during the month, or none) and set the month-end meal rate.
+    or during the month, or none) and the meal rate, with two buttons:
+    **Test meal rate** re-bills the manager's own pages only (try as many
+    rates as you like during the month); **Publish meal rate** also sends it
+    to every employee's panel with their bill and due/refund. Testing again
+    after publishing doesn't change what employees see until the next
+    publish (migration 0013).
   - **Report** — Employee → Meal Count → Total Bill → Total Deposit →
     Amount to be Paid, with CSV export.
   - **Employees** — shared employee list (add, rename, deactivate), each
@@ -92,7 +99,7 @@ src/
     types/database.ts        Hand-written types mirroring the SQL schema
   proxy.ts                   Next.js 16 "Proxy" (formerly middleware) — session refresh + /admin and /employee gates
 supabase/
-  migrations/                 Run in order: 0001 schema … 0011 employee meal days
+  migrations/                 Run in order: 0001 schema … 0013 published meal rate
   tests/meal_cutoffs_check.sql  Paste into the SQL Editor to verify meal deadlines (changes nothing)
 ```
 

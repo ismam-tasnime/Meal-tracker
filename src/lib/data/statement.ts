@@ -8,7 +8,8 @@ const toNumberOrNull = (v: unknown) => (v === null || v === undefined ? null : N
 
 /**
  * The signed-in employee's own meal count, bill, and deposits for one mess
- * month. The database answers only for the caller's own employee
+ * month. The bill uses the PUBLISHED meal rate only (0013), never the rate
+ * the manager is testing. The database answers only for the caller's own employee
  * (get_my_statement, 0010_employee_accounts.sql); null if not linked.
  */
 export async function getMyStatement(month: MessMonth): Promise<MyStatementRow | null> {
@@ -24,6 +25,7 @@ export async function getMyStatement(month: MessMonth): Promise<MyStatementRow |
   return {
     period_exists: data.period_exists,
     meal_rate: toNumberOrNull(data.meal_rate),
+    rate_published_at: data.rate_published_at ?? null,
     breakfast_count: Number(data.breakfast_count),
     lunch_count: Number(data.lunch_count),
     dinner_count: Number(data.dinner_count),
