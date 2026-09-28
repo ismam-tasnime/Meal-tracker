@@ -6,7 +6,7 @@ import { LoadError } from "@/components/LoadError";
 import { RetryButton } from "@/components/RetryButton";
 import { getEmployeeSession, type EmployeeSession } from "@/lib/auth/employee-session";
 import { EmployeeSignOutButton } from "@/components/employee/EmployeeSignOutButton";
-import { getMealCutoffs } from "@/lib/data/meals";
+import { getDayMenu, getMealCutoffs } from "@/lib/data/meals";
 import { getMyMeals, getMyMonthMeals, getMyStatement } from "@/lib/data/statement";
 import { formatCutoff } from "@/lib/utils/cutoffs";
 import { isValidDateStr, todayInOfficeTz } from "@/lib/utils/date";
@@ -68,6 +68,8 @@ export default async function EmployeePanelPage({
   let meals: Awaited<ReturnType<typeof getMyMeals>> | null = null;
   let statement: Awaited<ReturnType<typeof getMyStatement>> = null;
   let monthDays: Awaited<ReturnType<typeof getMyMonthMeals>> = [];
+  // Never throws (falls back to "nothing announced"), so it can't fail the page.
+  const menuPromise = getDayMenu(date);
   // getMealCutoffs never throws (falls back to defaults), so it can't fail the page.
   const cutoffsPromise = getMealCutoffs();
   try {
@@ -80,7 +82,7 @@ export default async function EmployeePanelPage({
     console.error("Failed to load the Employee Panel", err);
     loadError = "Could not load your meals.";
   }
-  const cutoffs = await cutoffsPromise;
+  const [cutoffs, menu] = await Promise.all([cutoffsPromise, menuPromise]);
   // Server Component, rendered once per request (force-dynamic): this is the
   // request's time, which the on-screen lock clock follows.
   // eslint-disable-next-line react-hooks/purity
@@ -136,6 +138,7 @@ export default async function EmployeePanelPage({
               employeeId={employee.id}
               date={date}
               initial={meals}
+              menu={menu}
               cutoffs={cutoffs}
               serverNow={serverNow}
             />

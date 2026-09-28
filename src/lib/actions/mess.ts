@@ -6,7 +6,7 @@ import { getAdminSession } from "@/lib/auth/session";
 import { getMyPeriod } from "@/lib/data/periods";
 import type { ActionResult } from "@/lib/actions/employees";
 import { isValidDateStr, todayInOfficeTz } from "@/lib/utils/date";
-import { isDateInPeriod, type MealWeights } from "@/lib/utils/mess";
+import { cleanMenuItem, isDateInPeriod, type DayMenu, type MealWeights } from "@/lib/utils/mess";
 import type { MealCutoffs } from "@/lib/utils/cutoffs";
 
 // Every mutation here is scoped to the caller's own period, looked up from
@@ -69,6 +69,47 @@ export async function setDayWeights(dateStr: string, input: MealWeights): Promis
 
   // No revalidate: the Meal Status table re-prices itself locally, and every
   // other page is dynamic, so it reads fresh weights on its next visit.
+  return { ok: true };
+}
+
+/**
+ * Announces what's being served on one date ("Khichuri", "Beef"), which
+ * employees see under that meal. A blank box means nothing announced for
+ * that meal; blanking all three removes the date's menu row.
+ */
+export async function setDayMenu(dateStr: string, input: DayMenu): Promise<ActionResult> {
+  const period = await requirePeriod();
+
+  if (!isValidDateStr(dateStr) || !isDateInPeriod(dateStr, period)) {
+    return { ok: false, error: "That date is outside your mess month." };
+  }
+
+  const menu: DayMenu = {
+    breakfast: cleanMenuItem(input.breakfast),
+    lunch: cleanMenuItem(input.lunch),
+    dinner: cleanMenuItem(input.dinner),
+  };
+
+  const supabase = await createClient();
+  const { error } =
+    !menu.breakfast && !menu.lunch && !menu.dinner
+      ? await supabase.from("meal_menus").delete().eq("meal_date", dateStr)
+      : await supabase.from("meal_menus").upsert(
+          {
+            meal_date: dateStr,
+            breakfast_item: menu.breakfast,
+            lunch_item: menu.lunch,
+            dinner_item: menu.dinner,
+          },
+          { onConflict: "meal_date" }
+        );
+
+  if (error) {
+    console.error("setDayMenu failed", error);
+    return { ok: false, error: "Could not save the menu." };
+  }
+
+  // Both panels are dynamic, so they read the new menu on their next load.
   return { ok: true };
 }
 

@@ -6,6 +6,7 @@ import { LockNotice } from "@/components/employee/LockNotice";
 import { MEALS, useMealToggles, useOfficeClock } from "@/lib/meals-client";
 import type { MealType } from "@/lib/types/database";
 import { mealLockReason, type MealCutoffs } from "@/lib/utils/cutoffs";
+import type { DayMenu } from "@/lib/utils/mess";
 
 /**
  * The signed-in employee's own breakfast / lunch / dinner for one date.
@@ -16,12 +17,15 @@ export function MyMeals({
   employeeId,
   date,
   initial,
+  menu,
   cutoffs,
   serverNow,
 }: {
   employeeId: string;
   date: string;
   initial: Record<MealType, boolean>;
+  /** What the mess manager announced is being served; null = nothing announced. */
+  menu: DayMenu;
   cutoffs: MealCutoffs;
   /** Server time (epoch ms) when the page was rendered. */
   serverNow: number;
@@ -63,6 +67,11 @@ export function MyMeals({
               locked={reasons[i] !== null}
               onToggle={() => toggle(employeeId, key, row[key])}
             />
+            {menu[key] && (
+              <span className="mt-auto w-full rounded-lg bg-amber-50 px-1.5 py-1 text-center text-[11px] font-semibold leading-snug text-amber-800 ring-1 ring-inset ring-amber-100">
+                {menu[key]}
+              </span>
+            )}
           </div>
         ))}
       </div>

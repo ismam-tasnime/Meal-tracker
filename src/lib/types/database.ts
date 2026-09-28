@@ -75,6 +75,18 @@ export type MealCutoffsRow = {
   updated_at: string;
 };
 
+/**
+ * What the mess manager announced is being served on one date. A null
+ * column means nothing was announced for that meal.
+ */
+export type MealMenu = {
+  meal_date: string; // YYYY-MM-DD
+  breakfast_item: string | null;
+  lunch_item: string | null;
+  dinner_item: string | null;
+  updated_at: string;
+};
+
 export type AdminProfile = {
   id: string;
   full_name: string | null;
@@ -187,6 +199,12 @@ export type Database = {
         Row: MealCutoffsRow;
         Insert: Partial<MealCutoffsRow>;
         Update: Partial<MealCutoffsRow>;
+        Relationships: [];
+      };
+      meal_menus: {
+        Row: MealMenu;
+        Insert: Partial<MealMenu> & { meal_date: string };
+        Update: Partial<MealMenu>;
         Relationships: [];
       };
       meal_day_weights: {
