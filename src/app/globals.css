@@ -7,6 +7,10 @@
  * navy-tinted greys.
  */
 @theme {
+  /* Very narrow phones (~360px): the header drops the nav icons here so the
+     brand marks and both labels still fit on one row. */
+  --breakpoint-xs: 400px;
+
   --color-indigo-50: #f3f3fe;
   --color-indigo-100: #e6e6fd;
   --color-indigo-200: #cfcefb;

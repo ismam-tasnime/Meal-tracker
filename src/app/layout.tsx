@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { DM_Sans } from "next/font/google";
 import { HeaderNav } from "@/components/HeaderNav";
@@ -20,7 +21,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-full flex flex-col bg-slate-50 text-slate-900">
         <header className="sticky top-0 z-30 border-b border-slate-200/70 bg-white/85 backdrop-blur">
           <div className="flex h-14 w-full items-center justify-between gap-2 px-4">
-            <Link href="/" aria-label="Meal Tracker home" className="flex shrink-0 items-center gap-2.5">
+            <Link href="/" aria-label="Meal Tracker home" className="flex shrink-0 items-center gap-2">
               <span
                 aria-hidden
                 className="relative flex h-10 w-10 items-center justify-center rounded-2xl bg-linear-to-br from-indigo-500 via-indigo-600 to-emerald-500 text-lg font-extrabold text-white shadow-md shadow-indigo-500/30 ring-1 ring-inset ring-white/30 transition-transform active:scale-95"
@@ -28,7 +29,17 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
                 M
                 <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-white/80" />
               </span>
-              <span className="hidden text-base font-bold tracking-tight text-slate-900 sm:inline">
+              <span aria-hidden className="h-6 w-px shrink-0 bg-slate-200" />
+              {/* Office branding; cropped from the Summit wordmark's mountain. */}
+              <Image
+                src="/summit-mark.png"
+                alt="Summit"
+                width={384}
+                height={168}
+                priority
+                className="h-5 w-auto shrink-0 sm:h-7"
+              />
+              <span className="hidden text-base font-bold tracking-tight text-slate-900 md:inline">
                 Meal Tracker
               </span>
             </Link>
