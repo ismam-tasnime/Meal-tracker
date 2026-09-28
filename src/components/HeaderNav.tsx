@@ -30,7 +30,7 @@ export function HeaderNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="flex min-w-0 items-center gap-1.5 sm:gap-2">
+    <nav className="flex min-w-0 items-center gap-1 sm:gap-2">
       {TABS.map((tab) => {
         const isActive = pathname.startsWith(tab.href);
         return (
@@ -39,14 +39,14 @@ export function HeaderNav() {
             href={tab.href}
             aria-current={isActive ? "page" : undefined}
             className={[
-              "flex h-10 items-center gap-1 whitespace-nowrap rounded-full px-2.5 text-[13px] font-semibold ring-1 transition-all active:scale-95 sm:gap-1.5 sm:px-3.5 sm:text-sm",
+              "flex h-10 items-center gap-1 whitespace-nowrap rounded-full px-2 text-xs font-semibold ring-1 transition-all active:scale-95 sm:gap-1.5 sm:px-3.5 sm:text-sm",
               isActive ? tab.active : tab.idle,
             ].join(" ")}
           >
             <svg
               aria-hidden
               viewBox="0 0 24 24"
-              className="h-4 w-4 shrink-0"
+              className="hidden h-4 w-4 shrink-0 xs:block"
               fill="none"
               stroke="currentColor"
               strokeWidth={2.2}
