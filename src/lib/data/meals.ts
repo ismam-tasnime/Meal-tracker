@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createPublicClient } from "@/lib/supabase/public";
 import type { MealType } from "@/lib/types/database";
 import { DEFAULT_MEAL_CUTOFFS, type MealCutoffs } from "@/lib/utils/cutoffs";
+import { EMPTY_DAY_MENU, type DayMenu } from "@/lib/utils/mess";
 
 export type MealSheetRow = {
   employeeId: string;
@@ -107,5 +108,32 @@ export async function getMealCutoffs(): Promise<MealCutoffs> {
   } catch (error) {
     console.error("Failed to load meal cut-offs; using defaults", error);
     return DEFAULT_MEAL_CUTOFFS;
+  }
+}
+
+/**
+ * The dish the mess manager announced for each meal of one date. Public
+ * data, like the deadlines above. Falls back to "nothing announced" if the
+ * row can't be read (e.g. before migration 0012 is run), so neither panel
+ * fails over a menu.
+ */
+export async function getDayMenu(dateStr: string): Promise<DayMenu> {
+  try {
+    const { data, error } = await createPublicClient()
+      .from("meal_menus")
+      .select("breakfast_item, lunch_item, dinner_item")
+      .eq("meal_date", dateStr)
+      .maybeSingle();
+    if (error) throw error;
+    if (!data) return EMPTY_DAY_MENU;
+
+    return {
+      breakfast: data.breakfast_item,
+      lunch: data.lunch_item,
+      dinner: data.dinner_item,
+    };
+  } catch (error) {
+    console.error("Failed to load the menu; showing none", error);
+    return EMPTY_DAY_MENU;
   }
 }

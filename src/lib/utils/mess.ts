@@ -109,6 +109,20 @@ export type MealWeights = { breakfast: number; lunch: number; dinner: number };
  */
 export const DEFAULT_MEAL_WEIGHTS: MealWeights = { breakfast: 0.75, lunch: 1.25, dinner: 1.0 };
 
+/** The dish announced for each meal of one date; null = nothing announced. */
+export type DayMenu = { breakfast: string | null; lunch: string | null; dinner: string | null };
+
+export const EMPTY_DAY_MENU: DayMenu = { breakfast: null, lunch: null, dinner: null };
+
+/** Longest dish name a manager can announce; matches the column checks in 0012. */
+export const MAX_MENU_ITEM = 80;
+
+/** Trims a typed-in dish name to what the database stores; blank becomes null. */
+export function cleanMenuItem(value: string | null | undefined): string | null {
+  const text = (value ?? "").trim().replace(/\s+/g, " ").slice(0, MAX_MENU_ITEM);
+  return text === "" ? null : text;
+}
+
 /**
  * How an employee stands at month end. balance = deposit − bill:
  * positive means money remaining (refund), negative means still due.
