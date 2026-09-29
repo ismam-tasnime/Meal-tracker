@@ -19,7 +19,7 @@ export default async function AdminEmployeesPage() {
       <div>
         <h1 className="text-lg font-bold tracking-tight text-slate-900">Employees</h1>
         <p className="text-sm text-slate-500">
-          Add, rename, activate/deactivate, or remove employees, and set the phone number each
+          Add, rename, activate/deactivate, or remove employees, and set the Token Number each
           one signs in with. Only active employees appear on the meal board and can sign in.
         </p>
       </div>

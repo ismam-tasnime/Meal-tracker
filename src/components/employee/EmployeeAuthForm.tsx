@@ -8,10 +8,10 @@ import { signInEmployee, signUpEmployee } from "@/lib/actions/employee-auth";
 const INPUT_CLASS =
   "h-11 rounded-xl border border-slate-300 px-3 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500";
 
-/** Employee sign-in and sign-up: phone number + password. */
+/** Employee sign-in and sign-up: Token Number + password. */
 export function EmployeeAuthForm({ mode, next = "/employee" }: { mode: "login" | "signup"; next?: string }) {
   const router = useRouter();
-  const [phone, setPhone] = useState("");
+  const [token, setToken] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -29,8 +29,8 @@ export function EmployeeAuthForm({ mode, next = "/employee" }: { mode: "login" |
 
     startTransition(async () => {
       const result = isSignup
-        ? await signUpEmployee(phone, password)
-        : await signInEmployee(phone, password);
+        ? await signUpEmployee(token, password)
+        : await signInEmployee(token, password);
       if (result.ok) {
         // replace() fetches the page fresh; no extra refresh() needed.
         router.replace(next);
@@ -43,18 +43,19 @@ export function EmployeeAuthForm({ mode, next = "/employee" }: { mode: "login" |
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="phone" className="text-sm font-semibold text-slate-700">
-          Phone number
+        <label htmlFor="token" className="text-sm font-semibold text-slate-700">
+          Token Number
         </label>
         <input
-          id="phone"
-          type="tel"
+          id="token"
+          type="text"
           required
-          inputMode="tel"
+          inputMode="numeric"
+          pattern="[0-9]*"
           autoComplete="username"
-          placeholder="01712345678"
-          value={phone}
-          onChange={(e) => setPhone(e.target.value)}
+          placeholder="12"
+          value={token}
+          onChange={(e) => setToken(e.target.value)}
           className={INPUT_CLASS}
         />
         {isSignup && (

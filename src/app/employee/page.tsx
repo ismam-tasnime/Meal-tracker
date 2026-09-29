@@ -50,7 +50,7 @@ export default async function EmployeePanelPage({
             ? "The connection to the database failed. Check your internet and try again."
             : employee
               ? "Your employee account has been deactivated. Please contact the mess manager."
-              : "This login isn’t linked to an employee. Sign out and sign in with your phone number."}
+              : "This login isn’t linked to an employee. Sign out and sign in with your Token Number."}
         </p>
         {loadFailed && (
           <div className="mt-4">
@@ -112,7 +112,9 @@ export default async function EmployeePanelPage({
           <h1 className="truncate text-lg font-bold tracking-tight text-slate-900 sm:text-xl">
             {employee.name}
           </h1>
-          <p className="text-xs tabular-nums text-slate-500">{employee.phone}</p>
+          {employee.token_no !== null && (
+            <p className="text-xs tabular-nums text-slate-500">Token {employee.token_no}</p>
+          )}
         </div>
         <EmployeeSignOutButton className="h-9 shrink-0 rounded-full border border-slate-300 px-3 text-sm font-semibold text-slate-700" />
       </header>
