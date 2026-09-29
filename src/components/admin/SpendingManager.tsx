@@ -16,7 +16,7 @@ import {
   isValidDateStr,
   todayInOfficeTz,
 } from "@/lib/utils/date";
-import { isDateInPeriod, periodLastDay, type PeriodRange } from "@/lib/utils/mess";
+import { defaultPeriodDate, isDateInPeriod, type PeriodRange } from "@/lib/utils/mess";
 import {
   MAX_PERSON_NAME,
   cleanPersonName,
@@ -27,12 +27,6 @@ import {
 const FIELD_CLASS =
   "h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-base focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500";
 
-/** Today if it's in the month; otherwise the month's nearest end. */
-function defaultSpendDate(period: PeriodRange): string {
-  const today = todayInOfficeTz();
-  if (isDateInPeriod(today, period)) return today;
-  return today < period.start_date ? period.start_date : periodLastDay(period);
-}
 
 function describe(entry: Pick<SpendingEntry, "spent_on" | "person_name" | "amount">): string {
   return `${formatBDT(entry.amount)} spent by ${entry.person_name} on ${formatDisplayDate(entry.spent_on)}`;
@@ -59,7 +53,9 @@ function SpendingDialog({
   onDone: (message: string) => void;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
-  const [spentOn, setSpentOn] = useState(() => entry?.spent_on ?? defaultSpendDate(period));
+  const [spentOn, setSpentOn] = useState(
+    () => entry?.spent_on ?? defaultPeriodDate(period, todayInOfficeTz())
+  );
   const [personName, setPersonName] = useState(entry?.person_name ?? "");
   const [amount, setAmount] = useState(entry ? String(entry.amount) : "");
   const [error, setError] = useState<string | null>(null);
@@ -138,7 +134,7 @@ function SpendingDialog({
             type="date"
             required
             min={period.start_date}
-            max={periodLastDay(period)}
+            max={period.end_date}
             value={spentOn}
             onChange={(e) => setSpentOn(e.target.value)}
             aria-invalid={!dateOk}

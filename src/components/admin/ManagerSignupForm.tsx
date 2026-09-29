@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { signUpMessManager } from "@/lib/actions/auth";
-import { formatPeriodRange, messMonthRange, parseMessMonthName } from "@/lib/utils/mess";
+import { formatPeriodMeals, messMonthMeals, parseMessMonthName } from "@/lib/utils/mess";
 
 const INPUT_CLASS =
   "h-11 rounded-xl border border-slate-300 px-3 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500";
@@ -56,7 +56,7 @@ export function ManagerSignupForm() {
         />
         <p className="text-xs text-slate-400">
           {messMonth
-            ? `Covers ${formatPeriodRange(messMonthRange(messMonth))}.`
+            ? `Covers ${formatPeriodMeals(messMonthMeals(messMonth), { long: true })}.`
             : "Month and year, like January2026. Each month can have only one account — share it with your team."}
         </p>
       </div>

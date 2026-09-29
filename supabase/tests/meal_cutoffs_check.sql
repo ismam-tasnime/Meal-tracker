@@ -9,8 +9,11 @@
 --
 -- Employee checks write as `authenticated` with a throwaway login linked to
 -- the test employee (migration 0010) — exactly what the Employee Panel or a
--- hand-made REST call uses. Manager checks write as `authenticated` with an
--- existing mess manager's id (skipped if there is none yet). Signed-out
+-- hand-made REST call uses. Manager checks write as `authenticated` with the
+-- id of the manager whose month owns that meal (migration 0015: a manager
+-- changes only their own month's meals; skipped if nobody manages that
+-- month yet). supabase/tests/manager_periods_check.sql covers who may change
+-- what in detail. Signed-out
 -- (`anon`) writes and writes to someone else's meals must be refused.
 -- "Before cut-off" / "after cut-off" are forced by setting the cut-off to
 -- 23:59:59.999999 / 00:00, so the result doesn't depend on when you run it.
@@ -21,7 +24,7 @@ language plpgsql
 as $$
 declare
   v_today date := (now() at time zone 'Asia/Dhaka')::date;
-  v_manager uuid := (select id from public.admin_profiles limit 1);
+  v_manager uuid;
   v_emp uuid := gen_random_uuid();
   v_other uuid := gen_random_uuid();
   v_login uuid := gen_random_uuid();
@@ -83,11 +86,11 @@ begin
            'insert into public.meal_records (employee_id, meal_date, lunch) values ($1, $2 + 1, true) on conflict (employee_id, meal_date) do update set lunch = excluded.lunch', 'REJECT'),
       (16, 'Employee edits someone else''s tomorrow', 'employee', v_open,
            'insert into public.meal_records (employee_id, meal_date, lunch) values ($3, $2 + 1, true) on conflict (employee_id, meal_date) do update set lunch = excluded.lunch', 'REJECT'),
-      (12, 'Mess Manager edits previous date', 'authenticated', v_shut,
+      (12, 'Mess Manager edits previous date (own month)', 'authenticated', v_shut,
            'update public.meal_records set lunch = false where employee_id = $1 and meal_date = $2 - 1', 'ALLOW'),
-      (13, 'Mess Manager edits today after cut-off', 'authenticated', v_shut,
+      (13, 'Mess Manager edits today after cut-off (own month)', 'authenticated', v_shut,
            'update public.meal_records set lunch = false where employee_id = $1 and meal_date = $2', 'ALLOW'),
-      (14, 'Mess Manager edits future meal', 'authenticated', v_shut,
+      (14, 'Mess Manager edits future meal (own month)', 'authenticated', v_shut,
            'insert into public.meal_records (employee_id, meal_date, breakfast) values ($1, $2 + 1, true) on conflict (employee_id, meal_date) do update set breakfast = excluded.breakfast', 'ALLOW')
     ) as t(n, name, role, cutoff, sql, expected)
   loop
@@ -95,8 +98,14 @@ begin
     check_name := c.name;
     expected := c.expected;
 
+    -- The manager whose month owns the meal the check changes.
+    v_manager := case when c.role = 'authenticated' then (
+      select p.manager_id from public.mess_periods p
+       where p.id = private.get_meal_period(
+               v_today + case c.n when 12 then -1 when 13 then 0 else 1 end,
+               case c.n when 14 then 'breakfast' else 'lunch' end)) end;
     if c.role = 'authenticated' and v_manager is null then
-      got := 'no mess manager account yet';
+      got := 'no mess manager for that month yet';
       result := 'SKIP';
       return next;
       continue;

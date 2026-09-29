@@ -2,7 +2,7 @@ import { MealRateForm } from "@/components/admin/MealRateForm";
 import { ReportFilters } from "@/components/admin/ReportFilters";
 import { getMyPeriod } from "@/lib/data/periods";
 import { getPeriodReport } from "@/lib/data/reports";
-import { formatPeriodName, formatPeriodRange } from "@/lib/utils/mess";
+import { formatPeriodMeals, formatPeriodName } from "@/lib/utils/mess";
 import { LoadError } from "@/components/LoadError";
 
 export const dynamic = "force-dynamic";
@@ -27,7 +27,7 @@ export default async function ManagerReportPage() {
       <div>
         <h1 className="text-lg font-bold tracking-tight text-slate-900">Final Report</h1>
         <p className="text-sm text-slate-500">
-          {formatPeriodName(period)} ({formatPeriodRange(period)})
+          {formatPeriodName(period)} ({formatPeriodMeals(period)})
         </p>
       </div>
 

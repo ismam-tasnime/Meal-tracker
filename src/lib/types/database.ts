@@ -97,12 +97,21 @@ export type AdminProfile = {
   created_at: string;
 };
 
-/** One mess month (e.g. 5 Jan – 4 Feb), owned by a single mess manager. */
+/**
+ * One mess month, owned by a single mess manager. It runs meal by meal from
+ * start_meal on start_date to end_meal on end_date, both inclusive — the
+ * standard month is 5th lunch → next 5th breakfast (0015).
+ */
 export type MessPeriod = {
   id: string;
   manager_id: string;
-  start_date: string; // YYYY-MM-DD, inclusive
-  end_date: string; // YYYY-MM-DD, exclusive
+  start_date: string; // YYYY-MM-DD: date of the first meal
+  start_meal: MealType; // the first meal, on start_date
+  end_date: string; // YYYY-MM-DD: date of the last meal
+  end_meal: MealType; // the last meal, on end_date
+  /** Every meal numbered in time order (private.meal_slot): first and last owned. */
+  first_slot: number;
+  last_slot: number;
   /**
    * The rate the manager is testing (BDT per meal count). Bills on the
    * manager's own pages use it; employees never see it. Null until set.
@@ -136,11 +145,13 @@ export type Deposit = {
 };
 
 /**
- * Guests declared for one date (0014): one row per date, a count per meal.
- * No row = no guests. Bills are never stored — see src/lib/utils/guests.ts.
+ * Guests declared for one date (0014): a count per meal. One row per month
+ * and date (0015): on the 5th, each month's row has only its own meals'
+ * guests. No row = no guests. Bills are never stored — see
+ * src/lib/utils/guests.ts.
  */
 export type GuestMeal = {
-  meal_date: string; // YYYY-MM-DD, primary key
+  meal_date: string; // YYYY-MM-DD; primary key with period_id
   period_id: string;
   breakfast_guests: number;
   lunch_guests: number;
@@ -163,6 +174,21 @@ export type SpendingRecord = {
   amount: number;
   created_at: string;
   updated_at: string;
+};
+
+/**
+ * The signed-in manager's month, for one date (get_my_meal_access): whether
+ * the month is open for changing employee meals, which of the date's meals
+ * it owns, and which of them the manager may change right now.
+ */
+export type MyMealAccessRow = {
+  period_status: "upcoming" | "active" | "completed";
+  breakfast_owned: boolean;
+  lunch_owned: boolean;
+  dinner_owned: boolean;
+  breakfast_can_change: boolean;
+  lunch_can_change: boolean;
+  dinner_can_change: boolean;
 };
 
 /** The month's spending, added up by the database (get_spending_total). */
@@ -190,10 +216,12 @@ export type PeriodReportRow = {
 
 export type DashboardStatsRow = {
   active_employees: number;
+  /** Today has at least one of the period's meals (its first and last dates count). */
   today_in_period: boolean;
-  today_breakfast: number;
-  today_lunch: number;
-  today_dinner: number;
+  /** Null when today's meal belongs to another month's period (on the 5th). */
+  today_breakfast: number | null;
+  today_lunch: number | null;
+  today_dinner: number | null;
   meal_count: number;
   total_deposit: number;
   /** Null until the meal rate is set. */
@@ -349,6 +377,10 @@ export type Database = {
       get_spending_total: {
         Args: { p_period_id: string };
         Returns: SpendingTotalRow[];
+      };
+      get_my_meal_access: {
+        Args: { p_meal_date: string };
+        Returns: MyMealAccessRow[];
       };
     };
   };
