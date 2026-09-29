@@ -146,7 +146,7 @@ src/
     types/database.ts        Hand-written types mirroring the SQL schema
   proxy.ts                   Next.js 16 "Proxy" (formerly middleware) — session refresh + /admin and /employee gates
 supabase/
-  migrations/                 Run in order: 0001 schema … 0015 manager periods
+  migrations/                 Run in order: 0001 schema … 0015 manager periods, 0016
   tests/meal_cutoffs_check.sql  Paste into the SQL Editor to verify meal deadlines (changes nothing)
   tests/guest_spending_check.sql  Same, for guest meals and spending (changes nothing)
   tests/manager_periods_check.sql  Same, for manager periods and data safety (changes nothing)
@@ -516,7 +516,7 @@ required for the plain email/password flow used here).
 
 ## Still to configure before going live
 
-- [ ] Create the Supabase project and run the migrations above (for guests and spending: `0014_guest_meals_spending.sql`; for manager periods: `0015_manager_meal_periods.sql`)
+- [ ] Create the Supabase project and run the migrations above (for guests and spending: `0014_guest_meals_spending.sql`; for manager periods: `0015_manager_meal_periods.sql` and `0016_guest_trigger_invoker.sql`)
 - [ ] Turn off "Confirm email" in Supabase Authentication settings
 - [ ] Each monthly team signs up once at `/admin/signup` (account name = month, e.g. `January2026`)
 - [ ] Add real employees, with their phone numbers, via `/admin/employees`
