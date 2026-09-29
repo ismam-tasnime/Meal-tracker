@@ -22,8 +22,10 @@ node manual/build.mjs     # src/*.html  ->  the single HTML file
 node manual/topdf.mjs     # that HTML   ->  the PDF
 ```
 
-`topdf.mjs` needs Playwright's Chromium plus `pdf-lib` and `pdfjs-dist`; it writes the
-contents page's page numbers back into the HTML on each run, so the two files stay in step.
+`topdf.mjs` needs Playwright's Chromium plus `pdf-lib` and `pdfjs-dist`; it works out the
+contents page's page numbers from the printed document and writes them back into the HTML,
+so the two files stay in step. `build.mjs` carries those numbers over from the previous
+build, so running it on its own never blanks the contents page.
 
 ## How the screenshots were produced
 

@@ -5,7 +5,7 @@
  *
  *   node manual/build.mjs
  */
-import { readFileSync, writeFileSync, readdirSync } from 'node:fs';
+import { readFileSync, writeFileSync, readdirSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -35,8 +35,30 @@ function injectPins(html) {
   );
 }
 
+/**
+ * The contents page's page numbers are worked out by topdf.mjs, which can only
+ * know them once the document has been printed. Rebuilding the HTML on its own
+ * would otherwise reset them to the "00" placeholders the sources carry, so
+ * carry over whatever the previous build ended up with; topdf.mjs corrects them
+ * on its next run anyway.
+ */
+function keepContentsPageNumbers(html) {
+  if (!existsSync(OUT)) return html;
+  const previous = Object.fromEntries(
+    [...readFileSync(OUT, 'utf8').matchAll(/data-page="(s\d+)">([^<]*)<\/span>/g)].map(
+      ([, id, page]) => [id, page]
+    )
+  );
+  return html.replace(
+    /(<span class="t-p" data-page="(s\d+)">)[^<]*(<\/span>)/g,
+    (match, open, id, close) => (previous[id] ? `${open}${previous[id]}${close}` : match)
+  );
+}
+
 const parts = readdirSync(SRC).filter((f) => f.endsWith('.html')).sort();
-const body = parts.map((f) => injectPins(readFileSync(join(SRC, f), 'utf8'))).join('\n\n');
+const body = keepContentsPageNumbers(
+  parts.map((f) => injectPins(readFileSync(join(SRC, f), 'utf8'))).join('\n\n')
+);
 const css = readFileSync(join(HERE, 'manual.css'), 'utf8');
 
 const html = `<!doctype html>
