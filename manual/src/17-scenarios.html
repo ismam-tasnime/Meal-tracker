@@ -1,0 +1,140 @@
+<section class="sec" id="s16">
+  <h1 class="sh"><span class="n">16</span>Common User Scenarios</h1>
+
+  <div class="scenario">
+    <h3>Scenario 1 — "I want lunch tomorrow"</h3>
+    <p><b>Situation.</b> It is Tuesday evening. Romith will be in the office tomorrow and wants
+    breakfast, lunch and dinner.</p>
+    <figure class="fig medium" style="margin:3mm 0">
+      <img src="shots/23b-employee-meals-all-on.png" alt="Setting tomorrow's meals">
+      <figcaption><b>Figure 16.1</b> — 30 September, all three meals ON and still editable.</figcaption>
+    </figure>
+    <p><b>Steps.</b></p>
+    <ol>
+      <li>Open <code>/employee</code> and sign in with the Token Number.</li>
+      <li>Press <b>Next →</b> once — the date becomes 30 September and the "Today" badge disappears.</li>
+      <li>Tap any meal that is not already ON. Each tap saves instantly.</li>
+      <li>There is no banner and no padlock, because future dates are always editable.</li>
+    </ol>
+    <div class="res"><b>Result.</b> Romith is counted in tomorrow's plate count from the moment he taps.
+    He can change his mind any time up to 8:00 AM for breakfast, 11:00 AM for lunch and 5:00 PM for
+    dinner tomorrow.</div>
+  </div>
+
+  <div class="scenario">
+    <h3>Scenario 2 — "I forgot to cancel breakfast before the deadline"</h3>
+    <p><b>Situation.</b> It is 9:30 AM. Breakfast was ON but Romith did not come in. The 8:00 AM
+    deadline has passed.</p>
+    <figure class="fig medium" style="margin:3mm 0">
+      <img src="shots/B2-employee-partial-lock.png" alt="Locked breakfast">
+      <figcaption><b>Figure 16.2</b> — The amber banner names the locked meals and tells him exactly what
+      to do: <i>"Please contact the Mess Manager for corrections."</i></figcaption>
+    </figure>
+    <p><b>Steps.</b></p>
+    <ol>
+      <li>Romith cannot fix this himself — the button has a padlock and the database would refuse the change anyway.</li>
+      <li>He tells the mess manager, naming the date and the meal.</li>
+      <li>The manager opens <b>Meal Status</b>, navigates to that date, finds row 101 and taps <b>Breakfast</b> off.</li>
+      <li>Romith's meal count for that date drops by 0.75 immediately.</li>
+    </ol>
+    <div class="res"><b>Result.</b> Corrected — but only because the manager's period is still running.
+    Ask on the day; after the period ends nobody can change it.</div>
+  </div>
+
+  <div class="scenario">
+    <h3>Scenario 3 — "I need to correct someone's meal"</h3>
+    <p><b>Situation.</b> Two employees tell the manager they were marked wrongly for 29 September.</p>
+    <figure class="fig medium" style="margin:3mm 0">
+      <img src="shots/40d-meals-table.png" alt="Correcting meals">
+      <figcaption><b>Figure 16.3</b> — The manager's sheet. Every button is live; the meal count column and
+      the Total ON row update as you tap.</figcaption>
+    </figure>
+    <p><b>Steps.</b></p>
+    <ol>
+      <li><b>Meal Status</b> → set the date.</li>
+      <li>Find the rows by token badge (rows are ordered by token).</li>
+      <li>Tap the wrong meals. Each saves on its own; several taps in a row save in parallel.</li>
+      <li>Check the <b>Total ON</b> footer to confirm the day's count is what you expect.</li>
+    </ol>
+    <div class="res"><b>Result.</b> Fixed in seconds, with no Save button and no page reload. If a tap is
+    refused — "That meal can't be changed from your account" — the meal belongs to another month or
+    your period has just ended.</div>
+  </div>
+
+  <div class="scenario">
+    <h3>Scenario 4 — "Eighteen guests are coming for lunch"</h3>
+    <p><b>Situation.</b> A client team of 18 will eat lunch today, plus 4 at breakfast and 6 at dinner.</p>
+    <div class="cmp" style="margin:3mm 0">
+      <div class="a"><div class="cmp-h">Declare them</div><img src="shots/50b-guests-form.png" alt="Declaring guests"><div class="cmp-c"><b>Figure 16.4</b> — Type the counts; the bills appear as you type. Total ৳3,840.</div></div>
+      <div class="a"><div class="cmp-h">The cook sees them</div><img src="shots/20b-board-counts-closeup.png" alt="Board with guests"><div class="cmp-c"><b>Figure 16.5</b> — Within a minute: 28 lunches to prepare, not 10.</div></div>
+    </div>
+    <p><b>Steps.</b></p>
+    <ol>
+      <li><b>Guest</b> tab → make sure the date is today.</li>
+      <li>Type 4 / 18 / 6 and press <b>Save guests</b>.</li>
+      <li>Confirmation: <i>"Guests saved for 29 September 2026. The cook sees them on the meal board."</i></li>
+      <li>The month's <b>Total bill to collect</b> rises by ৳3,840.</li>
+    </ol>
+    <div class="res"><b>Result.</b> The cook prepares the right amount, no employee's bill changes by a
+    single taka, and ৳3,840 is added to the invoice the office will pay.</div>
+  </div>
+
+  <div class="scenario">
+    <h3>Scenario 5 — "I have paid, but it still says I owe money"</h3>
+    <p><b>Situation.</b> Romith deposited ৳6,500 over three payments, yet his panel shows ৳368.13 due.</p>
+    <figure class="fig medium" style="margin:3mm 0">
+      <img src="shots/27b-employee-published-bill.png" alt="Published bill with a due">
+      <figcaption><b>Figure 16.6</b> — The card shows the whole calculation, so the answer is on screen.</figcaption>
+    </figure>
+    <p><b>How to read it.</b></p>
+    <div class="box calc">
+      meal count 74.25 × meal rate ৳92.50 = total bill ৳6,868.13<br>
+      you have paid&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= ৳6,500.00<br>
+      due&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= ৳&nbsp;&nbsp;368.13
+    </div>
+    <p>Paying is not the same as paying <i>enough</i>. Check the three deposits listed under
+    <b>My deposit</b> — if one is missing, the manager has not recorded it yet.</p>
+    <div class="res"><b>Result.</b> Hand ৳368.13 to the mess manager. They record it as a deposit, and
+    the row turns to <span class="pill grey">Fully settled</span> on both screens.</div>
+  </div>
+
+  <div class="scenario">
+    <h3>Scenario 6 — "The dashboard is completely empty"</h3>
+    <p><b>Situation.</b> A new manager signs in and sees zeros everywhere.</p>
+    <figure class="fig medium" style="margin:3mm 0">
+      <img src="shots/96-november-dashboard-empty.png" alt="Empty dashboard">
+      <figcaption><b>Figure 16.7</b> — Nothing is wrong. Every card is present; there is simply nothing recorded yet.</figcaption>
+    </figure>
+    <p><b>How to tell an empty month from a broken one.</b></p>
+    <table class="tbl" style="margin:2mm 0">
+      <tr><th style="width:44mm">Empty (normal)</th><th>Broken (needs attention)</th></tr>
+      <tr><td>Grey zeros and dashes, all cards present.</td><td>A red box: <i>"Could not load dashboard stats."</i> with a <b>Try again</b> button.</td></tr>
+      <tr><td>Badge shows a normal period state.</td><td><i>"Can't load your mess month"</i> — the connection failed.</td></tr>
+    </table>
+    <div class="res"><b>Result.</b> Check the account footer to confirm you signed in as the right month,
+    then start the month: add or check employees, and record the first bazar entry.</div>
+  </div>
+
+  <div class="scenario">
+    <h3>Scenario 7 — "Month end: review and close the bill"</h3>
+    <p><b>Situation.</b> It is 5 October. September's team must settle up.</p>
+    <figure class="fig medium" style="margin:3mm 0">
+      <img src="shots/80b-report-table.png" alt="Month end report">
+      <figcaption><b>Figure 16.8</b> — The Report table, with the footer row that closes the month:
+      647 meal count · ৳59,847.53 billed · ৳54,723.13 deposited · ৳7,100.64 due · ৳1,976.24 remaining.</figcaption>
+    </figure>
+    <p><b>Steps.</b></p>
+    <ol>
+      <li><b>Spend → Sum Spending</b> → ৳59,900 spent over 15 entries.</li>
+      <li><b>Dashboard</b> → month meal count 647.</li>
+      <li>৳59,900 ÷ 647 = ৳92.58 → test <b>92.5</b> on Expense Status and check the table.</li>
+      <li><b>Publish meal rate</b> → confirm. Employees see their bills immediately.</li>
+      <li>Work down <b>Amount to be Paid</b>: collect from the red rows, refund the green ones,
+      recording each as a deposit.</li>
+      <li><b>Guest</b> tab → invoice the office ৳64,200.</li>
+      <li><b>Report → Export CSV</b> → file <code>mess-report-September2026.csv</code>.</li>
+    </ol>
+    <div class="res"><b>Result.</b> The month is closed. Every figure stays available to the September
+    team forever; only employees' meal ON/OFF stops being editable after 5 October, 11:59 PM.</div>
+  </div>
+</section>

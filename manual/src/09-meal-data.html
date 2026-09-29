@@ -1,0 +1,147 @@
+<section class="sec" id="s8">
+  <h1 class="sh"><span class="n">8</span>Meal Data &amp; the Monthly Meal Table</h1>
+
+  <p class="lead">Every meal in the system is one row: <i>this employee, this date, breakfast
+  yes/no, lunch yes/no, dinner yes/no</i>. Everything else — plate counts, meal counts, bills,
+  reports, the CSV — is calculated from those rows when it is displayed. Nothing is stored twice,
+  so nothing can go stale.</p>
+
+  <h2><span class="n">8.1</span>The daily meal sheet</h2>
+  <figure class="fig medium">
+    <img src="shots/40d-meals-table.png" alt="Meal status table">
+    <figcaption><b>Figure 8.1</b> — The meal sheet for 29 September 2026. One row per employee,
+    three ON/OFF buttons, and that employee's meal count for the date on the right.</figcaption>
+  </figure>
+
+  <table class="tbl">
+    <tr><th style="width:36mm">Part of the table</th><th>What it shows</th></tr>
+    <tr><td><b>Employee column</b></td><td>Token badge and name. Inactive employees remain, tagged <span class="pill grey">Inactive</span>, so history stays visible and correctable.</td></tr>
+    <tr><td><b>Column header</b></td><td>The meal, with the weight in force for this date underneath — <code>× 0.75</code>, <code>× 1.25</code>, <code>× 1</code> — or <b>Not yours</b> on a handover day.</td></tr>
+    <tr><td><b>ON / OFF</b></td><td>The employee's choice. Tap to correct it. Saves instantly; several taps in a row save in parallel.</td></tr>
+    <tr><td><b>Meal count</b></td><td>That one person on that one date: Σ (meal ON × that meal's weight). 0.75 + 1.25 + 1 = <b>3</b> for a full day on default weights.</td></tr>
+    <tr><td><b>Total ON</b> (footer)</td><td>How many people have each meal ON, and the date's total meal count across everyone.</td></tr>
+  </table>
+
+  <h2><span class="n">8.2</span>Meal counts (weights) — how a date is priced</h2>
+  <p>Weights are stored <b>once per date</b>, not per employee. That is what makes a correction
+  instant and consistent.</p>
+  <div class="box calc">
+    default weights&nbsp; : breakfast 0.75 · lunch 1.25 · dinner 1.00<br>
+    allowed range&nbsp;&nbsp;&nbsp; : 0 to 10, two decimal places<br>
+    where stored&nbsp;&nbsp;&nbsp;&nbsp; : one row per customised date, belonging to one manager period<br>
+    no row&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : the date uses the defaults
+  </div>
+  <div class="cmp">
+    <div class="b"><div class="cmp-h">Default date</div><img src="shots/40c-meals-count-form.png" alt="Default meal counts"><div class="cmp-c"><b>Figure 8.2</b> — 29 September. Corner: <i>Default values</i>. No Reset button. <b>Save meal counts</b> is disabled until something changes.</div></div>
+    <div class="a"><div class="cmp-h">Customised date</div><img src="shots/42b-meals-custom-counts-form.png" alt="Custom meal counts"><div class="cmp-c"><b>Figure 8.3</b> — 16 September, biryani night: dinner raised to <b>2</b>. Corner: <i>Custom for this date</i>, plus a <b>Reset to 0.75 / 1.25 / 1</b> button.</div></div>
+  </div>
+  <div class="diff">
+    <span class="bt">What is different?</span>
+    Three things: the dinner box reads <b>2</b> instead of <b>1</b>; the corner label flips from
+    <i>Default values</i> to <i>Custom for this date</i>; and a <b>Reset</b> button appears. In the table
+    below, the dinner column header changes from <code>× 1</code> to <code>× 2</code> and every diner's meal
+    count for that date rises by 1.00 — automatically, with nothing else to press.
+  </div>
+
+  <figure class="fig medium">
+    <img src="shots/42-meals-custom-counts.png" alt="Meal status with custom counts">
+    <figcaption><b>Figure 8.4</b> — The whole page for 16 September: the raised dinner weight, the
+    announced biryani, and its effect on every employee's meal count in one view.</figcaption>
+  </figure>
+
+  <h2><span class="n">8.3</span>Handover days — the 5th of the month</h2>
+  <p>On the 5th, two managers are in charge of the same date. The outgoing month owns
+  <b>breakfast</b>; the incoming month owns <b>lunch and dinner</b>. The application makes this
+  visible rather than silently ignoring it.</p>
+
+  <figure class="fig medium">
+    <img src="shots/43-meals-handover-5oct.png" alt="Handover day 5 October">
+    <figcaption><b>Figure 8.5</b> — 5 October seen by the <b>September</b> manager. Breakfast is editable
+    and weighted <code>× 0.75</code>; lunch and dinner are padlocked and labelled <b>Not yours</b>, their
+    weight boxes greyed out. The blue strip explains it in words, and the meal-count column counts
+    breakfast only (0.75 for a full-day employee).</figcaption>
+  </figure>
+
+  <figure class="fig medium">
+    <img src="shots/44-meals-handover-5sep.png" alt="Handover day 5 September">
+    <figcaption><b>Figure 8.6</b> — The mirror image: 5 September seen by the same September manager.
+    Now <b>breakfast</b> belongs to the August manager and lunch and dinner are theirs.</figcaption>
+  </figure>
+
+  <table class="tbl">
+    <tr><th style="width:38mm">Meal</th><th>Belongs to</th></tr>
+    <tr><td>4 Sep dinner, 5 Sep breakfast</td><td>August's manager</td></tr>
+    <tr><td>5 Sep lunch, 5 Sep dinner, 6 Sep … 4 Oct, 5 Oct breakfast</td><td>September's manager</td></tr>
+    <tr><td>5 Oct lunch, 5 Oct dinner, 6 Oct breakfast …</td><td>October's manager</td></tr>
+  </table>
+  <p>Every meal belongs to exactly one month — there is no gap and no overlap, and the boundary
+  follows real calendar dates, so February, leap years and December→January need no special
+  handling.</p>
+
+  <h2><span class="n">8.4</span>Making a correction</h2>
+  <p>An employee who missed a deadline comes to you. The fix takes four taps:</p>
+  <ol>
+    <li>Open <b>Meal Status</b>.</li>
+    <li>Navigate to the date in question.</li>
+    <li>Find the employee's row (rows are ordered by token).</li>
+    <li>Tap the meal. It saves instantly — the row's meal count and the footer totals update as you watch.</li>
+  </ol>
+  <div class="box warn">
+    <span class="bt">Rule — what a manager may correct</span>
+    <table class="tbl" style="margin:2mm 0 0;background:#fff">
+      <tr><th style="width:52mm">Situation</th><th>Allowed?</th></tr>
+      <tr><td>A meal of your own period, your period is running</td><td><b>Yes</b>, at any time of day — deadlines do not apply to managers.</td></tr>
+      <tr><td>A meal of your own period, your period has ended</td><td><b>No.</b> Everything is 🔒 and the page becomes a read-only record.</td></tr>
+      <tr><td>A meal of your own period, your period has not started</td><td><b>No</b> — the current month's manager handles it until your first day.</td></tr>
+      <tr><td>A meal belonging to another month (e.g. the other half of the 5th)</td><td><b>No.</b> Shown 🔒 and labelled <b>Not yours</b>.</td></tr>
+      <tr><td>A date outside your mess month entirely</td><td><b>No.</b> The sheet is not even loaded (Figure 8.8).</td></tr>
+    </table>
+  </div>
+  <p>These are not screen-level restrictions. The database re-checks every single meal a write
+  touches and rejects the whole write if any part of it is not yours — so a modified request, a
+  copied URL or a direct API call gets exactly the same answer.</p>
+
+  <div class="cmp">
+    <div class="b"><div class="cmp-h">Period finished — read-only</div><img src="shots/91-august-meals-locked.png" alt="August meals locked"><div class="cmp-c"><b>Figure 8.7</b> — August's manager opening 20 August: full history, every button 🔒, and the grey notice explaining what they keep.</div></div>
+    <div class="b"><div class="cmp-h">Date outside the month</div><img src="shots/45-meals-outside-month.png" alt="Date outside the month"><div class="cmp-c"><b>Figure 8.8</b> — September's manager on 20 October: <i>"This date is outside your mess month (5 Sep Lunch → 5 Oct Breakfast). Pick a date inside it."</i> No table is shown at all.</div></div>
+  </div>
+  <div class="diff">
+    <span class="bt">What is different?</span>
+    Figure 8.7 still has all its data — it is a <b>record</b>. Figure 8.8 has none — it is <b>not your month</b>.
+    A finished period shows the amber-free grey notice and a full, padlocked table; a date outside
+    the period shows a single amber line and nothing else, because that data belongs to another
+    team and this account may not read it.
+  </div>
+
+  <h2><span class="n">8.5</span>How a whole month is added up</h2>
+  <p>Worked through with real numbers from this manual's dataset (Romith Ahmed, token 101,
+  September 2026):</p>
+  <div class="box calc">
+    22 breakfasts : 21 × 0.75  +  1 × 1.00 (21 Sep)  = 16.75<br>
+    25 lunches&nbsp;&nbsp;&nbsp;&nbsp; : 24 × 1.25  +  1 × 1.50 (21 Sep)  = 31.50<br>
+    25 dinners&nbsp;&nbsp;&nbsp;&nbsp; : 24 × 1.00  +  1 × 2.00 (16 Sep)  = 26.00<br>
+    ------------------------------------------------------<br>
+    monthly meal count&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; = 74.25<br>
+    total bill = 74.25 × ৳92.50&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; = ৳6,868.13<br>
+    deposits&nbsp;&nbsp; = ৳3,000 + ৳2,500 + ৳1,000 = ৳6,500.00<br>
+    balance&nbsp;&nbsp;&nbsp; = ৳6,500 − ৳6,868.13&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; = −৳368.13&nbsp;&nbsp;→ ৳368.13 DUE
+  </div>
+  <p class="muted" style="font-size:8.4pt">Notice the two customised dates pulling their weight:
+  21 September (a festival lunch, breakfast 1.00 / lunch 1.50) and 16 September (biryani night,
+  dinner 2.00). Every other date used the defaults. The answer, <b>74.25</b>, is the one shown
+  everywhere — the employee's bill, the manager's Expense Status, the Report and the CSV.</p>
+
+  <h2><span class="n">8.6</span>Empty state</h2>
+  <div class="cmp">
+    <div class="b"><div class="cmp-h">Empty — no employees at all</div><img src="shots/08-admin-meals-empty.png" alt="Meal status empty"><div class="cmp-c"><b>Figure 8.9</b> — A new installation: the dish and meal-count forms are fully usable, but the sheet says <i>"No employees yet."</i></div></div>
+    <div class="a"><div class="cmp-h">With data</div><img src="shots/40-meals-today.png" alt="Meal status with data"><div class="cmp-c"><b>Figure 8.10</b> — The same page once employees exist and have made their choices.</div></div>
+  </div>
+  <div class="diff">
+    <span class="bt">What is different?</span>
+    Only the table area. Everything above it — deadlines, date navigation, "What's cooking",
+    "Meal count for this date" — is present and working in both states, because those settings
+    belong to the date, not to the people. The empty state is a dashed box reading
+    <i>"No employees yet."</i>, and the <b>Total ON</b> footer row disappears entirely rather than
+    showing zeros.
+  </div>
+</section>

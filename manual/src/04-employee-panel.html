@@ -1,0 +1,161 @@
+<section class="sec" id="s3">
+  <h1 class="sh"><span class="n">3</span>The Employee Panel</h1>
+
+  <p class="lead">The Employee Panel (<code>/employee</code>) is a single scrolling page.
+  Everything an employee can do in the whole application is on it. There are no sub-pages
+  and no menus to learn.</p>
+
+  <h2><span class="n">3.1</span>The page at a glance</h2>
+  <figure class="fig medium">
+    <div class="imgwrap" data-anno="22-employee-panel-today-locked">
+      <img src="shots/22-employee-panel-today-locked.png" alt="Annotated Employee Panel">
+    </div>
+    <figcaption><b>Figure 3.1</b> — The complete Employee Panel with a populated month
+    (Romith Ahmed, token 101, 29 September 2026). Every numbered element is explained below.</figcaption>
+  </figure>
+
+  <table class="tbl long">
+    <tr><th class="c" style="width:9mm">#</th><th style="width:38mm">Element</th><th>What it does</th></tr>
+    <tr><td class="c">1</td><td><b>Token tile</b></td><td>Your Token Number, the number you sign in with. If you have no token it shows the first letter of your name instead.</td></tr>
+    <tr><td class="c">2</td><td><b>Your name</b></td><td>Exactly as the mess manager typed it on the employee list. You cannot change it yourself.</td></tr>
+    <tr><td class="c">3</td><td><b>Sign out</b></td><td>Ends the session on this device and erases the private dummy meal rate stored in this browser.</td></tr>
+    <tr><td class="c">4</td><td><b>Deadline line</b></td><td>The three deadlines currently in force, set by the mess manager. Read-only here.</td></tr>
+    <tr><td class="c">5</td><td><b>← Prev</b></td><td>Moves the meal section back one day. Past days are visible but locked.</td></tr>
+    <tr><td class="c">6</td><td><b>Date picker</b></td><td>Jump straight to any date. A <b>Jump to today</b> button appears beside it whenever you are not on today.</td></tr>
+    <tr><td class="c">7</td><td><b>Next →</b></td><td>Moves forward one day. Future days are always editable.</td></tr>
+    <tr><td class="c">8</td><td><b>Lock notice</b></td><td>Explains why meals cannot be changed right now, and which deadlines have passed. Absent when everything is open.</td></tr>
+    <tr><td class="c">9</td><td><b>Meal ON/OFF button</b></td><td>One per meal. Tap to switch. Saves instantly — there is no Save button anywhere on this page.</td></tr>
+    <tr><td class="c">10</td><td><b>Dish chip</b></td><td>What the mess manager announced is cooking for that meal. Information only — it changes no count and no bill.</td></tr>
+    <tr><td class="c">11</td><td><b>Month selector</b></td><td>The mess month whose record is shown below (5th → 5th). The ← → arrows move a whole month at a time.</td></tr>
+    <tr><td class="c">12</td><td><b>Meals I had</b></td><td>How many breakfasts, lunches and dinners you have already had this month. Tap one for the list of dates.</td></tr>
+    <tr><td class="c">13</td><td><b>My deposit</b></td><td>The month's total plus every individual deposit the manager recorded for you.</td></tr>
+    <tr><td class="c">14</td><td><b>My bill</b></td><td>Your real bill — but only after the manager <i>publishes</i> the meal rate.</td></tr>
+    <tr><td class="c">15</td><td><b>Bill calculator</b></td><td>A private "what if the rate were ৳X?" box. Never leaves your phone.</td></tr>
+  </table>
+
+  <div class="box tip">
+    <span class="bt">Everything saves by itself</span>
+    <p>Tapping a meal writes it to the database immediately. A brief <b>…</b> means the save is
+    in flight; a <b>red outline</b> means it failed and you should tap again. There is no Save
+    button and no "unsaved changes" state to worry about.</p>
+  </div>
+
+  <h2><span class="n">3.2</span>My meals — switching a meal ON or OFF</h2>
+  <p>Three cards, one per meal. The button underneath shows the current state and is the control itself.</p>
+  <div class="cmp">
+    <div class="a"><div class="cmp-h">All three ON</div><img src="shots/23b-employee-meals-all-on.png" alt="All meals on"><div class="cmp-c"><b>Figure 3.2</b> — 30 September (a future date): solid indigo <b>ON</b>, all three editable.</div></div>
+    <div class="b" style="border-color:#c7d2fe"><div class="cmp-h" style="background:#64748b">Breakfast switched OFF</div><img src="shots/24-employee-meals-breakfast-off.png" alt="Breakfast off"><div class="cmp-c"><b>Figure 3.3</b> — The same date one tap later. OFF is pale grey. The change was already saved.</div></div>
+  </div>
+  <div class="diff">
+    <span class="bt">What is different?</span>
+    Only the breakfast button: <b>solid indigo "ON"</b> becomes <b>pale grey "OFF"</b>. Nothing else on the
+    page moves. The dish chip stays — the kitchen is still cooking khichuri, you have simply
+    said you are not eating it. Your meal count for that day drops by 0.75 the moment the day passes.
+  </div>
+
+  <h2><span class="n">3.3</span>Locked meals</h2>
+  <p>A padlock on the button means the meal can no longer be changed from the Employee Panel.
+  The button still shows the truth (🔒 ON or 🔒 OFF) — it just cannot be pressed.</p>
+
+  <div class="cmp">
+    <div class="b"><div class="cmp-h">All three locked</div><img src="shots/22b-employee-mymeals-locked.png" alt="All meals locked"><div class="cmp-c"><b>Figure 3.4</b> — Today at 10 PM: all three deadlines have passed. The amber banner names every locked meal.</div></div>
+    <div class="a"><div class="cmp-h">Partly locked</div><img src="shots/B2-employee-partial-lock.png" alt="Partially locked"><div class="cmp-c"><b>Figure 3.5</b> — Breakfast and lunch are locked, dinner is still open. The grey line underneath reads <i>"Change before: Dinner 11:00 PM"</i>.</div></div>
+  </div>
+  <div class="diff">
+    <span class="bt">What is different?</span>
+    In Figure 3.5 the mess manager had moved the dinner deadline to 11:00 PM, so at 10:30 PM dinner
+    was still open: its button is tappable and the banner lists only <b>Breakfast, Lunch locked</b>.
+    The extra grey line <i>"Change before: …"</i> appears only while at least one of today's meals is still open.
+  </div>
+
+  <div class="box warn">
+    <span class="bt">Rule — three lock states, and only three</span>
+    <table class="tbl" style="margin:2mm 0 0;background:#fff">
+      <tr><th style="width:30mm">Date</th><th>Breakfast / Lunch / Dinner</th></tr>
+      <tr><td><b>Before today</b></td><td>🔒 Never editable, for any reason.</td></tr>
+      <tr><td><b>Today</b></td><td>✅ Editable until that meal's deadline · 🔒 from the deadline onwards.</td></tr>
+      <tr><td><b>After today</b></td><td>✅ Always editable (the deadline only applies once that day becomes today).</td></tr>
+    </table>
+  </div>
+  <p>The lock clock re-checks itself every 15 seconds and whenever you return to the tab, so a
+  meal locks on screen the moment its deadline passes — no reload needed. That clock follows the
+  <i>server's</i> time, so a phone set to the wrong time still shows the right locks.</p>
+
+  <h2><span class="n">3.4</span>Meals I had</h2>
+  <p>Three counters for the selected mess month, and the weighted total underneath.</p>
+  <div class="cmp">
+    <div class="a"><div class="cmp-h">Counters</div><img src="shots/25-employee-mealhistory.png" alt="Meal history counters"><div class="cmp-c"><b>Figure 3.6</b> — 19 breakfasts, 23 lunches, 23 dinners → total meal count 67.5.</div></div>
+    <div class="a"><div class="cmp-h">Dates behind a counter</div><img src="shots/26-employee-mealhistory-dates.png" alt="Meal history dates"><div class="cmp-c"><b>Figure 3.7</b> — Tapping <b>Lunch</b> lists every lunch date, each with 🔒: this is a record, not an editor.</div></div>
+  </div>
+
+  <div class="box note">
+    <span class="bt">"Past meals only" — why this number is smaller than your bill</span>
+    <p><b>Meals I had</b> counts a meal only once it can no longer be changed (its day is over, or
+    today's deadline has passed). Meals you have already switched ON for the days ahead do
+    <i>not</i> count yet. Your <b>My bill</b> card and the mess manager's report count <i>every</i>
+    meal that is ON in the month, including the upcoming ones. In Figure 3.1 that is the
+    difference between <b>67.5</b> (past) and <b>74.25</b> (the whole month, used for the bill).</p>
+  </div>
+
+  <p>The indigo strip inside the card restates the weights in force —
+  <b>Breakfast 0.75 · Lunch 1.25 · Dinner 1</b> — and warns that the manager may raise a day's
+  meal count for a special meal, in which case your total rises automatically.</p>
+
+  <h2><span class="n">3.5</span>My deposit</h2>
+  <figure class="fig narrow">
+    <img src="shots/27c-employee-deposit-card.png" alt="My deposit card">
+    <figcaption><b>Figure 3.8</b> — Total at the top, then every deposit newest first, with the
+    date and the manager's note (Cash, bKash, …). Employees cannot add or edit deposits — only
+    the mess manager records them, on the Expense Status tab.</figcaption>
+  </figure>
+
+  <h2><span class="n">3.6</span>My bill, and the private bill calculator</h2>
+  <p>These two cards look similar but are completely different things.</p>
+  <table class="tbl">
+    <tr><th style="width:36mm"></th><th>My bill</th><th>Bill calculator</th></tr>
+    <tr><td><b>Where the rate comes from</b></td><td>The mess manager, after pressing <b>Publish meal rate</b>.</td><td>Whatever you type into the box.</td></tr>
+    <tr><td><b>Which meals it counts</b></td><td>Every meal ON in the month.</td><td>Past meals only.</td></tr>
+    <tr><td><b>Who can see it</b></td><td>You and the manager — the same numbers.</td><td>Only you. The rate is stored in your own browser, under your own account, is never sent to the server, and is erased when you sign out.</td></tr>
+    <tr><td><b>Is it the real bill?</b></td><td><b>Yes.</b></td><td><b>No</b> — it is an estimate and changes nothing.</td></tr>
+  </table>
+
+  <figure class="fig narrow">
+    <img src="shots/27b-employee-published-bill.png" alt="Published bill card">
+    <figcaption><b>Figure 3.9</b> — <b>My bill</b> once the rate is published: the announcement line, the
+    time it was published, then meal rate, total bill (with the multiplication shown), what you have
+    paid, and the <span class="pill red">Due</span> or <span class="pill green">Refund</span> in colour.</figcaption>
+  </figure>
+
+  <div class="cmp">
+    <div class="a"><div class="cmp-h">A rate typed in</div><img src="shots/28-employee-bill-calculator.png" alt="Bill calculator with a rate"><div class="cmp-c"><b>Figure 3.10</b> — At ৳95 per meal count: 67.5 × ৳95 = ৳6,412.50 against a ৳6,500 deposit → <i>I'd get back ৳87.50</i>.</div></div>
+    <div class="b"><div class="cmp-h">Nothing typed</div><img src="shots/28b-employee-bill-calculator-blank.png" alt="Bill calculator empty"><div class="cmp-c"><b>Figure 3.11</b> — Empty box: <i>Enter a rate</i> and a dash. Your deposit is still shown.</div></div>
+  </div>
+  <div class="diff">
+    <span class="bt">What is different?</span>
+    Only the two right-hand values. With a rate, <b>Estimated bill</b> shows the working
+    (<i>67.5 × ৳95 =</i>) and <b>Estimated result</b> turns green (money back) or red (money to pay).
+    With the box empty, both fall back to placeholders. The rate you type is remembered on this
+    phone for next time — and only for your account, so on a shared phone nobody else sees it.
+  </div>
+
+  <h2><span class="n">3.7</span>The Employee Panel on a phone</h2>
+  <figure class="fig phone">
+    <img src="shots/M2-mobile-employee-panel.png" alt="Employee panel on a phone">
+    <figcaption><b>Figure 3.12</b> — The same page at phone width. The layout is designed for this
+    size first: the three meal cards stay side by side and the buttons are thumb-sized.</figcaption>
+  </figure>
+
+  <h2><span class="n">3.8</span>What an employee can and cannot do</h2>
+  <table class="tbl">
+    <tr><th style="width:52mm">Can</th><th>Cannot</th></tr>
+    <tr>
+      <td>Switch their own meals ON/OFF for today (before the deadline) and any future date</td>
+      <td>Change anyone else's meals — the database refuses it, not just the screen</td>
+    </tr>
+    <tr><td>Look at any date, past or future</td><td>Change a past date, or today after the deadline</td></tr>
+    <tr><td>See their own meal history, deposits and published bill for any month</td><td>See another employee's deposits, bill or due</td></tr>
+    <tr><td>Try any rate in the private calculator</td><td>Change the real meal rate, or see a rate the manager is only testing</td></tr>
+    <tr><td>Read the announced dish for a date</td><td>See guest counts, guest bills or mess spending — these never appear in the Employee Panel</td></tr>
+    <tr><td>Change their own password by asking for a login reset</td><td>Change their own name or Token Number</td></tr>
+  </table>
+</section>

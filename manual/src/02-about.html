@@ -1,0 +1,100 @@
+<section class="sec" id="s1">
+  <h1 class="sh"><span class="n">1</span>About the Application</h1>
+
+  <p class="lead">Meal Tracker is a mobile-first web application that runs an office mess:
+  who eats which meal on which day, what the mess spends, what each person owes at the
+  end of the month, and how many plates the cook has to prepare today.</p>
+
+  <h2><span class="n">1.1</span>Why it exists</h2>
+  <p>Before an app, an office mess runs on a paper register. Three problems repeat every month:</p>
+  <ul>
+    <li><b>Nobody knows today's plate count until it is too late.</b> The cook guesses, and food is wasted or runs short.</li>
+    <li><b>The register is edited after the fact.</b> Somebody "remembers" they skipped dinner three days ago and the totals stop being trustworthy.</li>
+    <li><b>Month-end billing is a night of arithmetic.</b> Meals × rate, minus deposits, per person, by hand.</li>
+  </ul>
+  <p>Meal Tracker fixes all three: employees mark their own meals in advance, meals lock
+  themselves at a published deadline, and every bill is calculated by the database from
+  the records that already exist — so the numbers can never go stale.</p>
+
+  <h2><span class="n">1.2</span>Who uses it — three audiences, three screens</h2>
+  <table class="tbl">
+    <tr><th style="width:32mm">Audience</th><th style="width:30mm">Screen</th><th>What they do there</th></tr>
+    <tr>
+      <td><b>The cook</b><br><span class="muted">no login at all</span></td>
+      <td><code>/</code> — the meal board</td>
+      <td>Reads today's plate count per meal, plus guests and the total to prepare. Read-only: there is not a single button to press. The page refreshes itself every minute.</td>
+    </tr>
+    <tr>
+      <td><b>Employees</b><br><span class="muted">one login each</span></td>
+      <td><code>/employee</code> — Employee Panel</td>
+      <td>Switch their own breakfast / lunch / dinner ON or OFF, see the meals they have already had, their deposits, and their published bill.</td>
+    </tr>
+    <tr>
+      <td><b>Mess managers</b><br><span class="muted">one shared login per month</span></td>
+      <td><code>/admin</code> — Mess Manager Panel</td>
+      <td>Seven tabs: Dashboard, Meal Status, Guest, Expense Status, Spend, Report, Employees. They run the month and close the books.</td>
+    </tr>
+  </table>
+
+  <div class="box note">
+    <span class="bt">The mess month runs 5th → 5th, meal by meal</span>
+    <p>A "month" here is not a calendar month. It starts with the <b>5th's lunch</b> and ends
+    with the <b>next 5th's breakfast</b> — for example <b>5 September lunch → 5 October breakfast</b>.
+    Each mess month has exactly one manager account, named after the month
+    (<code>September2026</code>), shared by that month's team of roughly five people.
+    On the 5th, two managers are in charge at once, each for their own meals of that day.</p>
+  </div>
+
+  <h2><span class="n">1.3</span>The basic workflow</h2>
+  <div class="flow">
+    <div class="step"><b>Employee</b><span>taps a meal ON/OFF</span></div>
+    <div class="arr">→</div>
+    <div class="step"><b>Deadline</b><span>meal locks itself</span></div>
+    <div class="arr">→</div>
+    <div class="step"><b>Meal board</b><span>cook sees the plate count</span></div>
+    <div class="arr">→</div>
+    <div class="step"><b>Manager</b><span>meal counts, guests, spending</span></div>
+  </div>
+  <div class="flow">
+    <div class="step"><b>Deposits</b><span>cash recorded all month</span></div>
+    <div class="arr">→</div>
+    <div class="step"><b>Meal rate</b><span>tested, then published</span></div>
+    <div class="arr">→</div>
+    <div class="step"><b>Bills</b><span>meal count × rate</span></div>
+    <div class="arr">→</div>
+    <div class="step"><b>Reconcile</b><span>due or refund, CSV export</span></div>
+  </div>
+
+  <h2><span class="n">1.4</span>How the money works</h2>
+  <p>Four formulas run the whole application. Everything else on screen is one of these
+  four applied to a different slice of data.</p>
+  <div class="box calc">
+    daily meal count&nbsp;&nbsp; = breakfast ON × breakfast count + lunch ON × lunch count + dinner ON × dinner count<br>
+    monthly meal count = sum of the daily meal counts over the manager period's own meals<br>
+    total bill&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; = monthly meal count × meal rate<br>
+    balance&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; = total deposit − total bill&nbsp;&nbsp;&nbsp;(&gt; 0 refund · = 0 settled · &lt; 0 due)
+  </div>
+  <p>A <b>meal count</b> is not the same as a meal. Breakfast is smaller than lunch, so each
+  meal carries a weight. The default weights are <b>Breakfast 0.75 · Lunch 1.25 · Dinner 1.00</b>,
+  and the mess manager can change them for any single date (a biryani night can be worth 2.00).
+  Weights are stored once per date, not per person, so changing a date's lunch count instantly
+  re-prices everyone who had lunch that day.</p>
+
+  <p>Guests and mess spending are kept completely separate from employee bills:</p>
+  <div class="box calc">
+    guest bill (one date) = breakfast guests × ৳60 + lunch guests × ৳150 + dinner guests × ৳150<br>
+    total bill to collect = the same, added up over every date of the mess month (paid by the office)<br>
+    total monthly spending = the sum of every spending entry recorded in the mess month
+  </div>
+
+  <h2><span class="n">1.5</span>What the system guarantees</h2>
+  <table class="tbl">
+    <tr><th style="width:44mm">Guarantee</th><th>How it is enforced</th></tr>
+    <tr><td><b>Nobody edits anyone else's meals</b></td><td>An employee's login can write only their own meal row. Enforced by the database (Row Level Security), not just hidden in the interface.</td></tr>
+    <tr><td><b>Past meals never change</b></td><td>A previous day is refused outright; today's meal is refused once its deadline passes. Enforced by a database trigger, so it also blocks a hand-made API request.</td></tr>
+    <tr><td><b>Each month sees only its own data</b></td><td>September2026 cannot see August's meal counts, deposits, rate, guests, spending or report — and vice versa.</td></tr>
+    <tr><td><b>A manager changes only their own meals</b></td><td>And only while their period is running: 00:00 on its first day to 23:59 on its last, Bangladesh time.</td></tr>
+    <tr><td><b>Nothing is ever deleted by an account change</b></td><td>A login cannot be deleted while its month exists; a month cannot be deleted while it holds meal counts, deposits, guests or spending.</td></tr>
+    <tr><td><b>"Today" is always Bangladesh time</b></td><td>Every date and deadline is computed in <code>Asia/Dhaka</code>, whatever the phone or server is set to.</td></tr>
+  </table>
+</section>

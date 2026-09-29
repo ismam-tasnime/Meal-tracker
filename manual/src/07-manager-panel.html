@@ -1,0 +1,218 @@
+<section class="sec" id="s6">
+  <h1 class="sh"><span class="n">6</span>The Mess Manager Panel</h1>
+
+  <p class="lead">The Mess Manager Panel (<code>/admin</code>) has seven tabs. One account runs
+  one mess month; the whole month's team of about five people shares that one login.</p>
+
+  <h2><span class="n">6.1</span>Layout and navigation</h2>
+  <table class="tbl">
+    <tr><th style="width:34mm">Part of the screen</th><th>What it is</th></tr>
+    <tr><td><b>Left sidebar</b> (desktop)</td><td>The seven tabs. The current one is highlighted grey.</td></tr>
+    <tr><td><b>Scrolling tab row</b> (phone)</td><td>The same seven tabs in one horizontal strip, with <b>Sign out</b> as the last item.</td></tr>
+    <tr><td><b>Account footer</b></td><td>Pinned to the bottom of the sidebar: the account name (<code>September2026</code>) and the period it owns (<i>5 Sep Lunch → 5 Oct Breakfast</i>). Always check this before you start typing — it tells you which month you are editing.</td></tr>
+    <tr><td><b>Top-right buttons</b></td><td>Switch to the Employee Panel or back. Present on every page of the site.</td></tr>
+  </table>
+
+  <table class="tbl">
+    <tr><th style="width:30mm">Tab</th><th style="width:22mm">Address</th><th>What it is for</th><th style="width:20mm">Detailed in</th></tr>
+    <tr><td><b>Dashboard</b></td><td><code>/admin</code></td><td>The period's status badge and nine month figures.</td><td>Section 11</td></tr>
+    <tr><td><b>Meal Status</b></td><td><code>/admin/meals</code></td><td>One date at a time: dish announcement, that date's meal counts, and every employee's ON/OFF.</td><td>Sections 6.4, 8</td></tr>
+    <tr><td><b>Guest</b></td><td><code>/admin/guests</code></td><td>Guests per date and the month's guest bill to collect from the office.</td><td>Section 10</td></tr>
+    <tr><td><b>Expense Status</b></td><td><code>/admin/expenses</code></td><td>Deposits, the meal rate, and who owes what.</td><td>Section 9</td></tr>
+    <tr><td><b>Spend</b></td><td><code>/admin/spending</code></td><td>What the mess spent — bazar, gas, extras.</td><td>Section 6.5</td></tr>
+    <tr><td><b>Report</b></td><td><code>/admin/reports</code></td><td>The final month-end table, filterable, with CSV export.</td><td>Section 6.6</td></tr>
+    <tr><td><b>Employees</b></td><td><code>/admin/employees</code></td><td>The shared employee list, tokens and logins.</td><td>Section 7</td></tr>
+  </table>
+
+  <h2><span class="n">6.2</span>The manager period — the one concept to understand first</h2>
+  <p>Your account owns a <b>manager period</b>: a run of meals from the 5th's lunch to the next
+  5th's breakfast. The period decides three things and nothing else:</p>
+  <ol>
+    <li><b>Which meals count towards your month's totals and bills.</b></li>
+    <li><b>Which employees' meals you may switch ON/OFF</b> — and only while the period is running.</li>
+    <li><b>Which dates you may set meal counts, guests and spending for.</b></li>
+  </ol>
+  <p>Its state is shown as a badge on the Dashboard and repeated as a notice on Meal Status.</p>
+
+  <table class="tbl">
+    <tr><th style="width:44mm">Badge</th><th>Means</th><th>Can you change employees' meals?</th></tr>
+    <tr><td><span class="pill green">Active Manager Period</span></td><td>Today falls inside your period.</td><td><b>Yes</b> — any meal of your period, at any time, ignoring the employee deadlines.</td></tr>
+    <tr><td><span class="pill amber">Manager Period Not Started</span></td><td>Your month has not begun yet.</td><td><b>No</b> — but meal counts, guests, deposits and spending for your month are already open.</td></tr>
+    <tr><td><span class="pill grey">Manager Period Completed</span></td><td>Your month is over.</td><td><b>No</b> — everything else about your month stays open to you forever.</td></tr>
+  </table>
+
+  <div class="cmp">
+    <div class="a"><div class="cmp-h">Active — September 2026</div><img src="shots/31b-admin-period-card.png" alt="Active period card"><div class="cmp-c"><b>Figure 6.1</b> — <i>"You can change employees' meal status for these meals until 5 October 2026, 11:59 PM."</i></div></div>
+    <div class="b"><div class="cmp-h">Completed — August 2026</div><img src="shots/90b-august-period-card.png" alt="Completed period card"><div class="cmp-c"><b>Figure 6.2</b> — The heading changes from "Current manager period" to "Your manager period".</div></div>
+  </div>
+  <figure class="fig medium">
+    <img src="shots/93b-october-period-card.png" alt="Upcoming period card">
+    <figcaption><b>Figure 6.3</b> — <span class="pill amber">Manager Period Not Started</span>, October 2026:
+    <i>"You can change employees' meal status from 5 October 2026. Until then, the September 2026 manager handles it."</i></figcaption>
+  </figure>
+
+  <div class="cmp">
+    <div class="b"><div class="cmp-h">Meal Status — period completed</div><img src="shots/91b-august-period-notice.png" alt="Completed notice"><div class="cmp-c"><b>Figure 6.4</b> — The full hand-over notice, naming your period, who is in charge now, and everything you keep.</div></div>
+    <div class="b"><div class="cmp-h">Meal Status — period not started</div><img src="shots/94b-october-period-notice.png" alt="Not started notice"><div class="cmp-c"><b>Figure 6.5</b> — The amber equivalent, with the date your period opens.</div></div>
+  </div>
+
+  <div class="box tip">
+    <span class="bt">A finished month loses exactly one power</span>
+    <p>When a period ends, nothing is locked away and nothing is deleted. The outgoing manager
+    keeps their meal records (read-only), meal counts, deposits, dues, meal rate (test and publish),
+    guests, spending, report, CSV export and every calculation — forever. The <b>only</b> thing that
+    stops is switching employees' meals ON and OFF.</p>
+  </div>
+
+  <h2><span class="n">6.3</span>The Dashboard at a glance</h2>
+  <figure class="fig medium">
+    <img src="shots/31-admin-dashboard-data.png" alt="Manager dashboard with data">
+    <figcaption><b>Figure 6.6</b> — The Dashboard for September 2026 on 29 September. Every card is
+    explained one by one in Section 11.</figcaption>
+  </figure>
+
+  <h2><span class="n">6.4</span>Meal Status — the per-date sheet</h2>
+  <p>This is where a manager spends most of their time. One date at a time, top to bottom:
+  deadlines, date picker, what's cooking, that date's meal counts, and the employee sheet.</p>
+
+  <figure class="fig medium">
+    <div class="imgwrap" data-anno="40-meals-today">
+      <img src="shots/40-meals-today.png" alt="Annotated Meal Status page">
+    </div>
+    <figcaption><b>Figure 6.7</b> — The complete Meal Status tab for 29 September 2026.</figcaption>
+  </figure>
+
+  <table class="tbl long">
+    <tr><th class="c" style="width:9mm">#</th><th style="width:40mm">Element</th><th>What it does</th></tr>
+    <tr><td class="c">1</td><td><b>Tab list</b></td><td>The seven tabs; the current one is highlighted.</td></tr>
+    <tr><td class="c">2</td><td><b>Page title and blurb</b></td><td>Restates your period and reminds you that employee deadlines do not apply to you.</td></tr>
+    <tr><td class="c">3</td><td><b>🔒 Employee meal deadlines</b></td><td>Collapsed strip showing the three deadlines in force. Press <b>Edit</b> to change them office-wide.</td></tr>
+    <tr><td class="c">4</td><td><b>Day navigator</b></td><td>Prev / Next / date picker / Jump to today. Everything below follows this date.</td></tr>
+    <tr><td class="c">5</td><td><b>🍲 What's cooking this date</b></td><td>Three free-text boxes (max 80 characters). Employees see each dish under that meal. <b>Save menu</b> stores it; <b>Clear menu</b> removes all three.</td></tr>
+    <tr><td class="c">6</td><td><b>Meal count for this date</b></td><td>The weights used for this date only, 0–10 with two decimals. Defaults 0.75 / 1.25 / 1.00.</td></tr>
+    <tr><td class="c">7</td><td><b>Save meal counts</b></td><td>Enabled only when a value has actually changed. A <b>Reset to 0.75 / 1.25 / 1</b> button appears whenever the date is not on the defaults.</td></tr>
+    <tr><td class="c">8</td><td><b>Column header</b></td><td>The meal, and under it the weight in force (<code>× 1.25</code>) or <b>Not yours</b> on a handover day.</td></tr>
+    <tr><td class="c">9</td><td><b>ON / OFF button</b></td><td>Same control as the employee's, without the deadline. Saves instantly.</td></tr>
+    <tr><td class="c">10</td><td><b>Meal count column</b></td><td>That employee's weighted count for this one date, recalculated live as you tap.</td></tr>
+    <tr><td class="c">11</td><td><b>Total ON row</b></td><td>How many people have each meal ON, and the date's total meal count.</td></tr>
+    <tr><td class="c">12</td><td><b>Account footer</b></td><td>Which month you are signed in as, and its period.</td></tr>
+  </table>
+
+  <div class="cmp">
+    <div class="a"><div class="cmp-h">What's cooking — filled</div><img src="shots/40b-meals-menu-form.png" alt="Menu form"><div class="cmp-c"><b>Figure 6.8</b> — Three dishes announced. The corner reads <i>"Employees can see this"</i> and a <b>Clear menu</b> button appears.</div></div>
+    <div class="a"><div class="cmp-h">Meal counts — default</div><img src="shots/40c-meals-count-form.png" alt="Meal count form"><div class="cmp-c"><b>Figure 6.9</b> — Corner reads <i>"Default values"</i>; <b>Save meal counts</b> is greyed out because nothing has changed.</div></div>
+  </div>
+  <figure class="fig medium">
+    <img src="shots/42b-meals-custom-counts-form.png" alt="Custom meal counts">
+    <figcaption><b>Figure 6.10</b> — 16 September: dinner was a biryani night, so its count was raised to <b>2</b>.
+    The corner now reads <i>"Custom for this date"</i> and a <b>Reset to 0.75 / 1.25 / 1</b> button has appeared.
+    Everyone who had dinner on 16 September was re-priced the instant this was saved.</figcaption>
+  </figure>
+
+  <h2><span class="n">6.5</span>Spend — what the mess actually cost</h2>
+  <p>The Spend tab is the mess's cash book for the month: bazar runs, gas, extras. It never
+  touches an employee's bill — it is the evidence behind the meal rate you choose.</p>
+
+  <figure class="fig medium">
+    <div class="imgwrap" data-anno="70-spend-full">
+      <img src="shots/70-spend-full.png" alt="Annotated Spend tab">
+    </div>
+    <figcaption><b>Figure 6.11</b> — The Spend tab with 15 entries for September 2026.</figcaption>
+  </figure>
+
+  <table class="tbl">
+    <tr><th class="c" style="width:9mm">#</th><th style="width:38mm">Element</th><th>What it does</th></tr>
+    <tr><td class="c">1</td><td><b>+ Add Spending</b></td><td>Opens the entry dialog. Any number of entries per date.</td></tr>
+    <tr><td class="c">2</td><td><b>Date</b></td><td>Oldest first; entries on the same date keep the order they were added.</td></tr>
+    <tr><td class="c">3</td><td><b>Person / Name</b></td><td>Who spent it, 1–80 characters. Free text; names already used this month are suggested while typing.</td></tr>
+    <tr><td class="c">4</td><td><b>Total Spending</b></td><td>The amount, more than ৳0.</td></tr>
+    <tr><td class="c">5</td><td><b>Pencil</b></td><td>Opens the same dialog in edit mode. Tapping anywhere on the row does the same.</td></tr>
+    <tr><td class="c">6</td><td><b>Sum Spending</b></td><td>Asks the database to add up every entry of the month and shows <b>TOTAL MONTHLY SPENDING</b>.</td></tr>
+  </table>
+
+  <div class="cmp">
+    <div class="a"><div class="cmp-h">Add Spending</div><img src="shots/72-spend-add-dialog.png" alt="Add spending dialog"><div class="cmp-c"><b>Figure 6.12</b> — Date, Person/Name, amount. The date box is limited to the mess month.</div></div>
+    <div class="b" style="border-color:#fecaca"><div class="cmp-h" style="background:#b91c1c">Edit Spending</div><img src="shots/73-spend-edit-dialog.png" alt="Edit spending dialog"><div class="cmp-c"><b>Figure 6.13</b> — The same dialog opened on an existing entry: the title changes to <b>Edit spending</b> and a red <b>Delete</b> button appears on the right.</div></div>
+  </div>
+  <div class="diff">
+    <span class="bt">What is different?</span>
+    The heading (<b>Add spending</b> → <b>Edit spending</b>), the pre-filled values, and the extra
+    <b>Delete</b> button. Deleting asks for confirmation and names the entry in full
+    ("Delete ৳4,500 spent by Rahim Mia on 5 September 2026?"). Escape, <b>Cancel</b> or a tap
+    outside closes the dialog without saving.
+  </div>
+
+  <figure class="fig medium">
+    <img src="shots/71-spend-sum.png" alt="Sum spending result">
+    <figcaption><b>Figure 6.14</b> — <b>Sum Spending</b> pressed: <b>TOTAL MONTHLY SPENDING ৳59,900</b>, with
+    <i>15 entries · September2026 (5 Sep Lunch → 5 Oct Breakfast)</i> underneath. The total is computed in the database,
+    not in the browser, and recalculates automatically if you add or edit an entry while it is on screen.</figcaption>
+  </figure>
+
+  <div class="box warn">
+    <span class="bt">Rules for spending entries</span>
+    <ul style="margin:0">
+      <li>The date must be <b>inside your mess month</b>. Both 5ths count, so a payment made on the
+      5th can be recorded by either month — but never by both.</li>
+      <li>You can change an entry's date, name and amount, but you can never move it to another month.</li>
+      <li>There are no blank rows: a date with no spending simply does not appear.</li>
+      <li><b>Employees never see spending.</b> It exists only on this tab.</li>
+    </ul>
+  </div>
+
+  <h2><span class="n">6.6</span>Report — the month-end table</h2>
+  <p>The Report tab is the Expense Status table in its final, printable form: one row per
+  employee, with the breakfast/lunch/dinner breakdown added and an <b>Export CSV</b> button.</p>
+
+  <figure class="fig medium">
+    <img src="shots/80-report-full.png" alt="Final report">
+    <figcaption><b>Figure 6.15</b> — <b>Final Report</b> for September2026. The meal rate card is repeated here
+    so the rate can be adjusted and the effect seen without changing tabs.</figcaption>
+  </figure>
+
+  <table class="tbl">
+    <tr><th style="width:34mm">Column</th><th>What it contains</th></tr>
+    <tr><td><b>Employee</b></td><td>Token badge and name. Inactive employees are listed with a grey <span class="pill grey">Inactive</span> tag — they stay in the report for any month in which they ate or deposited.</td></tr>
+    <tr><td><b>B / L / D</b></td><td>How many breakfasts, lunches and dinners — plain counts, not weighted.</td></tr>
+    <tr><td><b>Meal Count</b></td><td>The weighted total: Σ (meal ON × that date's weight).</td></tr>
+    <tr><td><b>Total Bill</b></td><td>Meal Count × meal rate. A dash until a rate is set.</td></tr>
+    <tr><td><b>Total Deposit</b></td><td>Everything recorded for that employee in this month.</td></tr>
+    <tr><td><b>Amount to be Paid</b></td><td>Deposit − bill, spelled out as <span class="pill red">Due (to pay)</span>, <span class="pill green">Remaining (refund)</span> or <span class="pill grey">Fully settled</span> — never a bare negative number.</td></tr>
+  </table>
+
+  <div class="cmp">
+    <div class="a"><div class="cmp-h">All employees</div><img src="shots/80b-report-table.png" alt="Report table"><div class="cmp-c"><b>Figure 6.16</b> — The footer row totals meal count, bill and deposits, then splits the balance into total due and total remaining.</div></div>
+    <div class="b" style="border-color:#c7d2fe"><div class="cmp-h" style="background:var(--indigo)">Filtered to one employee</div><img src="shots/81-report-filtered.png" alt="Report filtered"><div class="cmp-c"><b>Figure 6.17</b> — The <b>Employee</b> dropdown narrows the table to one person — useful when someone queries their bill at the counter.</div></div>
+  </div>
+  <div class="diff">
+    <span class="bt">What is different?</span>
+    Only the rows shown. The filter runs in the browser on data the page already has, so it is
+    instant and does not re-query the database; the choice is remembered in the address bar
+    (<code>?employee=…</code>) so the filtered view can be bookmarked or shared with a colleague
+    who is also signed in as this month.
+  </div>
+
+  <h3>Export CSV</h3>
+  <p><b>Export CSV</b> downloads the full (unfiltered) table as
+  <code>mess-report-September2026.csv</code> — one row per employee, eleven columns, ready to open
+  in Excel, Google Sheets or Numbers.</p>
+  <table class="tbl">
+    <tr><th>Column order in the file</th></tr>
+    <tr><td><code>Token, Employee, Breakfasts, Lunches, Dinners, Meal Count, Meal Rate, Total Bill, Total Deposit, Amount to be Paid, Status</code></td></tr>
+  </table>
+  <div class="box calc">
+    Token,Employee,Breakfasts,Lunches,Dinners,Meal Count,Meal Rate,Total Bill,Total Deposit,Amount to be Paid,Status<br>
+    101,Romith Ahmed,22,25,25,74.25,92.50,6868.13,6500.00,368.13,368.13 due<br>
+    102,Tanvir Hasan,0,18,18,41.75,92.50,3861.88,4000.00,-138.12,138.12 remaining (refund)<br>
+    108,Sadia Islam,18,18,18,55.50,92.50,5133.75,0.00,5133.75,5133.75 due
+  </div>
+  <p class="muted" style="font-size:8.4pt">Three real lines from the exported file. In the CSV,
+  <b>Amount to be Paid</b> is a plain number: positive means the employee owes, negative means a refund.
+  The <b>Status</b> column spells the same thing out in words.</p>
+
+  <h2><span class="n">6.7</span>The panel on a phone</h2>
+  <div class="cmp">
+    <div class="a"><div class="cmp-h">Dashboard</div><img src="shots/M3-mobile-admin-dashboard.png" alt="Mobile dashboard"><div class="cmp-c"><b>Figure 6.18</b> — The tabs become one scrolling row under the header; the cards stack two per line.</div></div>
+    <div class="a"><div class="cmp-h">Expense Status</div><img src="shots/M4-mobile-admin-expenses.png" alt="Mobile expenses"><div class="cmp-c"><b>Figure 6.19</b> — On a phone the bill table becomes one card per employee, so "Amount to be Paid" is never off-screen.</div></div>
+  </div>
+</section>

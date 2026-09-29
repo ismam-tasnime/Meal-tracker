@@ -1,0 +1,76 @@
+<section class="sec" id="s18">
+  <h1 class="sh"><span class="n">18</span>Quick Start Guide</h1>
+  <p class="lead">Two pages. Print them, pin them by the mess counter.</p>
+
+  <div class="qs">
+    <div class="card">
+      <h3>👤 Employee — 30-second guide</h3>
+      <div>
+        <ol>
+          <li><b>Sign in</b> at <code>/employee</code> with your <b>Token Number</b> and password.</li>
+          <li><b>Open the day you care about</b> — <b>Next →</b> for tomorrow, or the date box for any day.</li>
+          <li><b>Tap Breakfast / Lunch / Dinner</b> to switch each ON or OFF. It saves itself; there is no Save button.</li>
+          <li><b>Watch the padlocks.</b> 🔒 means that meal can no longer be changed by you.</li>
+          <li><b>Respect the deadlines</b> — Breakfast <b>8:00 AM</b>, Lunch <b>11:00 AM</b>, Dinner <b>5:00 PM</b> (today only; future days are always open).</li>
+          <li><b>Scroll down</b> for the month: meals you have had, your deposits, and your bill once it is published.</li>
+        </ol>
+      </div>
+    </div>
+    <div class="card mgr">
+      <h3>🗂 Mess Manager — 30-second guide</h3>
+      <div>
+        <ol>
+          <li><b>Sign in</b> at <code>/admin</code> as your month, e.g. <code>September2026</code>.</li>
+          <li><b>Dashboard</b> — check the badge is <span class="pill green">Active</span> and read today's three plate counts.</li>
+          <li><b>Meal Status</b> — announce the dish, fix any meal an employee asks about, adjust a date's meal count for a special meal.</li>
+          <li><b>Guest</b> — type today's guest numbers the moment you hear about them.</li>
+          <li><b>Spend</b> — record every bazar payment the same day.</li>
+          <li><b>Expense Status</b> — record deposits as cash arrives.</li>
+          <li><b>Month end</b> — Sum Spending ÷ month meal count → <b>Test</b> the rate → <b>Publish</b> it → collect, refund, <b>Export CSV</b>.</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <h2><span class="n">18.1</span>The numbers to remember</h2>
+  <table class="tbl">
+    <tr><th style="width:44mm">Thing</th><th>Value</th></tr>
+    <tr><td>Mess month</td><td>5th <b>lunch</b> → next 5th <b>breakfast</b></td></tr>
+    <tr><td>Meal deadlines (today only)</td><td>Breakfast <b>8:00 AM</b> · Lunch <b>11:00 AM</b> · Dinner <b>5:00 PM</b></td></tr>
+    <tr><td>Default meal counts</td><td>Breakfast <b>0.75</b> · Lunch <b>1.25</b> · Dinner <b>1.00</b></td></tr>
+    <tr><td>Guest rates (paid by the office)</td><td>Breakfast <b>৳60</b> · Lunch <b>৳150</b> · Dinner <b>৳150</b></td></tr>
+    <tr><td>Password minimum</td><td>Employee <b>6</b> characters · Mess manager <b>8</b> characters</td></tr>
+    <tr><td>Guests per meal per date</td><td>0 – <b>10,000</b>, whole numbers</td></tr>
+    <tr><td>Meal counts per meal per date</td><td>0 – <b>10</b>, two decimals</td></tr>
+    <tr><td>Time zone</td><td><b>Asia/Dhaka</b>, always</td></tr>
+  </table>
+
+  <h2><span class="n">18.2</span>Where everything lives</h2>
+  <table class="tbl">
+    <tr><th style="width:44mm">I want to…</th><th>Go to</th></tr>
+    <tr><td>See today's plate count</td><td><code>/</code> — the meal board (no login)</td></tr>
+    <tr><td>Set my own meals</td><td>Employee Panel → My meals</td></tr>
+    <tr><td>See how many meals I have had</td><td>Employee Panel → Meals I had</td></tr>
+    <tr><td>See what I owe</td><td>Employee Panel → My bill</td></tr>
+    <tr><td>Fix somebody's meal</td><td>Manager → Meal Status → that date</td></tr>
+    <tr><td>Announce the dish</td><td>Manager → Meal Status → 🍲 What's cooking this date</td></tr>
+    <tr><td>Change a date's meal count</td><td>Manager → Meal Status → Meal count for this date</td></tr>
+    <tr><td>Change the deadlines</td><td>Manager → Meal Status → 🔒 Employee meal deadlines</td></tr>
+    <tr><td>Enter guests</td><td>Manager → Guest</td></tr>
+    <tr><td>Record cash from an employee</td><td>Manager → Expense Status → Record a deposit</td></tr>
+    <tr><td>Set or publish the meal rate</td><td>Manager → Expense Status (or Report)</td></tr>
+    <tr><td>Record a bazar payment</td><td>Manager → Spend → + Add Spending</td></tr>
+    <tr><td>Total the month's spending</td><td>Manager → Spend → Sum Spending</td></tr>
+    <tr><td>Export the month</td><td>Manager → Report → Export CSV</td></tr>
+    <tr><td>Add, rename or deactivate someone</td><td>Manager → Employees</td></tr>
+    <tr><td>Reset a forgotten password</td><td>Manager → Employees → Reset login</td></tr>
+  </table>
+
+  <div class="box tip">
+    <span class="bt">The three habits that make this work</span>
+    <p><b>Employees:</b> set your meals a week ahead, not the morning of.
+    <b>Managers:</b> record spending and deposits on the day, never in a month-end rush.
+    <b>Everyone:</b> when something looks wrong, quote the <i>date</i> and the <i>meal</i> — that is all
+    anyone needs to fix it.</p>
+  </div>
+</section>

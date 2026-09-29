@@ -1,0 +1,94 @@
+<section class="sec" id="s5">
+  <h1 class="sh"><span class="n">5</span>Monthly View — Dates, Months and Totals</h1>
+
+  <div class="box note">
+    <span class="bt">There is no calendar grid in this application</span>
+    <p>Meal Tracker deliberately has no month-grid calendar. Navigation is done with two
+    separate controls that do two different jobs: a <b>day navigator</b> for the meal buttons,
+    and a <b>month navigator</b> for your record and your money. Learning which is which takes
+    about ten seconds and removes most of the confusion new users have.</p>
+  </div>
+
+  <h2><span class="n">5.1</span>The day navigator — which day's meals am I editing?</h2>
+  <p>It sits directly under the "My meals" heading and controls <b>only</b> the three meal buttons.</p>
+  <table class="tbl">
+    <tr><th style="width:34mm">Control</th><th>What it does</th></tr>
+    <tr><td><b>← Prev</b> / <b>Next →</b></td><td>One day back or forward.</td></tr>
+    <tr><td><b>The date itself</b></td><td>Shows the full date and weekday. A green <span class="pill green">Today</span> badge appears when you are on today.</td></tr>
+    <tr><td><b>Date box</b></td><td>Opens the device's date picker — the fastest way to jump a long way.</td></tr>
+    <tr><td><b>Jump to today</b></td><td>Appears only when you are <i>not</i> on today. One tap returns you.</td></tr>
+  </table>
+  <p>The same day navigator is used on the mess manager's <b>Meal Status</b> and <b>Guest</b> tabs,
+  where it selects which date's sheet you are editing.</p>
+
+  <h2><span class="n">5.2</span>The month navigator — which month's record am I reading?</h2>
+  <figure class="fig medium">
+    <img src="shots/C7-employee-month-nav.png" alt="Month navigator">
+    <figcaption><b>Figure 5.1</b> — The month navigator: the mess month's name and, underneath, the exact
+    dates it spans — <i>5 Sep – 5 Oct 2026</i>. The ← → buttons move a whole mess month at a time
+    and leave the day navigator above untouched.</figcaption>
+  </figure>
+
+  <div class="box warn">
+    <span class="bt">Rule — a mess month is not a calendar month</span>
+    <p>September 2026 means <b>5 September lunch through 5 October breakfast</b>. So 1–4 October
+    belongs to September's record, and 1–4 September belongs to August's. When a date near the
+    5th looks "missing", you are almost always looking at the neighbouring mess month.</p>
+  </div>
+
+  <h2><span class="n">5.3</span>How to read your month, top to bottom</h2>
+  <figure class="fig medium">
+    <img src="shots/27-employee-month-section.png" alt="The full month section">
+    <figcaption><b>Figure 5.2</b> — One complete mess month for one employee: counters, deposits,
+    published bill and calculator. This is the whole of an employee's record.</figcaption>
+  </figure>
+
+  <ol>
+    <li><b>Check the month name first.</b> Everything below it belongs to that month and nothing else.</li>
+    <li><b>Read the three counters</b> — breakfasts, lunches, dinners you have <i>already had</i>.</li>
+    <li><b>Tap a counter</b> if a number looks wrong: you get the exact dates, so you can see which day is in dispute.</li>
+    <li><b>Read "Total meal count"</b> — the weighted figure your bill is built from (19 × 0.75 + 23 × 1.25 + 23 × 1.00 = 67.5 in Figure 5.2).</li>
+    <li><b>Read "My deposit"</b> — every payment the manager has recorded for this month.</li>
+    <li><b>Read "My bill"</b> — the real numbers, once published.</li>
+  </ol>
+
+  <h2><span class="n">5.4</span>A populated month, an empty month, and the handover month</h2>
+  <div class="cmp">
+    <div class="a"><div class="cmp-h">With data — September 2026</div><img src="shots/27-employee-month-section.png" alt="Populated month"><div class="cmp-c"><b>Figure 5.3</b> — Counters filled, three deposits listed, bill published.</div></div>
+    <div class="b"><div class="cmp-h">Empty — June 2026</div><img src="shots/C5-employee-month-truly-empty.png" alt="Empty month"><div class="cmp-c"><b>Figure 5.4</b> — A month before this employee joined: every counter 0.</div></div>
+  </div>
+  <div class="diff">
+    <span class="bt">What is different?</span>
+    <ul style="margin:0">
+      <li>Counters read <b>0 / 0 / 0</b> and total meal count <b>0</b> — no error, just nothing to count.</li>
+      <li><b>My deposit</b> shows <b>৳0</b> with the grey line <i>"No deposits recorded for this month."</i> instead of a list.</li>
+      <li><b>My bill</b> becomes a dashed outline: <i>"The mess manager hasn't published this month's meal rate yet."</i></li>
+      <li>The calculator still works, but any rate × 0 meals = ৳0.</li>
+      <li>A grey strip appears at the very bottom: <i>"No mess manager has opened this month yet, so the meal count uses the standard counts."</i> — nobody has ever signed up for June2026.</li>
+    </ul>
+  </div>
+
+  <figure class="fig medium">
+    <img src="shots/C6-employee-month-august.png" alt="August month for the employee">
+    <figcaption><b>Figure 5.5</b> — Switching back one month to <b>August 2026</b>. It is fully populated and
+    the bill is published at that month's own rate (৳88). Past months stay available forever —
+    nothing is archived or hidden when a new month starts.</figcaption>
+  </figure>
+
+  <figure class="fig medium">
+    <img src="shots/29b-employee-month-empty-section.png" alt="July month, one breakfast">
+    <figcaption><b>Figure 5.6</b> — <b>July 2026</b> for the same employee: a single breakfast, total meal count
+    <b>0.75</b>. That is not a bug — July's mess month ends with <b>5 August breakfast</b>, and this employee
+    ate breakfast on 5 August. This is the 5th-of-the-month handover seen from the employee's side.</figcaption>
+  </figure>
+
+  <h2><span class="n">5.5</span>Why the month total can differ from your bill</h2>
+  <table class="tbl">
+    <tr><th style="width:44mm">Number</th><th style="width:30mm">Counts</th><th>Where it appears</th></tr>
+    <tr><td><b>Total meal count</b> (Meals I had)</td><td>Past meals only</td><td>Employee Panel — the counters card, and the bill calculator</td></tr>
+    <tr><td><b>Meal count</b> (bill)</td><td>Every meal ON in the month, including meals booked for days still to come</td><td>Employee Panel — <b>My bill</b>; Manager — Expense Status, Report, Dashboard</td></tr>
+  </table>
+  <p>Late in a month the two converge; mid-month they differ by whatever you have booked ahead.
+  Both are correct — they answer different questions ("what have I eaten?" and "what am I on the
+  hook for?").</p>
+</section>

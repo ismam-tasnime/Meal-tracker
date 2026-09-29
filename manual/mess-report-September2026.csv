@@ -1,0 +1,15 @@
+Token,Employee,Breakfasts,Lunches,Dinners,Meal Count,Meal Rate,Total Bill,Total Deposit,Amount to be Paid,Status
+101,Romith Ahmed,22,25,25,74.25,92.50,6868.13,6500.00,368.13,368.13 due
+102,Tanvir Hasan,0,18,18,41.75,92.50,3861.88,4000.00,-138.12,138.12 remaining (refund)
+103,Nusrat Jahan,0,22,0,27.75,92.50,2566.88,2500.00,66.88,66.88 due
+104,Sabbir Rahman,27,27,27,82.50,92.50,7631.25,7000.00,631.25,631.25 due
+105,Mehedi Hasan,0,12,12,28.00,92.50,2590.00,3000.00,-410.00,410.00 remaining (refund)
+106,Farhana Akter,20,20,0,40.50,92.50,3746.25,3800.00,-53.75,53.75 remaining (refund)
+107,Imran Kabir,0,0,25,26.00,92.50,2405.00,2000.00,405.00,405.00 due
+108,Sadia Islam,18,18,18,55.50,92.50,5133.75,0.00,5133.75,5133.75 due
+109,Rakib Hossain,0,27,27,62.00,92.50,5735.00,7000.00,-1265.00,1265.00 remaining (refund)
+110,Jannatul Ferdous,24,27,27,80.25,92.50,7423.13,7423.13,0.00,Fully settled
+111,Arif Mahmud,15,15,15,46.50,92.50,4301.25,4000.00,301.25,301.25 due
+112,Shahriar Kabir,15,16,0,31.25,92.50,2890.63,3000.00,-109.37,109.37 remaining (refund)
+113,Mizanur Rahman,0,22,22,50.75,92.50,4694.38,4500.00,194.38,194.38 due
+,Rafiq Chowdhury,0,0,0,0.00,92.50,0.00,0.00,0.00,Fully settled

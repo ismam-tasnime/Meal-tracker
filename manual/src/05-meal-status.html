@@ -1,0 +1,104 @@
+<section class="sec" id="s4">
+  <h1 class="sh"><span class="n">4</span>Meal Status &amp; Meal Selection</h1>
+
+  <p class="lead">This section covers the single most-used feature in the application:
+  telling the mess whether you are eating. It is deliberately tiny — three buttons — and
+  everything interesting is in the rules around them.</p>
+
+  <h2><span class="n">4.1</span>The three deadlines currently in force</h2>
+  <table class="tbl">
+    <tr><th style="width:32mm">Meal</th><th style="width:32mm">Deadline</th><th>What happens at that time</th></tr>
+    <tr><td>🍳 <b>Breakfast</b></td><td><b>8:00 AM</b></td><td>Today's breakfast button locks. It keeps showing ON or OFF, but tapping does nothing.</td></tr>
+    <tr><td>🍛 <b>Lunch</b></td><td><b>11:00 AM</b></td><td>Today's lunch button locks.</td></tr>
+    <tr><td>🌙 <b>Dinner</b></td><td><b>5:00 PM</b></td><td>Today's dinner button locks.</td></tr>
+  </table>
+
+  <div class="box warn">
+    <span class="bt">These times are a setting, not a law of nature</span>
+    <p>8:00 / 11:00 / 17:00 are the values this office is running with, and they are what
+    every screenshot in this manual shows. They are one office-wide setting that <b>any</b> mess
+    manager can change at <b>Meal Status → 🔒 Employee meal deadlines</b> (Section 4.5). If your
+    office has different times, the Employee Panel always prints the real ones on the line
+    under "My meals" — trust that line, not this table.</p>
+  </div>
+
+  <h2><span class="n">4.2</span>Every state a meal button can be in</h2>
+  <table class="tbl">
+    <tr><th style="width:30mm">Appearance</th><th style="width:34mm">State</th><th>Meaning</th></tr>
+    <tr><td><span class="pill indigo">ON</span> solid indigo</td><td>ON, editable</td><td>You are eating this meal. Tap to cancel.</td></tr>
+    <tr><td><span class="pill grey">OFF</span> pale grey</td><td>OFF, editable</td><td>You are not eating. Tap to book it.</td></tr>
+    <tr><td><span class="pill indigo">🔒 ON</span> pale indigo</td><td>ON, locked</td><td>You are counted for this meal and it can no longer be cancelled here.</td></tr>
+    <tr><td><span class="pill grey">🔒 OFF</span> pale grey</td><td>OFF, locked</td><td>You are not counted and can no longer book it here.</td></tr>
+    <tr><td><b>…</b></td><td>Saving</td><td>The tap is being written to the database. Lasts a fraction of a second.</td></tr>
+    <tr><td>Red outline</td><td>Save failed</td><td>The value was rolled back. Check your connection and tap again.</td></tr>
+  </table>
+
+  <h2><span class="n">4.3</span>The same employee, four different dates</h2>
+
+  <div class="cmp">
+    <div class="b"><div class="cmp-h">Yesterday and earlier</div><img src="shots/C1-employee-past-date.png" alt="Past date locked"><div class="cmp-c"><b>Figure 4.1</b> — 25 September. Grey banner: <i>"Locked. Previous days cannot be changed."</i> All three buttons carry 🔒 regardless of deadlines.</div></div>
+    <div class="b"><div class="cmp-h">Today, after all deadlines</div><img src="shots/22b-employee-mymeals-locked.png" alt="Today locked"><div class="cmp-c"><b>Figure 4.2</b> — 29 September at 10 PM. Amber banner naming all three meals, and the advice to contact the Mess Manager.</div></div>
+  </div>
+  <div class="cmp">
+    <div class="a"><div class="cmp-h">Today, one deadline still open</div><img src="shots/B2-employee-partial-lock.png" alt="Partially locked"><div class="cmp-c"><b>Figure 4.3</b> — Only the meals whose deadline has passed are named; the rest stay tappable and a <i>"Change before: …"</i> line appears.</div></div>
+    <div class="a"><div class="cmp-h">Tomorrow (and any later date)</div><img src="shots/23b-employee-meals-all-on.png" alt="Future date editable"><div class="cmp-c"><b>Figure 4.4</b> — 30 September. No banner at all: future dates are always editable, so there is nothing to explain.</div></div>
+  </div>
+  <div class="diff">
+    <span class="bt">What is different across the four?</span>
+    <b>The banner and the padlocks — nothing else.</b> The buttons always show the true ON/OFF value;
+    the date never changes what you are counted for, only whether you may still change it.
+    A past date gets a grey "previous days" banner, today gets an amber "deadline passed" banner
+    listing exactly which meals are affected, and a future date gets no banner.
+  </div>
+
+  <h2><span class="n">4.4</span>When there is no data for a date</h2>
+  <p>A date on which you have never touched anything has no record in the database at all.
+  The panel does not show an error or an empty box — it simply shows all three meals OFF,
+  because that is what "no record" means.</p>
+  <div class="cmp">
+    <div class="b"><div class="cmp-h">A day you ate nothing (past)</div><img src="shots/C2-employee-zero-meal-day.png" alt="Zero meal day"><div class="cmp-c"><b>Figure 4.5</b> — 12 September: on leave. All three OFF and locked. Your meal count for this day is 0.</div></div>
+    <div class="b"><div class="cmp-h">A far-off date, nothing chosen yet</div><img src="shots/C3-employee-far-future-no-record.png" alt="Future date with no record"><div class="cmp-c"><b>Figure 4.6</b> — 20 October: no record exists. All three OFF, all three editable, no dish announced so no amber chips.</div></div>
+  </div>
+  <div class="diff">
+    <span class="bt">What is different?</span>
+    The buttons are identical in wording — the only difference is the padlocks, and the amber
+    dish chips that appear in Figure 4.5 (the manager had announced a menu for that date) but
+    not in Figure 4.6 (nothing announced). Read the padlocks, not the words.
+  </div>
+
+  <h2><span class="n">4.5</span>Who changes the deadlines — and how</h2>
+  <p>The deadlines live on the mess manager's <b>Meal Status</b> tab, in a collapsed strip at the
+  top. Any mess manager can open it; the change applies office-wide and takes effect on every
+  employee's next page load.</p>
+  <figure class="fig medium">
+    <img src="shots/41-meals-cutoff-settings.png" alt="Employee meal deadlines editor">
+    <figcaption><b>Figure 4.7</b> — <b>Meal Status → 🔒 Employee meal deadlines</b>, expanded. Three time
+    fields and one <b>Save deadlines</b> button. The paragraph above them restates the rule; note the
+    last sentence: <i>"You can still change anything, any time, here on Meal Status."</i></figcaption>
+  </figure>
+  <figure class="fig medium">
+    <img src="shots/B1-cutoff-saved.png" alt="Deadlines saved confirmation">
+    <figcaption><b>Figure 4.8</b> — After saving: <i>"Deadlines saved. Employees see them on their next page load."</i>
+    The summary line in the collapsed header updates immediately.</figcaption>
+  </figure>
+
+  <h2><span class="n">4.6</span>What happens after a deadline — exactly</h2>
+  <ol>
+    <li><b>On screen:</b> within 15 seconds the button grows a padlock and stops responding. No reload needed.</li>
+    <li><b>In the database:</b> any attempt to write that meal is rejected with <code>MEAL_LOCKED</code> —
+    including an attempt made outside the application, from a script or a modified request.</li>
+    <li><b>Your count:</b> the meal immediately joins <b>Meals I had</b> and your total meal count,
+    because it can no longer change.</li>
+    <li><b>The cook:</b> the plate count on the meal board is final for that meal.</li>
+    <li><b>The fix, if you need one:</b> ask the mess manager. A manager is not bound by the deadlines
+    and can correct any meal of their own running period (Section 8.4).</li>
+  </ol>
+
+  <div class="box stop">
+    <span class="bt">Warning — the deadline is not a reminder, it is a wall</span>
+    <p>There is no grace period, no "request a change" button and no appeal inside the application.
+    If you miss the lunch deadline and leave the office, you are billed for that lunch unless a mess
+    manager removes it for you. Set your meals for the whole week in advance — future dates are
+    always open.</p>
+  </div>
+</section>

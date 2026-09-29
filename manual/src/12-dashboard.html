@@ -1,0 +1,110 @@
+<section class="sec" id="s11">
+  <h1 class="sh"><span class="n">11</span>Dashboard Analytics</h1>
+
+  <p class="lead">The Dashboard is the manager's one-screen answer to "where is this month?".
+  It is a status card plus nine figures. There are no charts in this application — every figure
+  is a single number with a label and a one-line hint telling you which period it covers.</p>
+
+  <h2><span class="n">11.1</span>The Dashboard, card by card</h2>
+  <figure class="fig medium">
+    <div class="imgwrap" data-anno="31-admin-dashboard-data">
+      <img src="shots/31-admin-dashboard-data.png" alt="Annotated dashboard">
+    </div>
+    <figcaption><b>Figure 11.1</b> — The September 2026 Dashboard on 29 September.</figcaption>
+  </figure>
+
+  <table class="tbl long">
+    <tr><th class="c" style="width:8mm">#</th><th style="width:32mm">Card</th><th style="width:44mm">Where the number comes from</th><th>Period it covers</th></tr>
+    <tr><td class="c">1</td><td><b>Manager period card</b></td><td>Your account's own period, read from the database.</td><td>Fixed: 5 Sep lunch → 5 Oct breakfast.</td></tr>
+    <tr><td class="c">2</td><td><b>Status badge</b></td><td>Whether today falls inside the period.</td><td>Right now.</td></tr>
+    <tr><td class="c">3</td><td><b>Active employees</b></td><td>How many employees are marked active on the shared list.</td><td>Right now — not tied to any month.</td></tr>
+    <tr><td class="c">4</td><td><b>Today's breakfast / lunch / dinner</b></td><td>How many employees have that meal ON today.</td><td>Today only. Shows <b>—</b> when the meal belongs to the neighbouring month.</td></tr>
+    <tr><td class="c">5</td><td><b>Month meal count</b></td><td>Every employee's weighted meal count added up.</td><td>The whole period, including meals already booked for days still to come.</td></tr>
+    <tr><td class="c">6</td><td><b>Deposits received</b></td><td>Every deposit recorded in this month.</td><td>The whole period.</td></tr>
+    <tr><td class="c">7</td><td><b>Meal rate</b></td><td>The rate currently being tested, with the publish state in the hint.</td><td>The whole period.</td></tr>
+    <tr><td class="c">8</td><td><b>Total bill</b></td><td>Month meal count × meal rate.</td><td>The whole period. <b>—</b> until a rate is set.</td></tr>
+    <tr><td class="c">9</td><td><b>Still due</b></td><td>The dues only, added up (refunds are not netted off).</td><td>The whole period. <b>—</b> until a rate is set.</td></tr>
+    <tr><td class="c">10</td><td><b>Guest bill to collect</b></td><td>The Guest tab's total, recalculated from the guest counts.</td><td>The whole period. Owed by the <i>office</i>, not by employees.</td></tr>
+  </table>
+
+  <h2><span class="n">11.2</span>Reading each figure properly</h2>
+  <figure class="fig medium">
+    <img src="shots/31c-admin-stat-grid.png" alt="Dashboard stat cards">
+    <figcaption><b>Figure 11.2</b> — The nine figures, close up.</figcaption>
+  </figure>
+
+  <table class="tbl long">
+    <tr><th style="width:36mm">Card</th><th>What it is telling you</th></tr>
+    <tr><td><b>Active employees — 13</b></td><td>The size of the mess right now. It does not change when the month changes, and it drops the moment somebody is deactivated. (The office has 14 people on the list; one is inactive.)</td></tr>
+    <tr><td><b>Today's breakfast — 6<br>Today's lunch — 10<br>Today's dinner — 9</b></td><td>Exactly what the cook's board shows, minus guests. Use these to sanity-check the kitchen at a glance. They change live as employees tap, until each deadline passes.</td></tr>
+    <tr><td><b>Month meal count — 647</b></td><td>The single most important operational number: it is the divisor when you work out the meal rate. It rises during the month and includes meals booked ahead, so late in the month it is close to final.</td></tr>
+    <tr><td><b>Deposits received — ৳54,723.13</b></td><td>Cash actually in hand for this month. Compare it with Total bill to see how much collecting is left.</td></tr>
+    <tr><td><b>Meal rate — ৳92.50</b></td><td>The hint under it is the important part. See the table in 11.3.</td></tr>
+    <tr><td><b>Total bill — ৳59,847.53</b></td><td>What the mess will collect from employees at the current rate. Compare with <b>Total monthly spending</b> on the Spend tab (৳59,900) to see whether the rate covers costs.</td></tr>
+    <tr><td><b>Still due — ৳7,100.64</b></td><td>The sum of every <i>negative</i> balance. Employees who overpaid are <b>not</b> subtracted — so this is literally "cash still to collect", not a net position.</td></tr>
+    <tr><td><b>Guest bill to collect — ৳64,200</b></td><td>Invoice the office for this. It is not part of Total bill and never affects an employee.</td></tr>
+  </table>
+
+  <div class="box note">
+    <span class="bt">Still due is a collection target, not a profit figure</span>
+    <p>In this month ৳7,100.64 is due and ৳1,976.24 is owed back as refunds (visible in the Expense
+    Status footer). The Dashboard shows only the first number, because the manager's job is to
+    collect it. To see both together, look at the footer row of Expense Status or Report.</p>
+  </div>
+
+  <h2><span class="n">11.3</span>The Meal rate card's hint — four possible states</h2>
+  <table class="tbl">
+    <tr><th style="width:34mm">Value shown</th><th style="width:44mm">Hint underneath</th><th>Meaning</th></tr>
+    <tr><td><b>—</b></td><td><i>Not set yet</i></td><td>No rate has been entered. Bills are dashes everywhere.</td></tr>
+    <tr><td>৳95</td><td><i>Testing — not published</i></td><td>You are trying a rate. Employees see nothing at all.</td></tr>
+    <tr><td>৳92.50</td><td><i>Published to employees</i></td><td>The tested and published rates match. This is the settled state.</td></tr>
+    <tr><td>৳95</td><td><i>Testing · published ৳92.50</i></td><td>You are experimenting <i>after</i> publishing. Employees still see ৳92.50 until you publish again.</td></tr>
+  </table>
+
+  <h2><span class="n">11.4</span>Do the numbers update by themselves?</h2>
+  <table class="tbl">
+    <tr><th style="width:44mm">Card</th><th>Refresh behaviour</th></tr>
+    <tr><td>Today's breakfast / lunch / dinner</td><td>Recalculated every time you open or reload the Dashboard. They do <b>not</b> auto-refresh while you watch — only the public meal board does that (every 60 seconds).</td></tr>
+    <tr><td>Month meal count, Deposits, Total bill, Still due, Guest bill</td><td>Recalculated from the underlying records on every page load. They are never cached, so they cannot be stale.</td></tr>
+    <tr><td>Meal rate</td><td>Changes the instant you press Test or Publish.</td></tr>
+  </table>
+
+  <h2><span class="n">11.5</span>The Dashboard in the other two period states</h2>
+  <div class="cmp">
+    <div class="b"><div class="cmp-h">Completed — August 2026</div><img src="shots/90-august-dashboard-completed.png" alt="August dashboard"><div class="cmp-c"><b>Figure 11.3</b> — A finished month keeps every figure. Only the badge and the sentence under it have changed.</div></div>
+    <div class="b"><div class="cmp-h">Not started — October 2026</div><img src="shots/93-october-dashboard-upcoming.png" alt="October dashboard"><div class="cmp-c"><b>Figure 11.4</b> — A month that has not begun, yet already shows a meal count of 6.75 and ৳6,500 of advance deposits.</div></div>
+  </div>
+  <div class="diff">
+    <span class="bt">What is different?</span>
+    <ul style="margin:0">
+      <li><b>August (completed)</b> — all nine figures are still populated, because the month happened.
+      "Today's breakfast/lunch/dinner" are <b>absent entirely</b>: today is not inside that period, so
+      there is no "today" to report.</li>
+      <li><b>October (not started)</b> — the same three cards are absent for the same reason.
+      Total bill and Still due are dashes because no rate has been set, and Guest bill is ৳0.
+      But two figures are already alive: <b>Deposits received ৳6,500</b> (two employees paid in
+      advance) and <b>Month meal count 6.75</b> — three employees have already switched on 5 October's
+      lunch and dinner, which are October's meals: 3 × (1.25 + 1.00) = 6.75. A month starts filling
+      up before its first day.</li>
+    </ul>
+  </div>
+
+  <h2><span class="n">11.6</span>Empty state</h2>
+  <div class="cmp">
+    <div class="b"><div class="cmp-h">Empty — nothing recorded at all</div><img src="shots/07-admin-dashboard-empty.png" alt="Dashboard empty"><div class="cmp-c"><b>Figure 11.5</b> — The very first sign-in: no employees, no meals, no money.</div></div>
+    <div class="a"><div class="cmp-h">With data</div><img src="shots/31-admin-dashboard-data.png" alt="Dashboard with data"><div class="cmp-c"><b>Figure 11.6</b> — The same Dashboard at the end of a full month.</div></div>
+  </div>
+  <div class="diff">
+    <span class="bt">What is different?</span>
+    <ul style="margin:0">
+      <li>The layout is identical — <b>no card disappears</b>, and no "nothing here yet" message is shown.</li>
+      <li>Counts read <b>0</b>; money reads <b>৳0</b>; Meal rate, Total bill and Still due read <b>—</b>.</li>
+      <li>The Meal rate hint reads <i>Not set yet</i> rather than <i>Published to employees</i>.</li>
+      <li>The period card and its <span class="pill green">Active Manager Period</span> badge look exactly
+      the same, because the period exists from the moment the account is created.</li>
+    </ul>
+    <p style="margin:2mm 0 0">A zero here means "nothing has been recorded", never "something failed".
+    If a figure genuinely cannot be loaded, the Dashboard says so in a red box with a <b>Try again</b>
+    button instead of showing a zero.</p>
+  </div>
+</section>

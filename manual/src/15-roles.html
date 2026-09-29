@@ -1,0 +1,64 @@
+<section class="sec" id="s14">
+  <h1 class="sh"><span class="n">14</span>Role &amp; Permission Guide</h1>
+
+  <p class="lead">Three roles exist: the <b>public visitor</b> (the cook), the <b>employee</b>, and the
+  <b>mess manager</b>. Every rule below is enforced inside the database, so it holds even if someone
+  edits a URL, replays a form, or calls the API directly.</p>
+
+  <h2><span class="n">14.1</span>Feature-by-feature comparison</h2>
+  <table class="tbl long">
+    <tr><th style="width:52mm">Feature</th><th class="c" style="width:22mm">Public<br>(no login)</th><th class="c" style="width:26mm">Employee</th><th class="c">Mess Manager</th></tr>
+    <tr><td>Today's meal board (plate counts, ticks)</td><td class="c yes">View</td><td class="c yes">View</td><td class="c yes">View</td></tr>
+    <tr><td>Today's guest counts on the board</td><td class="c yes">View</td><td class="c yes">View</td><td class="c yes">View</td></tr>
+    <tr><td>Any other date's meal sheet</td><td class="c no">—</td><td class="c">Own meals only</td><td class="c yes">View all</td></tr>
+    <tr><td>Own meals ON/OFF — today before the deadline</td><td class="c no">—</td><td class="c yes">Edit</td><td class="c yes">Edit anyone's</td></tr>
+    <tr><td>Own meals ON/OFF — today after the deadline</td><td class="c no">—</td><td class="c no">Locked</td><td class="c yes">Edit anyone's</td></tr>
+    <tr><td>Own meals ON/OFF — any past date</td><td class="c no">—</td><td class="c no">Locked</td><td class="c">Own running period only</td></tr>
+    <tr><td>Own meals ON/OFF — any future date</td><td class="c no">—</td><td class="c yes">Edit</td><td class="c">Own running period only</td></tr>
+    <tr><td>Another employee's meals</td><td class="c no">—</td><td class="c no">Never</td><td class="c yes">Edit (own period)</td></tr>
+    <tr><td>Announced dish for a date</td><td class="c no">—</td><td class="c">View</td><td class="c yes">Edit (any date)</td></tr>
+    <tr><td>Employee meal deadlines</td><td class="c no">—</td><td class="c">View</td><td class="c yes">Edit (office-wide)</td></tr>
+    <tr><td>Meal counts / weights for a date</td><td class="c no">—</td><td class="c">See the defaults quoted</td><td class="c yes">Edit (own period's dates)</td></tr>
+    <tr><td>Own meal history and totals</td><td class="c no">—</td><td class="c yes">View</td><td class="c yes">View everyone's</td></tr>
+    <tr><td>Own deposits</td><td class="c no">—</td><td class="c">View</td><td class="c yes">Add / remove (own month)</td></tr>
+    <tr><td>Another employee's deposits or bill</td><td class="c no">—</td><td class="c no">Never</td><td class="c yes">View (own month)</td></tr>
+    <tr><td>Meal rate — test</td><td class="c no">—</td><td class="c no">—</td><td class="c yes">Yes (own month)</td></tr>
+    <tr><td>Meal rate — publish / unpublish</td><td class="c no">—</td><td class="c no">—</td><td class="c yes">Yes (own month)</td></tr>
+    <tr><td>Own published bill and due/refund</td><td class="c no">—</td><td class="c">View</td><td class="c yes">View everyone's</td></tr>
+    <tr><td>Private "dummy rate" calculator</td><td class="c no">—</td><td class="c yes">Use</td><td class="c no">—</td></tr>
+    <tr><td>Guest counts and guest bills</td><td class="c">Today's counts only</td><td class="c no">Never</td><td class="c yes">Edit (own period's meals)</td></tr>
+    <tr><td>Mess spending</td><td class="c no">—</td><td class="c no">Never</td><td class="c yes">Add / edit / delete (own month)</td></tr>
+    <tr><td>Monthly report + CSV export</td><td class="c no">—</td><td class="c no">—</td><td class="c yes">Own month</td></tr>
+    <tr><td>Employee list — add / rename / token</td><td class="c no">—</td><td class="c no">—</td><td class="c yes">Yes (shared by all months)</td></tr>
+    <tr><td>Activate / deactivate an employee</td><td class="c no">—</td><td class="c no">—</td><td class="c yes">Yes</td></tr>
+    <tr><td>Reset an employee's login</td><td class="c no">—</td><td class="c no">—</td><td class="c yes">Yes</td></tr>
+    <tr><td>Delete an employee</td><td class="c no">—</td><td class="c no">—</td><td class="c">Only if they have no meals and no deposits</td></tr>
+    <tr><td>Another month's data</td><td class="c no">—</td><td class="c no">—</td><td class="c no">Never</td></tr>
+  </table>
+
+  <h2><span class="n">14.2</span>The historical-data rule</h2>
+  <table class="tbl">
+    <tr><th style="width:34mm">Who</th><th>Can they change history?</th></tr>
+    <tr><td><b>Employee</b></td><td><b>No.</b> A past date is refused outright. The only route is to ask a mess manager.</td></tr>
+    <tr><td><b>The month's own manager, while running</b></td><td><b>Yes</b> — any meal of their own period, any date within it, ignoring deadlines.</td></tr>
+    <tr><td><b>The month's own manager, after it ends</b></td><td><b>No.</b> Meals become a read-only record; everything else about the month stays editable forever.</td></tr>
+    <tr><td><b>Any other month's manager</b></td><td><b>No</b> — they cannot even read another month's data.</td></tr>
+  </table>
+
+  <div class="box warn">
+    <span class="bt">The one shared thing</span>
+    <p>The <b>employee list</b> is office-wide, not per month: any manager account — past, present or
+    future — can add, rename, deactivate or reset a login. Agree changes before making them.</p>
+  </div>
+
+  <h2><span class="n">14.3</span>What is blocked at the database, not just on screen</h2>
+  <ul>
+    <li>An employee writing another employee's meal row.</li>
+    <li>Anyone writing a meal on a past date, or today after its deadline (managers excepted).</li>
+    <li>A manager writing a meal outside their own running period — one forbidden meal rejects the whole write.</li>
+    <li>A manager reading or writing another month's data, or changing any period's dates (only the meal rate fields can be updated).</li>
+    <li>Deleting a login, a manager profile, a period, or an employee that still has records attached.</li>
+    <li>A signed-out visitor reading deposits, bills, guest bills, spending or anyone's phone number.</li>
+  </ul>
+  <p>A padlock or a greyed-out field is only reflecting a rule the database would enforce anyway.</p>
+</section>

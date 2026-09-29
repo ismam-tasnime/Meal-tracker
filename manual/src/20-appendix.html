@@ -1,0 +1,135 @@
+<section class="sec" id="s19">
+  <h1 class="sh"><span class="n">A</span>Appendix — Screen Audit &amp; Demo Dataset</h1>
+
+  <h2><span class="n">A.1</span>Every route in the application</h2>
+  <table class="tbl long">
+    <tr><th style="width:36mm">Route</th><th style="width:34mm">Screen</th><th style="width:18mm">Login</th><th>Documented in</th></tr>
+    <tr><td><code>/</code></td><td>Meal board (cook's view)</td><td>None</td><td>2.1, 10.6, 12.1, 13.7</td></tr>
+    <tr><td><code>/employee/signup</code></td><td>Employee sign-up</td><td>None</td><td>2.2</td></tr>
+    <tr><td><code>/employee/login</code></td><td>Employee sign-in</td><td>None</td><td>2.3</td></tr>
+    <tr><td><code>/employee</code></td><td>Employee Panel</td><td>Employee</td><td>3, 4, 5</td></tr>
+    <tr><td><code>/admin/signup</code></td><td>Mess manager sign-up</td><td>None</td><td>2.4</td></tr>
+    <tr><td><code>/admin/login</code></td><td>Mess manager sign-in</td><td>None</td><td>2.5</td></tr>
+    <tr><td><code>/admin</code></td><td>Dashboard</td><td>Manager</td><td>6.3, 11</td></tr>
+    <tr><td><code>/admin/meals</code></td><td>Meal Status</td><td>Manager</td><td>4.5, 6.4, 8</td></tr>
+    <tr><td><code>/admin/guests</code></td><td>Guest</td><td>Manager</td><td>10</td></tr>
+    <tr><td><code>/admin/expenses</code></td><td>Expense Status</td><td>Manager</td><td>9</td></tr>
+    <tr><td><code>/admin/spending</code></td><td>Spend</td><td>Manager</td><td>6.5</td></tr>
+    <tr><td><code>/admin/reports</code></td><td>Report</td><td>Manager</td><td>6.6</td></tr>
+    <tr><td><code>/admin/employees</code></td><td>Employees</td><td>Manager</td><td>7</td></tr>
+  </table>
+
+  <h2><span class="n">A.2</span>Completeness checklist</h2>
+  <p>Every item below was opened in the running application, captured, and documented.</p>
+  <div class="checklist">
+    <div><span class="ok">✓</span> Meal board — populated, empty, with guests, on a phone</div>
+    <div><span class="ok">✓</span> Employee sign-up — blank, filled, unknown token, token taken</div>
+    <div><span class="ok">✓</span> Employee sign-in — blank, wrong password</div>
+    <div><span class="ok">✓</span> Employee Panel — today locked, today partly locked, future editable, past date, zero-meal day, no-record date</div>
+    <div><span class="ok">✓</span> Employee Panel — Meals I had, dates list, deposits, published bill, calculator (filled and blank)</div>
+    <div><span class="ok">✓</span> Employee Panel — populated month, empty month, previous month, handover month</div>
+    <div><span class="ok">✓</span> Employee Panel — deactivated account, wrong-role account</div>
+    <div><span class="ok">✓</span> Manager sign-up — blank, month recognised, month taken</div>
+    <div><span class="ok">✓</span> Manager sign-in — blank, wrong credentials</div>
+    <div><span class="ok">✓</span> Dashboard — populated, empty, active, completed, not started</div>
+    <div><span class="ok">✓</span> Meal Status — populated, empty, custom meal counts, both handover days, outside the month, finished period</div>
+    <div><span class="ok">✓</span> Meal Status — menu form, meal-count form, deadline editor (collapsed, expanded, saved)</div>
+    <div><span class="ok">✓</span> Guest — small / large / single-meal / no guests, handover day, month list, bill card, empty month</div>
+    <div><span class="ok">✓</span> Expense Status — populated, empty, deposit form, deposit history, rate card published, rate card testing, bills at two rates</div>
+    <div><span class="ok">✓</span> Spend — populated, empty, Add dialog, Edit dialog, Sum Spending</div>
+    <div><span class="ok">✓</span> Report — populated, empty, filtered, CSV export</div>
+    <div><span class="ok">✓</span> Employees — populated, empty, add form, inline edit, badges, deactivation effect</div>
+    <div><span class="ok">✓</span> Loading skeleton, error messages, lock notices, period notices</div>
+    <div><span class="ok">✓</span> Phone layouts — board, Employee Panel, Dashboard, Expense Status, Meal Status</div>
+  </div>
+
+  <h2><span class="n">A.3</span>The demo dataset behind every screenshot</h2>
+  <p>So that every figure in this manual can be checked, here is exactly what was loaded.</p>
+
+  <h3>Manager accounts</h3>
+  <table class="tbl">
+    <tr><th style="width:30mm">Account</th><th style="width:48mm">Period</th><th>State on 29 Sep 2026</th></tr>
+    <tr><td><code>August2026</code></td><td>5 Aug lunch → 5 Sep breakfast</td><td><span class="pill grey">Completed</span> — full month, rate ৳88 published</td></tr>
+    <tr><td><code>September2026</code></td><td>5 Sep lunch → 5 Oct breakfast</td><td><span class="pill green">Active</span> — the manual's reference month</td></tr>
+    <tr><td><code>October2026</code></td><td>5 Oct lunch → 5 Nov breakfast</td><td><span class="pill amber">Not started</span> — two advance deposits</td></tr>
+    <tr><td><code>November2026</code></td><td>5 Nov lunch → 5 Dec breakfast</td><td><span class="pill amber">Not started</span> — completely empty (all empty-state figures)</td></tr>
+  </table>
+
+  <h3>Employees (14)</h3>
+  <table class="tbl long">
+    <tr><th class="num" style="width:16mm">Token</th><th style="width:34mm">Name</th><th>Pattern</th><th class="num" style="width:20mm">Sep meal count</th></tr>
+    <tr><td class="num">101</td><td>Romith Ahmed</td><td>All three most days; no breakfast on Fridays; on leave 12–13 Sep</td><td class="num">74.25</td></tr>
+    <tr><td class="num">102</td><td>Tanvir Hasan</td><td>Never breakfast; off at weekends</td><td class="num">41.75</td></tr>
+    <tr><td class="num">103</td><td>Nusrat Jahan</td><td>Lunch only</td><td class="num">27.75</td></tr>
+    <tr><td class="num">104</td><td>Sabbir Rahman</td><td>Every meal, every day</td><td class="num">82.50</td></tr>
+    <tr><td class="num">105</td><td>Mehedi Hasan</td><td>Irregular — several days with zero meals</td><td class="num">28.00</td></tr>
+    <tr><td class="num">106</td><td>Farhana Akter</td><td>Breakfast + lunch, weekdays</td><td class="num">40.50</td></tr>
+    <tr><td class="num">107</td><td>Imran Kabir</td><td>Night shift — dinner only</td><td class="num">26.00</td></tr>
+    <tr><td class="num">108</td><td>Sadia Islam</td><td>All three on weekdays; <b>no deposits at all</b></td><td class="num">55.50</td></tr>
+    <tr><td class="num">109</td><td>Rakib Hossain</td><td>Lunch + dinner; <b>overpaid</b></td><td class="num">62.00</td></tr>
+    <tr><td class="num">110</td><td>Jannatul Ferdous</td><td>All three; paid <b>exactly</b> the bill</td><td class="num">80.25</td></tr>
+    <tr><td class="num">111</td><td>Arif Mahmud</td><td><b>Joined 15 Sep</b></td><td class="num">46.50</td></tr>
+    <tr><td class="num">112</td><td>Shahriar Kabir</td><td><b>Left 20 Sep</b>, now deactivated</td><td class="num">31.25</td></tr>
+    <tr><td class="num">113</td><td>Mizanur Rahman</td><td>Lunch + dinner, a few days off</td><td class="num">50.75</td></tr>
+    <tr><td class="num">—</td><td>Rafiq Chowdhury</td><td><b>No token</b>, no meals, no deposits</td><td class="num">0</td></tr>
+  </table>
+  <p class="muted" style="font-size:8.4pt">Tokens 101, 102, 104, 109 and 110 have signed up; the rest
+  show <span class="pill grey">Not signed up</span>.</p>
+
+  <h3>September 2026 in numbers</h3>
+  <table class="tbl">
+    <tr><th style="width:52mm">Figure</th><th class="num" style="width:34mm">Value</th><th>Where to check it</th></tr>
+    <tr><td>Daily meal records loaded</td><td class="num">629</td><td>Across August and September</td></tr>
+    <tr><td>Month meal count</td><td class="num">647</td><td>Dashboard</td></tr>
+    <tr><td>Meal rate (tested and published)</td><td class="num">৳92.50</td><td>Expense Status</td></tr>
+    <tr><td>Total bill</td><td class="num">৳59,847.53</td><td>Dashboard · Expense Status footer</td></tr>
+    <tr><td>Deposits received (18 deposits)</td><td class="num">৳54,723.13</td><td>Dashboard · Expense Status footer</td></tr>
+    <tr><td>Still due</td><td class="num">৳7,100.64</td><td>Dashboard · Expense Status footer</td></tr>
+    <tr><td>Remaining (refunds)</td><td class="num">৳1,976.24</td><td>Expense Status footer</td></tr>
+    <tr><td>Total monthly spending (15 entries)</td><td class="num">৳59,900</td><td>Spend → Sum Spending</td></tr>
+    <tr><td>Guest bill to collect (7 dates)</td><td class="num">৳64,200</td><td>Guest tab · Dashboard</td></tr>
+    <tr><td>Guests: breakfast / lunch / dinner</td><td class="num">35 / 291 / 123</td><td>Guest bill card</td></tr>
+    <tr><td>Customised meal-count dates</td><td class="num">2</td><td>16 Sep (dinner 2.00) · 21 Sep (breakfast 1.00, lunch 1.50)</td></tr>
+  </table>
+
+  <div class="box note">
+    <span class="bt">Arithmetic check</span>
+    <p>647 × ৳92.50 = ৳59,847.50; the application shows <b>৳59,847.53</b> because each employee's bill is
+    rounded to the paisa <i>before</i> the column is totalled. Both are correct — the three-paisa
+    difference is rounding, and the figure the employees are billed is the per-person one.</p>
+  </div>
+
+  <h2><span class="n">A.4</span>Additional reference screens</h2>
+  <p>Four screens referred to in the text but shown in full here.</p>
+  <div class="cmp">
+    <div class="b"><div class="cmp-h">A finished month's report</div><img src="shots/92-august-report.png" alt="August report"><div class="cmp-c"><b>Figure A.1</b> — <b>August2026</b>, a completed period. The Report, the rate card and the CSV export all still work; only employees' meal ON/OFF has closed.</div></div>
+    <div class="b"><div class="cmp-h">Meal Status before a period starts</div><img src="shots/94-october-meals-notstarted.png" alt="October meal status"><div class="cmp-c"><b>Figure A.2</b> — <b>October2026</b> on 8 October — a date it owns, but before its period opens. Amber notice, full sheet, every button 🔒.</div></div>
+  </div>
+  <div class="cmp">
+    <div class="a"><div class="cmp-h">Meal board on a phone</div><img src="shots/M1-mobile-board.png" alt="Mobile meal board"><div class="cmp-c"><b>Figure A.3</b> — The cook's board at phone width: the three meal cards stay side by side, with guests and "To prepare" stacked underneath each.</div></div>
+    <div class="a"><div class="cmp-h">Meal Status on a phone</div><img src="shots/M5-mobile-admin-meals.png" alt="Mobile meal status"><div class="cmp-c"><b>Figure A.4</b> — The manager's sheet on a phone: the tabs become a scrolling row, each employee's meal count moves under their name, and the meal columns scroll sideways (Dinner sits just off the right edge).</div></div>
+  </div>
+
+  <h2><span class="n">A.5</span>How this manual was produced</h2>
+  <ol>
+    <li>The application was run against an isolated, empty database — the production data was never
+    touched, read or written.</li>
+    <li>Four manager accounts and fourteen employees were created through the application's own
+    sign-up and Employees screens.</li>
+    <li>A complete month of meal records, deposits, guest dates, spending entries, custom meal counts
+    and announced menus was loaded, plus a second, finished month (August) and two future months.</li>
+    <li>Every screen was then opened in a real browser and captured at 2× resolution — populated
+    first, then empty, then in each locked or handover state.</li>
+    <li>Numbered call-outs were positioned from the live page geometry, so each marker sits on the
+    element it names.</li>
+    <li>Every figure quoted in the text was read back from the application or the database and checked
+    against the screenshots.</li>
+  </ol>
+
+  <div class="box tip">
+    <span class="bt">Reproducing a figure</span>
+    <p>Sign in as <code>September2026</code>, open the tab named in the caption, and set the same date.
+    Because nothing in this application is cached or pre-computed, the same data always produces the
+    same screen.</p>
+  </div>
+</section>

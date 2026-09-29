@@ -1,0 +1,132 @@
+<section class="sec" id="s12">
+  <h1 class="sh"><span class="n">12</span>Empty States</h1>
+
+  <p class="lead">An empty screen in this application always means "nothing has been recorded
+  yet" — never "something broke". Failures look completely different: a red box with a
+  <b>Try again</b> button. This section shows every empty state so nobody ever has to guess.</p>
+
+  <table class="tbl">
+    <tr><th style="width:30mm">You see…</th><th>It means</th></tr>
+    <tr><td><b>Dashed box</b> with a grey sentence</td><td>No records of this kind exist yet. Normal. The sentence usually tells you what to do next.</td></tr>
+    <tr><td><b>0</b> or <b>৳0</b></td><td>The records exist but add up to nothing.</td></tr>
+    <tr><td><b>—</b> (a dash)</td><td>The number cannot be worked out yet — almost always because no meal rate has been set.</td></tr>
+    <tr><td><b>Amber strip</b></td><td>A rule is stopping you: outside your mess month, period not started, deadline passed.</td></tr>
+    <tr><td><b>Red box + Try again</b></td><td>A genuine failure (usually the connection). <b>Not</b> an empty state. Your saved data is safe.</td></tr>
+  </table>
+
+  <h2><span class="n">12.1</span>No employees yet</h2>
+  <div class="cmp">
+    <div class="b"><div class="cmp-h">Meal board</div><img src="shots/01-board-empty.png" alt="Board empty"><div class="cmp-c"><b>Figure 12.1</b> — <i>"No active employees yet."</i> The date header still shows, so the cook knows the page loaded.</div></div>
+    <div class="b"><div class="cmp-h">Employees tab</div><img src="shots/13-admin-employees-empty.png" alt="Employees empty"><div class="cmp-c"><b>Figure 12.2</b> — <i>"No employees yet — add the first one above."</i></div></div>
+  </div>
+  <p><b>Why it appears:</b> a brand-new installation, or every employee has been deactivated.
+  <b>What to do:</b> a mess manager adds people on the Employees tab (Section 7.2).</p>
+
+  <div class="cmp">
+    <div class="b"><div class="cmp-h">Meal Status</div><img src="shots/08-admin-meals-empty.png" alt="Meal status empty"><div class="cmp-c"><b>Figure 12.3</b> — <i>"No employees yet."</i> in place of the sheet; the date's menu and meal counts are still editable.</div></div>
+    <div class="b"><div class="cmp-h">Report</div><img src="shots/12-admin-reports-empty.png" alt="Report empty"><div class="cmp-c"><b>Figure 12.4</b> — <i>"No employees yet."</i> across the table, and <b>Export CSV</b> is greyed out because there is nothing to export.</div></div>
+  </div>
+
+  <h2><span class="n">12.2</span>No meals recorded</h2>
+  <p>There is no separate "no meals" screen. A date on which nobody has chosen anything simply
+  shows every button OFF, and the <b>Total ON</b> row reads 0 / 0 / 0 with a meal count of 0. On the
+  employee's side the same thing shows as three OFF buttons (Figures 4.5 and 4.6). This is
+  deliberate: "no record" and "not eating" are the same statement.</p>
+
+  <h2><span class="n">12.3</span>No guest meals</h2>
+  <figure class="fig medium">
+    <img src="shots/97-november-guests-empty.png" alt="Guests empty">
+    <figcaption><b>Figure 12.5</b> — <i>"No guests declared for November2026 yet."</i>, the heading counter reads
+    <b>(0 dates)</b>, and the green card totals ৳0 with its workings shown as <code>0 × ৳60</code> and so on.
+    The entry form above is fully usable — this is where you break the empty state.</figcaption>
+  </figure>
+
+  <h2><span class="n">12.4</span>No spending</h2>
+  <figure class="fig medium">
+    <img src="shots/98-november-spending-empty.png" alt="Spending empty">
+    <figcaption><b>Figure 12.6</b> — <i>"No spending recorded for this month yet. Press <b>+ Add Spending</b> to
+    record one."</i> The heading reads <b>Spending this month (0)</b> and <b>Sum Spending</b> still works —
+    pressing it returns ৳0 over 0 entries.</figcaption>
+  </figure>
+
+  <h2><span class="n">12.5</span>No deposits and no meal rate</h2>
+  <figure class="fig medium">
+    <img src="shots/99-november-expenses-empty.png" alt="Expenses empty">
+    <figcaption><b>Figure 12.7</b> — Expense Status for a month that has not started. Three empty
+    states stacked: the amber strip explaining that bills need a rate, a table of real employees with
+    zeros and dashes, and <b>Deposit history (0)</b> — <i>"No deposits recorded yet."</i></figcaption>
+  </figure>
+  <div class="box note">
+    <span class="bt">Why the table is not empty</span>
+    <p>The bill table always lists every active employee, even with no data. That is not a bug:
+    the list of people is a fact about the office, while their meals and money are facts about the
+    month. Seeing the names with zeros is how you confirm the month is set up correctly.</p>
+  </div>
+
+  <h2><span class="n">12.6</span>No monthly data (Dashboard and Report)</h2>
+  <div class="cmp">
+    <div class="b"><div class="cmp-h">Dashboard — new month</div><img src="shots/96-november-dashboard-empty.png" alt="November dashboard"><div class="cmp-c"><b>Figure 12.8</b> — Every card is present; counts are 0, money is ৳0, and rate/bill/due are dashes.</div></div>
+    <div class="b"><div class="cmp-h">Report — new month</div><img src="shots/99b-november-report-empty.png" alt="November report"><div class="cmp-c"><b>Figure 12.9</b> — Employees listed with 0 / 0 / 0 meals, dashes for bills, and a Total row of zeros.</div></div>
+  </div>
+
+  <h2><span class="n">12.7</span>An employee's empty month</h2>
+  <figure class="fig medium">
+    <img src="shots/C5-employee-month-truly-empty.png" alt="Employee empty month">
+    <figcaption><b>Figure 12.10</b> — June 2026 for an employee who was not in the mess then. Counters 0,
+    <i>"No deposits recorded for this month."</i>, a dashed <b>My bill</b> box, and the grey footnote
+    <i>"No mess manager has opened this month yet, so the meal count uses the standard counts."</i>
+    Tapping a counter would show <i>"No lunch this month."</i></figcaption>
+  </figure>
+
+  <h2><span class="n">12.8</span>Summary — every empty state in one table</h2>
+  <table class="tbl long">
+    <tr><th style="width:38mm">Where</th><th style="width:56mm">Exact wording</th><th>What to do next</th></tr>
+    <tr><td>Meal board</td><td><i>No active employees yet.</i></td><td>Manager adds employees.</td></tr>
+    <tr><td>Employees tab</td><td><i>No employees yet — add the first one above.</i></td><td>Use the form at the top.</td></tr>
+    <tr><td>Meal Status sheet</td><td><i>No employees yet.</i></td><td>Same.</td></tr>
+    <tr><td>Expense Status / Report table</td><td><i>No employees yet.</i></td><td>Same.</td></tr>
+    <tr><td>Deposit history</td><td><i>No deposits recorded yet.</i></td><td>Record one above when cash comes in.</td></tr>
+    <tr><td>Guest month list</td><td><i>No guests declared for &lt;Month&gt; yet.</i></td><td>Nothing, unless guests are expected.</td></tr>
+    <tr><td>Spend table</td><td><i>No spending recorded for this month yet. Press + Add Spending to record one.</i></td><td>Add the first bazar entry.</td></tr>
+    <tr><td>Employee — My deposit</td><td><i>No deposits recorded for this month.</i></td><td>Hand cash to the mess manager.</td></tr>
+    <tr><td>Employee — My bill</td><td><i>The mess manager hasn't published this month's meal rate yet. Your bill will show here once it's published.</i></td><td>Wait for month end; use the calculator meanwhile.</td></tr>
+    <tr><td>Employee — meal dates</td><td><i>No &lt;meal&gt; this month.</i></td><td>Nothing — you had none.</td></tr>
+    <tr><td>Employee — unmanaged month</td><td><i>No mess manager has opened this month yet, so the meal count uses the standard counts.</i></td><td>Nothing.</td></tr>
+    <tr><td>Expense Status, no rate</td><td><i>Bills appear once you test a meal rate above…</i></td><td>Test a rate.</td></tr>
+  </table>
+
+  <h2><span class="n">12.9</span>What a real failure looks like</h2>
+  <p>Empty states are calm and grey. Failures are red and offer a retry.</p>
+  <table class="tbl">
+    <tr><th style="width:44mm">Message</th><th>When</th></tr>
+    <tr><td><i>Could not load dashboard stats.</i> / <i>Could not load meal records.</i> / <i>Could not load expense status.</i> / <i>Could not load the report.</i> / <i>Could not load guest meals.</i> / <i>Could not load spending.</i> / <i>Could not load employees.</i></td><td>One part of a page could not be fetched. Shown in a red strip with <b>Try again</b>. The rest of the page still works.</td></tr>
+    <tr><td><i>Something went wrong while loading this page — usually a dropped connection. Your saved data is safe.</i></td><td>The whole page failed. A <b>Try again</b> button reloads it in place.</td></tr>
+    <tr><td><i>Can't load your mess month</i> / <i>Can't load your account</i></td><td>The session loaded but the month or employee behind it could not be read. Retry, then sign out and in.</td></tr>
+    <tr><td><i>Couldn't save a meal (outlined in red). Check your connection and tap it again.</i></td><td>A meal toggle failed. The value was rolled back — tap it again.</td></tr>
+    <tr><td><i>Couldn't load today's guests, so these counts are employees only.</i></td><td>On the meal board: the employee counts are right, the guest counts are missing. Ask the manager whether guests are expected.</td></tr>
+  </table>
+
+  <h2><span class="n">12.10</span>And what "loading" looks like</h2>
+  <figure class="fig medium">
+    <img src="shots/B4-loading-skeleton.png" alt="Loading skeleton">
+    <figcaption><b>Figure 12.11</b> — Moving to a tab whose data is still arriving: a grey skeleton of the
+    table plus a status line (here <i>"Calculating monthly report…"</i>). It appears instantly so the app
+    never looks frozen, and is replaced by real content as soon as the data lands. A skeleton that
+    never resolves means the connection dropped — the red box above will follow.</figcaption>
+  </figure>
+  <p>Each screen has its own wording, so the message doubles as confirmation that you pressed the
+  right tab:</p>
+  <table class="tbl">
+    <tr><th style="width:44mm">Screen</th><th>Loading message</th></tr>
+    <tr><td>Meal board (<code>/</code>)</td><td><i>Loading employees…</i></td></tr>
+    <tr><td>Employee Panel</td><td><i>Loading…</i></td></tr>
+    <tr><td>Mess Manager Panel (entering)</td><td><i>Opening Mess Manager…</i></td></tr>
+    <tr><td>Dashboard</td><td><i>Loading dashboard…</i></td></tr>
+    <tr><td>Meal Status</td><td><i>Loading meal status…</i></td></tr>
+    <tr><td>Guest</td><td><i>Loading guest meals…</i></td></tr>
+    <tr><td>Expense Status</td><td><i>Loading deposits and balances…</i></td></tr>
+    <tr><td>Spend</td><td><i>Loading spending…</i></td></tr>
+    <tr><td>Report</td><td><i>Calculating monthly report…</i></td></tr>
+    <tr><td>Employees</td><td><i>Loading employees…</i></td></tr>
+  </table>
+</section>

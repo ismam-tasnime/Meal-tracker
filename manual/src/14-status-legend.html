@@ -1,0 +1,88 @@
+<section class="sec" id="s13">
+  <h1 class="sh"><span class="n">13</span>Status, Colour &amp; Icon Guide</h1>
+
+  <p class="lead">The application uses a small, consistent visual vocabulary. Learn these twenty
+  signs and every screen becomes readable at a glance.</p>
+
+  <h2><span class="n">13.1</span>Colours and what they always mean</h2>
+  <table class="tbl">
+    <tr><th style="width:30mm">Colour</th><th style="width:40mm">Used for</th><th>Never used for</th></tr>
+    <tr><td><span class="pill indigo">Indigo</span></td><td>ON, the active choice, primary buttons, the Employee Panel.</td><td>Warnings.</td></tr>
+    <tr><td><span class="pill green">Emerald</span></td><td>Money coming back (refunds), published things, confirmations, the Mess Manager Panel, ticks on the meal board.</td><td>Errors.</td></tr>
+    <tr><td><span class="pill grey">Slate / grey</span></td><td>OFF, inactive, settled, historical, "nothing here yet".</td><td>Anything urgent.</td></tr>
+    <tr><td><span class="pill amber">Amber</span></td><td>A rule is stopping you: deadlines passed, date outside your month, period not started. Also guest counts on the cook's board and the "what's cooking" card.</td><td>Failures.</td></tr>
+    <tr><td><span class="pill red">Red</span></td><td>Money owed, destructive buttons (Remove, Delete), and genuine failures.</td><td>Ordinary information.</td></tr>
+    <tr><td><span style="color:#0369a1;font-weight:700">Sky blue</span></td><td>Handover-day explanations on the 5th.</td><td>Anything else.</td></tr>
+  </table>
+
+  <h2><span class="n">13.2</span>Meal buttons</h2>
+  <table class="tbl legend">
+    <tr><th style="width:30mm">Visual</th><th style="width:40mm">Meaning</th><th>What you should do</th></tr>
+    <tr><td><span class="pill indigo">ON</span> solid indigo</td><td>Eating this meal; still changeable.</td><td>Nothing, unless your plan changes.</td></tr>
+    <tr><td><span class="pill grey">OFF</span> pale grey</td><td>Not eating; still changeable.</td><td>Tap it if you will be eating.</td></tr>
+    <tr><td><span class="pill indigo">🔒 ON</span></td><td>Eating, and locked — you are being billed for it.</td><td>Ask the mess manager if this is wrong.</td></tr>
+    <tr><td><span class="pill grey">🔒 OFF</span></td><td>Not eating, and locked.</td><td>Ask the mess manager if you need it added.</td></tr>
+    <tr><td><b>…</b></td><td>Saving right now.</td><td>Wait half a second.</td></tr>
+    <tr><td>Red outline</td><td>The save failed and the value was rolled back.</td><td>Check your connection and tap again.</td></tr>
+  </table>
+
+  <h2><span class="n">13.3</span>Manager period badges</h2>
+  <table class="tbl legend">
+    <tr><th style="width:44mm">Badge</th><th style="width:40mm">Meaning</th><th>What you can do</th></tr>
+    <tr><td><span class="pill green">Active Manager Period</span></td><td>Today is inside your month.</td><td>Everything, including changing employees' meals.</td></tr>
+    <tr><td><span class="pill amber">Manager Period Not Started</span></td><td>Your month begins later.</td><td>Meal counts, guests, deposits, spending. Not meal ON/OFF.</td></tr>
+    <tr><td><span class="pill grey">Manager Period Completed</span></td><td>Your month is over.</td><td>Everything except meal ON/OFF — forever.</td></tr>
+  </table>
+
+  <h2><span class="n">13.4</span>Money statuses</h2>
+  <table class="tbl legend">
+    <tr><th style="width:44mm">Visual</th><th style="width:40mm">Meaning</th><th>What to do</th></tr>
+    <tr><td><span class="pill red">৳368.13 · Due (to pay)</span></td><td>Bill &gt; deposits.</td><td>Manager: collect it. Employee: pay it.</td></tr>
+    <tr><td><span class="pill green">৳1,265 · Remaining (refund)</span></td><td>Deposits &gt; bill.</td><td>Manager: refund or carry forward.</td></tr>
+    <tr><td><span class="pill grey">Fully settled</span></td><td>Exactly equal.</td><td>Nothing.</td></tr>
+    <tr><td><b>—</b></td><td>No meal rate set, so no bill exists.</td><td>Manager: test a rate.</td></tr>
+    <tr><td><span class="pill green">Published to employees</span></td><td>Employees can see this rate and their bills.</td><td>Nothing.</td></tr>
+    <tr><td><span class="pill grey">Testing (only you)</span> / <i>Not yet</i></td><td>Private to the manager / never published.</td><td>Publish when final.</td></tr>
+  </table>
+
+  <h2><span class="n">13.5</span>Employee statuses</h2>
+  <table class="tbl legend">
+    <tr><th style="width:44mm">Visual</th><th style="width:40mm">Meaning</th><th>What to do</th></tr>
+    <tr><td><span class="pill green">Signed up</span></td><td>The token has a login.</td><td>Nothing. <b>Reset login</b> if the password is lost.</td></tr>
+    <tr><td><span class="pill grey">Not signed up</span></td><td>Nobody has claimed the token.</td><td>Ask the employee to visit <code>/employee/signup</code>.</td></tr>
+    <tr><td><span class="pill amber">No token number — can't sign up yet</span></td><td>No token assigned.</td><td>Press <b>Edit</b> and give them one.</td></tr>
+    <tr><td><span class="pill grey">Inactive</span> + struck-through name</td><td>Deactivated.</td><td><b>Activate</b> if they are back.</td></tr>
+    <tr><td><span class="pill indigo">101</span> token badge</td><td>The employee's Token Number.</td><td>It is also their username.</td></tr>
+  </table>
+
+  <h2><span class="n">13.6</span>Icons and symbols</h2>
+  <table class="tbl legend">
+    <tr><th style="width:24mm">Icon</th><th style="width:40mm">Where</th><th>Meaning</th></tr>
+    <tr><td style="font-size:14pt">🍳</td><td>Meal board, Guest tab, meal lists</td><td>Breakfast.</td></tr>
+    <tr><td style="font-size:14pt">🍛</td><td>Same</td><td>Lunch.</td></tr>
+    <tr><td style="font-size:14pt">🌙</td><td>Same</td><td>Dinner.</td></tr>
+    <tr><td style="font-size:14pt">🔒</td><td>Meal buttons, meal-date chips, deadline settings, finished periods</td><td>Cannot be changed from here.</td></tr>
+    <tr><td style="font-size:14pt">⏳</td><td>Meal Status notice</td><td>Your manager period has not started.</td></tr>
+    <tr><td style="font-size:14pt">📢</td><td>Employee "My bill"</td><td>The meal rate has been published.</td></tr>
+    <tr><td style="font-size:14pt">🍲</td><td>Meal Status</td><td>"What's cooking this date."</td></tr>
+    <tr><td style="font-size:14pt">👥</td><td>Guest tab</td><td>Guests on this date.</td></tr>
+    <tr><td style="font-size:14pt">🧾</td><td>Guest tab</td><td>The month's guest bill.</td></tr>
+    <tr><td><span style="display:inline-flex;width:6mm;height:6mm;border-radius:50%;background:#059669;color:#fff;align-items:center;justify-content:center;font-weight:800">✓</span></td><td>Meal board</td><td>This employee is eating this meal.</td></tr>
+    <tr><td style="color:#cbd5e1;font-weight:800;font-size:12pt">—</td><td>Meal board</td><td>This employee is not eating this meal.</td></tr>
+    <tr><td><span class="pill green">Today</span></td><td>Date navigators and the meal board</td><td>The date shown is today (Bangladesh time).</td></tr>
+    <tr><td><b>Not yours</b></td><td>Meal Status / Guest on the 5th</td><td>That meal belongs to the neighbouring month's manager.</td></tr>
+  </table>
+
+  <h2><span class="n">13.7</span>The meal board's three blocks</h2>
+  <table class="tbl legend">
+    <tr><th style="width:34mm">Block</th><th style="width:34mm">Colour</th><th>Meaning</th></tr>
+    <tr><td>Big number at the top</td><td>Black on white</td><td><b>Employee meals</b> — how many staff are eating.</td></tr>
+    <tr><td>Middle block</td><td>Amber</td><td><b>Guests</b> — declared by the mess manager. Appears only when guests exist today.</td></tr>
+    <tr><td>Bottom block</td><td>Indigo, white text</td><td><b>To prepare</b> — employees + guests. The number the cook cooks to.</td></tr>
+  </table>
+  <div class="box note">
+    <span class="bt">No guests today? The board looks like it always did</span>
+    <p>The amber and indigo blocks are drawn only when at least one guest is declared for today,
+    so a normal day shows just the three plate counts.</p>
+  </div>
+</section>

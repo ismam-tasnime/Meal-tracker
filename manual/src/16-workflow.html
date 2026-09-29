@@ -1,0 +1,102 @@
+<section class="sec" id="s15">
+  <h1 class="sh"><span class="n">15</span>The Monthly Workflow</h1>
+
+  <p class="lead">One mess month from beginning to end, in the order things actually happen.
+  The example throughout is September 2026: <b>5 September lunch → 5 October breakfast</b>.</p>
+
+  <div class="phase">
+    <div class="ph-h">BEFORE THE MONTH STARTS — any time before the 5th</div>
+    <div class="ph-b">
+      <ol>
+        <li><b>The team signs up once</b> at <code>/admin/signup</code> as <code>September2026</code> and shares the password (Section 2.4).</li>
+        <li><b>Check the employee list.</b> Add joiners with their Token Numbers, deactivate leavers, reset any lost logins (Section 7).</li>
+        <li><b>Chase sign-ups.</b> Anyone still marked <span class="pill grey">Not signed up</span> cannot set their own meals.</li>
+        <li><b>Collect advance deposits</b> if that is your office's habit — Expense Status accepts them before the month begins (Figure 9.10).</li>
+        <li><b>Confirm the deadlines.</b> Meal Status → 🔒 Employee meal deadlines.</li>
+      </ol>
+      <p class="muted" style="margin:2mm 0 0;font-size:8.6pt">Your Dashboard reads
+      <span class="pill amber">Manager Period Not Started</span> throughout. That is expected: everything
+      except employees' meal ON/OFF is already yours.</p>
+    </div>
+  </div>
+
+  <div class="phase b">
+    <div class="ph-h">DURING THE MONTH — 5 September to 5 October</div>
+    <div class="ph-b">
+      <p><b>Every day (employees, 10 seconds):</b></p>
+      <div class="flow">
+        <div class="step"><b>Open the panel</b><span>token + password</span></div>
+        <div class="arr">→</div>
+        <div class="step"><b>Set tomorrow</b><span>3 taps at most</span></div>
+        <div class="arr">→</div>
+        <div class="step"><b>Respect the deadlines</b><span>8:00 · 11:00 · 17:00</span></div>
+      </div>
+      <p><b>Every day (mess manager, 2 minutes):</b></p>
+      <ol>
+        <li><b>Announce the dish</b> on Meal Status → 🍲 What's cooking this date.</li>
+        <li><b>Glance at the Dashboard</b> — today's breakfast/lunch/dinner tell the cook what to expect.</li>
+        <li><b>Fix any corrections</b> employees ask for, on the date in question (Section 8.4).</li>
+        <li><b>Declare guests</b> the moment you hear about them — the cook's board picks them up within a minute (Section 10.3).</li>
+        <li><b>Record the bazar</b> on the Spend tab, same day, with the name of whoever paid.</li>
+        <li><b>Record deposits</b> as cash comes in, with a note (Cash / bKash / …).</li>
+      </ol>
+      <p><b>Occasionally:</b> raise a date's meal count for a special meal — a biryani night at
+      dinner 2.00 (Section 8.2). Do it on the day, not at month end, so nobody is surprised.</p>
+    </div>
+  </div>
+
+  <div class="phase c">
+    <div class="ph-h">END OF THE MONTH — from 5 October</div>
+    <div class="ph-b">
+      <ol>
+        <li><b>Close the meal data.</b> Walk the last few days on Meal Status and settle any
+        outstanding corrections. After 5 October, 11:59 PM this becomes impossible.</li>
+        <li><b>Total the spending.</b> Spend → <b>Sum Spending</b> → <b>TOTAL MONTHLY SPENDING ৳59,900</b>.</li>
+        <li><b>Read the month meal count.</b> Dashboard → <b>647</b>.</li>
+        <li><b>Work out the rate.</b> ৳59,900 ÷ 647 = ৳92.58 → round to <b>৳92.50</b>.</li>
+        <li><b>Test it.</b> Expense Status → type 92.5 → <b>Test meal rate</b>. Nobody else sees anything yet.</li>
+        <li><b>Check the table.</b> Total bill ৳59,847.53 against ৳59,900 spent — close enough. Try
+        ৳93 or ৳95 if you want the mess to end in surplus (Figure 9.7).</li>
+        <li><b>Publish it.</b> <b>Publish meal rate</b> → confirm. Every employee's <b>My bill</b> fills in
+        within seconds with their rate, bill, deposit and due or refund.</li>
+        <li><b>Collect and refund.</b> Work down the <b>Amount to be Paid</b> column; record each payment
+        as a deposit, and watch the red rows turn to <span class="pill grey">Fully settled</span>.</li>
+        <li><b>Invoice the office</b> for the guest bill — ৳64,200 (Guest tab, Figure 10.7).</li>
+        <li><b>Export the CSV</b> from Report and file it. That is the month's permanent record.</li>
+        <li><b>Hand over.</b> On the 5th the incoming team takes the lunch and dinner; you keep the
+        breakfast, and you keep everything else about your month forever.</li>
+      </ol>
+    </div>
+  </div>
+
+  <h2><span class="n">15.1</span>The handover day, hour by hour</h2>
+  <table class="tbl">
+    <tr><th style="width:34mm">5 October</th><th style="width:34mm">Whose meal</th><th>Who may change it</th></tr>
+    <tr><td>Breakfast</td><td>September</td><td>The September manager (their last act).</td></tr>
+    <tr><td>Lunch</td><td>October</td><td>The October manager (their first act).</td></tr>
+    <tr><td>Dinner</td><td>October</td><td>The October manager.</td></tr>
+  </table>
+  <p>Both managers are "active" all day, each for their own meals only. Each month also keeps its
+  own meal-count row and its own guest row for the 5th, so the day is split cleanly down the
+  middle with no double-counting. A spending entry dated the 5th may be recorded by either month
+  — but only once.</p>
+
+  <h2><span class="n">15.2</span>What survives into the next month</h2>
+  <table class="tbl">
+    <tr><th style="width:44mm">Thing</th><th>Carried over?</th></tr>
+    <tr><td>Employee list, tokens, logins</td><td><b>Yes</b> — it is office-wide and never resets.</td></tr>
+    <tr><td>Meal deadlines</td><td><b>Yes</b> — one office-wide setting.</td></tr>
+    <tr><td>Meal counts / weights</td><td><b>No</b> — each month sets its own, and unset dates use the defaults.</td></tr>
+    <tr><td>Meal rate</td><td><b>No</b> — every month calculates its own from its own spending.</td></tr>
+    <tr><td>Deposits, dues, refunds</td><td><b>No</b> — each month's money is its own. A refund can be re-recorded as an advance deposit in the new month.</td></tr>
+    <tr><td>Guests, spending, reports</td><td><b>No</b> — strictly per month.</td></tr>
+    <tr><td>Employees' meal choices</td><td><b>No</b> — nothing is copied forward. Everyone starts the new month with every meal OFF until they choose.</td></tr>
+  </table>
+
+  <div class="box stop">
+    <span class="bt">The one deadline a manager must not miss</span>
+    <p>Employee meal ON/OFF becomes uneditable at <b>11:59 PM on the period's last day</b> — 5 October
+    for September's team. Every other task (rate, collection, refunds, reports, CSV) can be done at
+    leisure afterwards. Settle the meal data first, then take your time over the money.</p>
+  </div>
+</section>

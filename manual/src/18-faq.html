@@ -1,0 +1,166 @@
+<section class="sec" id="s17">
+  <h1 class="sh"><span class="n">17</span>Frequently Asked Questions</h1>
+
+  <h2><span class="n">17.1</span>Meals and deadlines</h2>
+
+  <div class="faq"><div class="q">Why can't I change yesterday's meal?</div>
+  <div class="a">Previous days are locked for every employee, always, with no exception and no grace
+  period. Meal records have to stop moving at some point or no bill could ever be trusted. A mess
+  manager can still correct a past date, provided it belongs to their own running period.</div></div>
+
+  <div class="faq"><div class="q">Why is today's lunch locked when it is only 11:05?</div>
+  <div class="a">The lunch deadline is 11:00 AM. The lock takes effect at the deadline to the minute,
+  in Bangladesh time, using the server's clock — so a phone set five minutes slow will still show
+  the meal locked.</div></div>
+
+  <div class="faq"><div class="q">What exactly happens after a deadline?</div>
+  <div class="a">Four things: the button gets a padlock within 15 seconds; the database rejects any
+  attempt to change that meal; the meal joins your "Meals I had" count because it can no longer
+  change; and the cook's plate count for that meal is final.</div></div>
+
+  <div class="faq"><div class="q">Can I set my meals for next week?</div>
+  <div class="a">Yes, as far ahead as you like. Future dates are always editable — the deadline only
+  applies once that day becomes today. This is the recommended way to use the app.</div></div>
+
+  <div class="faq"><div class="q">Who can change historical data?</div>
+  <div class="a">Only the mess manager whose own period owns that meal, and only while their period
+  is running (00:00 on its first day to 23:59 on its last, Bangladesh time). After that, nobody —
+  not the next manager, not an administrator through the interface.</div></div>
+
+  <div class="faq"><div class="q">The deadline times in this manual do not match my screen.</div>
+  <div class="a">The deadlines are a setting a mess manager can change at any time. The line under
+  "My meals" in your panel always prints the real ones — trust that.</div></div>
+
+  <div class="faq"><div class="q">I tapped a meal and it went back to how it was, outlined in red.</div>
+  <div class="a">The save failed — almost always the connection. Tap it again. Nothing was written,
+  so there is nothing to undo.</div></div>
+
+  <h2><span class="n">17.2</span>Meal counts and money</h2>
+
+  <div class="faq"><div class="q">Why is breakfast only 0.75 of a meal?</div>
+  <div class="a">Because breakfast costs the mess less than lunch. Each meal carries a weight —
+  by default Breakfast 0.75, Lunch 1.25, Dinner 1.00 — so people who eat only breakfast are not
+  billed as if they ate a full lunch.</div></div>
+
+  <div class="faq"><div class="q">My meal count went up and I did not eat anything extra.</div>
+  <div class="a">The mess manager raised a date's meal count for a special meal — a biryani night at
+  dinner 2.00, for example. It applies to everyone who had that meal on that date. The note inside
+  "Meals I had" warns that this can happen.</div></div>
+
+  <div class="faq"><div class="q">How is my due amount calculated?</div>
+  <div class="a"><code>meal count × meal rate = total bill</code>, then <code>total deposit − total bill = balance</code>.
+  A negative balance is shown as a <span class="pill red">Due</span>; a positive one as a
+  <span class="pill green">Refund</span>. Every step is printed on your "My bill" card.</div></div>
+
+  <div class="faq"><div class="q">"Meals I had" says 67.5 but my bill says 74.25. Which is right?</div>
+  <div class="a">Both. "Meals I had" counts only meals that can no longer change (past meals). Your
+  bill counts every meal that is ON this month, including ones you have booked for days still to
+  come. By the end of the month the two agree.</div></div>
+
+  <div class="faq"><div class="q">Where does the meal rate come from?</div>
+  <div class="a">The month's team divides the mess's total spending (Spend → Sum Spending) by the
+  month's total meal count (Dashboard) and rounds it. The application does not choose it.</div></div>
+
+  <div class="faq"><div class="q">Why can't I see the meal rate yet?</div>
+  <div class="a">Because it has not been <b>published</b>. A manager can test as many rates as they like
+  during the month; none of them reaches employees until <b>Publish meal rate</b> is pressed.</div></div>
+
+  <div class="faq"><div class="q">Is the "dummy meal rate" my real bill?</div>
+  <div class="a">No. It is a private what-if calculator. The number you type never leaves your phone,
+  is stored under your own account, is erased when you sign out, and has no connection to the
+  manager's rate.</div></div>
+
+  <div class="faq"><div class="q">I paid more than my bill. What happens?</div>
+  <div class="a">Your row shows <span class="pill green">Remaining (refund)</span> with the amount. The
+  mess manager either hands it back or records it as an advance deposit in the next month.</div></div>
+
+  <h2><span class="n">17.3</span>Guests</h2>
+
+  <div class="faq"><div class="q">How does guest meal billing work?</div>
+  <div class="a">Guests are billed to the office at fixed rates — Breakfast ৳60, Lunch ৳150, Dinner ৳150
+  — and the month's total appears as "Total bill to collect" on the Guest tab and "Guest bill to
+  collect" on the Dashboard. No employee's meal count or bill changes by a single taka.</div></div>
+
+  <div class="faq"><div class="q">Can employees see guest numbers?</div>
+  <div class="a">No. The Employee Panel never shows guests. The cook's public board shows today's
+  guest counts (never any money) so the right amount of food is prepared.</div></div>
+
+  <div class="faq"><div class="q">Twenty more guests turned up. Do I add a second entry?</div>
+  <div class="a">No — change the number and save again. There is exactly one guest record per date per
+  month, and saving overwrites it.</div></div>
+
+  <div class="faq"><div class="q">Why are the lunch and dinner guest boxes greyed out on the 5th?</div>
+  <div class="a">The 5th is a handover day. The outgoing month declares breakfast guests; the incoming
+  month declares lunch and dinner. Each month declares only its own meals.</div></div>
+
+  <h2><span class="n">17.4</span>Accounts and access</h2>
+
+  <div class="faq"><div class="q">I forgot my password.</div>
+  <div class="a">There is no reset e-mail. Ask the mess manager to press <b>Reset login</b> beside your
+  name, then sign up again at <code>/employee/signup</code> with the same Token Number and a new password.
+  Your meals and deposits are untouched.</div></div>
+
+  <div class="faq"><div class="q">Someone else signed up with my Token Number.</div>
+  <div class="a">The mess manager presses <b>Reset login</b>, which deletes that login, and you sign up
+  again immediately. Token numbers are not secret — they are printed on the meal board — so whoever
+  signs up first claims one.</div></div>
+
+  <div class="faq"><div class="q">My panel says "Account deactivated".</div>
+  <div class="a">A mess manager has deactivated you. You can still sign in but cannot set meals or see
+  your bill until you are reactivated. Your history is safe.</div></div>
+
+  <div class="faq"><div class="q">Can two people use the mess manager account at once?</div>
+  <div class="a">Yes — that is the design. One account per month, shared by the whole team of about
+  five. There is no per-person manager login.</div></div>
+
+  <div class="faq"><div class="q">Can I see another month's data?</div>
+  <div class="a">Only by signing in as that month's account. Months are sealed from one another in the
+  database, so changing a URL or an ID returns nothing.</div></div>
+
+  <h2><span class="n">17.5</span>Months and history</h2>
+
+  <div class="faq"><div class="q">What happens at the beginning of a new month?</div>
+  <div class="a">On the 5th the incoming team takes over from lunch. Nothing is copied forward: every
+  employee starts with all meals OFF, the new month has no rate, no deposits, no guests and no
+  spending. The employee list and the meal deadlines carry over, because they are office-wide.</div></div>
+
+  <div class="faq"><div class="q">What happens to the previous month's data?</div>
+  <div class="a">Nothing — it stays exactly as it was, and the previous team keeps full access to it
+  forever. The only thing they lose is the ability to change employees' meal ON/OFF.</div></div>
+
+  <div class="faq"><div class="q">Why does 4 October appear in September's report?</div>
+  <div class="a">Because a mess month runs 5th to 5th. September 2026 means 5 September lunch through
+  5 October breakfast, so 1–4 October belong to September.</div></div>
+
+  <div class="faq"><div class="q">Why is my dashboard empty at the start of a month?</div>
+  <div class="a">Because nothing has been recorded yet. Zeros and dashes are the normal empty state.
+  A genuine failure shows a red box with a <b>Try again</b> button instead.</div></div>
+
+  <h2><span class="n">17.6</span>Data and corrections</h2>
+
+  <div class="faq"><div class="q">What should I do if I see incorrect information?</div>
+  <div class="a">Employees: tell the mess manager, naming the date and the meal — tapping a counter in
+  "Meals I had" gives you the exact dates to quote. Managers: correct it on Meal Status for that date
+  (meals), or Expense Status (deposits — remove the wrong one and add a correct one).</div></div>
+
+  <div class="faq"><div class="q">Can a deposit be edited?</div>
+  <div class="a">No — deposits are removed and re-added. <b>Remove</b> asks for confirmation naming the
+  amount and the employee.</div></div>
+
+  <div class="faq"><div class="q">Why won't the app let me delete an employee?</div>
+  <div class="a">Because they have meals or deposits on record, and billing history must never
+  disappear. Deactivate them instead — they vanish from the meal board but stay in every month's
+  report where they ate or paid.</div></div>
+
+  <div class="faq"><div class="q">What does "Not yours" mean on a meal column?</div>
+  <div class="a">You are looking at a handover day (the 5th) and that meal belongs to the neighbouring
+  month's manager. It is read-only for you and is left out of your meal counts.</div></div>
+
+  <div class="faq"><div class="q">"This date is outside your mess month" — what now?</div>
+  <div class="a">Press <b>Jump to today</b>, or pick a date between your period's first and last dates
+  (shown in the sidebar under your account name).</div></div>
+
+  <div class="faq"><div class="q">Is the CSV the same as what I see on screen?</div>
+  <div class="a">Yes — the same rows and the same numbers, plus the breakfast/lunch/dinner breakdown.
+  It always exports every employee, even when the table on screen is filtered to one.</div></div>
+</section>

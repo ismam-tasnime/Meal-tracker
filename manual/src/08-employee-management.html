@@ -1,0 +1,120 @@
+<section class="sec" id="s7">
+  <h1 class="sh"><span class="n">7</span>Employee Management</h1>
+
+  <p class="lead">The <b>Employees</b> tab holds the office employee list. Unlike every other
+  manager tab, this list is <b>shared by every month</b> — August, September and October all see
+  and edit the same people. A name added in September is there in October.</p>
+
+  <h2><span class="n">7.1</span>The employee list</h2>
+  <figure class="fig medium">
+    <img src="shots/30-admin-employees-populated.png" alt="Employee list">
+    <figcaption><b>Figure 7.1</b> — The Employees tab with 14 people. Each row shows the token badge,
+    the name, the sign-up status, and four buttons.</figcaption>
+  </figure>
+
+  <table class="tbl">
+    <tr><th style="width:34mm">Element</th><th>What it means</th></tr>
+    <tr><td><b>Token badge</b></td><td>The employee's Token Number (TKN). This is their username. Tokens are unique across the office; the list is ordered by token, then by name.</td></tr>
+    <tr><td><span class="pill green">Signed up</span></td><td>This token already has a login. The employee can sign in.</td></tr>
+    <tr><td><span class="pill grey">Not signed up</span></td><td>The token exists but nobody has claimed it yet. Tell the employee to visit <code>/employee/signup</code>.</td></tr>
+    <tr><td><span class="pill amber">No token number — can't sign up yet</span></td><td>The employee has no token, so there is nothing to sign in with. Give them one with <b>Edit</b>.</td></tr>
+    <tr><td><span class="pill grey">Inactive</span></td><td>Deactivated: struck-through name, hidden from the public meal board, cannot sign up, and cannot change meals or see their bill if already signed up.</td></tr>
+  </table>
+
+  <h2><span class="n">7.2</span>Adding an employee</h2>
+  <p>The form at the top of the tab: a <b>Token</b> box, a <b>name</b> box, and <b>Add</b>.</p>
+  <figure class="fig medium">
+    <img src="shots/14-admin-employees-add-filled.png" alt="Adding an employee">
+    <figcaption><b>Figure 7.2</b> — Adding token 101, "Romith Ahmed", to an empty list. Note the
+    reminder underneath: <i>"An employee can sign up at /employee/signup with their Token Number."</i></figcaption>
+  </figure>
+  <ul>
+    <li>The <b>name</b> is required; the <b>token</b> is optional but an employee without one cannot sign in.</li>
+    <li>A token must be a whole number and must not already be in use — if it is, you get
+    <i>"Token N is already used by another employee."</i> and nothing is saved.</li>
+    <li>New employees are active immediately and appear on the meal board straight away.</li>
+  </ul>
+
+  <h2><span class="n">7.3</span>Editing a name or token</h2>
+  <figure class="fig medium">
+    <img src="shots/B3-employees-edit-row.png" alt="Editing an employee row">
+    <figcaption><b>Figure 7.3</b> — <b>Edit</b> turns the row into two input boxes (token and name) and the
+    button becomes <b>Save</b>. Enter saves too. No other row is affected.</figcaption>
+  </figure>
+  <div class="box warn">
+    <span class="bt">Rule — a signed-up employee's token is frozen</span>
+    <p>The Token Number <i>is</i> the login. Once an employee has signed up, changing their token is
+    refused: <i>"This employee has already signed up with their token. Reset their login first, then
+    change the token."</i> Their name can still be corrected at any time.</p>
+  </div>
+
+  <h2><span class="n">7.4</span>Reset login — the password recovery route</h2>
+  <p>There is no "forgot password" e-mail anywhere in this application. <b>Reset login</b> is the
+  entire recovery mechanism, and it is in the mess manager's hands.</p>
+  <ol>
+    <li>Press <b>Reset login</b> beside the employee.</li>
+    <li>Confirm the warning, which names the employee and their token and states that their meals
+    and deposits stay.</li>
+    <li>The row goes back to <span class="pill grey">Not signed up</span> and a green message appears:
+    <i>"&lt;Name&gt; can now sign up again at /employee/signup."</i></li>
+    <li>The employee signs up again with the same token and a new password.</li>
+  </ol>
+  <p>Use it for a forgotten password, or when the wrong person claimed a token.</p>
+  <div class="box tip">
+    <span class="bt">Reset login deletes only the login</span>
+    <p>It does not touch the employee record, their meal history, or their deposits. It is safe.</p>
+  </div>
+
+  <h2><span class="n">7.5</span>Deactivate / Activate</h2>
+  <p>Use this when somebody leaves, goes on long leave, or has not joined yet.</p>
+  <table class="tbl">
+    <tr><th style="width:44mm">Deactivating an employee…</th><th>Effect</th></tr>
+    <tr><td>Public meal board</td><td>They disappear from it entirely.</td></tr>
+    <tr><td>Meal Status sheet</td><td>They stay, tagged <span class="pill grey">Inactive</span>, so history remains visible and correctable.</td></tr>
+    <tr><td>Their own panel</td><td>Sign-in still works, but the panel shows <i>"Account deactivated — please contact the mess manager."</i></td></tr>
+    <tr><td>Sign-up</td><td>Blocked.</td></tr>
+    <tr><td>Reports</td><td>They still appear in any month where they ate or deposited, so their final bill is never lost.</td></tr>
+    <tr><td>Deposit dropdown</td><td>They are removed from the "Record a deposit" employee list.</td></tr>
+  </table>
+  <p><b>Activate</b> reverses all of it.</p>
+
+  <div class="cmp">
+    <div class="a"><div class="cmp-h">Board before deactivation</div><img src="shots/20x-board-before-deactivation.png" alt="Board before"><div class="cmp-c"><b>Figure 7.4</b> — 14 people listed, including token 112 Shahriar Kabir.</div></div>
+    <div class="b"><div class="cmp-h">Board after deactivation</div><img src="shots/20-board-with-data.png" alt="Board after"><div class="cmp-c"><b>Figure 7.5</b> — 13 people. Shahriar Kabir left on 20 September and no longer appears for the cook.</div></div>
+  </div>
+  <div class="diff">
+    <span class="bt">What is different?</span>
+    One row is gone from the cook's board — and nothing else. Shahriar Kabir's 31.25 meal count
+    and his ৳3,000 deposit are still in September's Expense Status and Report (tagged
+    <span class="pill grey">Inactive</span>), so his final settlement still happens.
+  </div>
+
+  <h2><span class="n">7.6</span>Remove — and why it usually refuses</h2>
+  <p><b>Remove</b> deletes the employee outright. It is allowed <b>only</b> if the person has no meal
+  history and no deposits in any month. Otherwise the application refuses:</p>
+  <div class="box stop">
+    <span class="bt">"This employee has meal history and can't be deleted. Deactivate them instead."</span>
+    <p>This is deliberate, and the database enforces it independently of the application. Billing
+    records must never silently disappear. For anyone who has ever eaten, <b>Deactivate</b> is the
+    correct action — removal is only for a row typed in by mistake.</p>
+  </div>
+
+  <h2><span class="n">7.7</span>Empty state</h2>
+  <div class="cmp">
+    <div class="b"><div class="cmp-h">Empty — no employees yet</div><img src="shots/13-admin-employees-empty.png" alt="Employees empty"><div class="cmp-c"><b>Figure 7.6</b> — A brand-new installation: <i>"No employees yet — add the first one above."</i></div></div>
+    <div class="a"><div class="cmp-h">With data</div><img src="shots/15-admin-employees-list.png" alt="Employees list populated"><div class="cmp-c"><b>Figure 7.7</b> — The same tab after the 14 people were added, before anyone had signed up.</div></div>
+  </div>
+  <div class="diff">
+    <span class="bt">What is different?</span>
+    The dashed empty-state line is replaced by the list. The add form at the top never changes —
+    it is in exactly the same place either way, which is why the empty state says "above".
+    Note that in Figure 7.7 every row still reads <span class="pill grey">Not signed up</span>:
+    adding an employee does <b>not</b> create their login — they must sign up themselves.
+  </div>
+
+  <h2><span class="n">7.8</span>Who can do all this</h2>
+  <p><b>Any</b> mess manager account — the current month's, a past month's, or a future month's.
+  The employee list is office-wide and is not tied to a manager period. This is the one place
+  where an outgoing manager can still change something that affects the current month, so treat
+  it with care and agree changes with the month's team.</p>
+</section>

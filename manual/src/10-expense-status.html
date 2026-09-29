@@ -1,0 +1,156 @@
+<section class="sec" id="s9">
+  <h1 class="sh"><span class="n">9</span>Expense Status — Deposits, Meal Rate, Dues</h1>
+
+  <p class="lead">Expense Status is where the money lives: the cash employees hand in, the rate
+  the mess settles on, and the resulting due or refund for every person. It is one page with
+  four stacked parts.</p>
+
+  <h2><span class="n">9.1</span>The page at a glance</h2>
+  <figure class="fig medium">
+    <div class="imgwrap" data-anno="60-expenses-full">
+      <img src="shots/60-expenses-full.png" alt="Annotated Expense Status page">
+    </div>
+    <figcaption><b>Figure 9.1</b> — The complete Expense Status tab for September 2026, with a
+    published rate of ৳92.50 and 18 deposits recorded.</figcaption>
+  </figure>
+
+  <table class="tbl long">
+    <tr><th class="c" style="width:9mm">#</th><th style="width:40mm">Element</th><th>What it does</th></tr>
+    <tr><td class="c">1</td><td><b>Employee name</b> (dropdown)</td><td>Who the deposit is from. Lists active employees only, as "token · name".</td></tr>
+    <tr><td class="c">2</td><td><b>Deposit amount (৳)</b></td><td>Must be more than ৳0. Paisa allowed.</td></tr>
+    <tr><td class="c">3</td><td><b>Date received</b></td><td>Defaults to today. It can be <i>any</i> date — before, during or after the month — because it records when the cash actually changed hands.</td></tr>
+    <tr><td class="c">4</td><td><b>Note (optional)</b></td><td>Up to 200 characters: "Cash", "bKash", "Advance for October", "Final settlement". The employee sees this note under the deposit in their own panel.</td></tr>
+    <tr><td class="c">5</td><td><b>Add deposit</b></td><td>Saves it. Greyed out until an employee and an amount above zero are chosen. A green confirmation names the employee and amount.</td></tr>
+    <tr><td class="c">6</td><td><b>Testing (only you)</b></td><td>The rate the tables on <i>your</i> pages are using right now. Employees never see it.</td></tr>
+    <tr><td class="c">7</td><td><b>Published to employees</b></td><td>The rate employees can see, with the time it was published. Green once published, grey ("Not yet") before.</td></tr>
+    <tr><td class="c">8</td><td><b>Rate box</b></td><td>Type the rate here, then press one of the two buttons.</td></tr>
+    <tr><td class="c">9</td><td><b>Test meal rate</b></td><td>Applies the rate to your own pages only. Press it as often as you like.</td></tr>
+    <tr><td class="c">10</td><td><b>Publish meal rate</b></td><td>Sends the rate to every employee with their bill, deposit and due/refund. Asks for confirmation first.</td></tr>
+    <tr><td class="c">11</td><td><b>Meal Count</b></td><td>The employee's weighted meal count for the month.</td></tr>
+    <tr><td class="c">12</td><td><b>Total Bill</b></td><td>Meal Count × the <i>testing</i> rate. A dash until a rate is set.</td></tr>
+    <tr><td class="c">13</td><td><b>Total Deposit</b></td><td>Everything recorded for that person in this month.</td></tr>
+    <tr><td class="c">14</td><td><b>Amount to be Paid</b></td><td>Deposit − bill, in words and colour. Never a bare minus sign.</td></tr>
+    <tr><td class="c">15</td><td><b>Total row</b></td><td>Month totals, then total due (red) and total remaining (green) side by side.</td></tr>
+    <tr><td class="c">16</td><td><b>Deposit history (18)</b></td><td>Every deposit newest first, with a <b>Remove</b> button on each.</td></tr>
+  </table>
+
+  <h2><span class="n">9.2</span>Recording a deposit</h2>
+  <figure class="fig medium">
+    <img src="shots/60b-expenses-deposit-form.png" alt="Record a deposit form">
+    <figcaption><b>Figure 9.2</b> — <b>Record a deposit</b>. Four fields, one button.</figcaption>
+  </figure>
+  <ol>
+    <li>Pick the employee.</li>
+    <li>Type the amount they handed over.</li>
+    <li>Set the date they handed it over (today by default).</li>
+    <li>Add a note if it helps — the employee will read it.</li>
+    <li>Press <b>Add deposit</b>. The table above and the history below both update immediately.</li>
+  </ol>
+  <div class="box tip">
+    <span class="bt">Any number of deposits, any time</span>
+    <p>An employee can pay in one lump or in five instalments; the system simply adds them up.
+    A deposit can be recorded before the month starts (an advance) or after it ends (a late
+    settlement) — what matters is the <i>month</i> you are signed in as, not the date on the deposit.</p>
+  </div>
+
+  <figure class="fig medium">
+    <img src="shots/60e-expenses-deposit-history.png" alt="Deposit history">
+    <figcaption><b>Figure 9.3</b> — <b>Deposit history (18)</b>: newest first, showing token, name, date,
+    note and amount. <b>Remove</b> asks for confirmation — <i>"Remove ৳3,000 deposit from Romith Ahmed?"</i>
+    — and then deletes that one deposit. A deposit cannot be edited; remove it and add it again.</figcaption>
+  </figure>
+
+  <h2><span class="n">9.3</span>The meal rate: Test, then Publish</h2>
+  <p>The rate is the single number that turns meal counts into money. It has two independent values.</p>
+  <table class="tbl">
+    <tr><th style="width:26mm"></th><th>Test meal rate</th><th>Publish meal rate</th></tr>
+    <tr><td><b>Who sees the effect</b></td><td>Only this manager account, on Expense Status and Report.</td><td>Every employee, in <b>My bill</b>, plus the manager's own pages.</td></tr>
+    <tr><td><b>How often</b></td><td>As many times as you like, all month.</td><td>Whenever the figure is final. Re-publishing simply replaces it.</td></tr>
+    <tr><td><b>Confirmation</b></td><td>None — it is harmless.</td><td>Yes, a confirmation box, because it is visible to the whole office.</td></tr>
+    <tr><td><b>Undo</b></td><td>Type another rate and test again; clear the box and press to remove the test rate.</td><td><b>Unpublish</b> (the small grey link under the buttons) — employees stop seeing a rate and a bill.</td></tr>
+  </table>
+
+  <div class="cmp">
+    <div class="a"><div class="cmp-h">Published — the normal state</div><img src="shots/60c-expenses-rate-card.png" alt="Rate card published"><div class="cmp-c"><b>Figure 9.4</b> — Both boxes read ৳92.50. The right-hand box is green and stamped with the publication time.</div></div>
+    <div class="b" style="border-color:#fde68a"><div class="cmp-h" style="background:#b45309">Testing a different rate</div><img src="shots/61-expenses-rate-testing.png" alt="Rate card testing"><div class="cmp-c"><b>Figure 9.5</b> — Testing ৳95 while ৳92.50 stays published. The message spells it out: <i>"Testing ৳95 — bills below use it. Employees don't see it until you publish."</i></div></div>
+  </div>
+  <div class="diff">
+    <span class="bt">What is different?</span>
+    Only the left ("Testing") box and the confirmation line. The green <b>Published to employees</b> box
+    is untouched at ৳92.50 — which is exactly the point: <b>testing never leaks</b>. Meanwhile the whole
+    bill table below silently re-prices to ৳95 for the manager's eyes only.
+  </div>
+
+  <div class="cmp">
+    <div class="a"><div class="cmp-h">Bills at the published ৳92.50</div><img src="shots/60d-expenses-bill-table.png" alt="Bill table at 92.50"><div class="cmp-c"><b>Figure 9.6</b> — Total bill ৳59,847.53 · ৳7,100.64 due · ৳1,976.24 remaining.</div></div>
+    <div class="b" style="border-color:#fde68a"><div class="cmp-h" style="background:#b45309">The same table while testing ৳95</div><img src="shots/61b-expenses-bill-table-testing.png" alt="Bill table at 95"><div class="cmp-c"><b>Figure 9.7</b> — Every bill, due and refund has moved — on this screen only.</div></div>
+  </div>
+  <div class="diff">
+    <span class="bt">What is different?</span>
+    Every number in the <b>Total Bill</b> and <b>Amount to be Paid</b> columns, and both figures in the
+    footer. <b>Meal Count</b> and <b>Total Deposit</b> do not move — they are facts, not opinions.
+    This is the intended way to choose a rate: try a few, watch how much cash you would collect,
+    then publish the one that matches what the mess actually spent.
+  </div>
+
+  <h2><span class="n">9.4</span>Reading the "Amount to be Paid" column</h2>
+  <table class="tbl legend">
+    <tr><th style="width:44mm">What you see</th><th>What it means</th><th>What to do</th></tr>
+    <tr><td><span class="pill red">৳368.13 · Due (to pay)</span></td><td>The bill is bigger than the deposits.</td><td>Collect ৳368.13 from that employee.</td></tr>
+    <tr><td><span class="pill green">৳1,265 · Remaining (refund)</span></td><td>They paid more than their bill.</td><td>Refund it, or carry it into next month as an advance.</td></tr>
+    <tr><td><span class="pill grey">Fully settled</span></td><td>Deposit and bill are equal (to the paisa).</td><td>Nothing.</td></tr>
+    <tr><td><b>—</b> (a dash)</td><td>No meal rate has been set yet, so there is no bill to compare against.</td><td>Test a rate.</td></tr>
+  </table>
+
+  <div class="box note">
+    <span class="bt">Real examples from Figure 9.1</span>
+    <ul style="margin:0">
+      <li><b>108 Sadia Islam</b> — 55.5 meal count, ৳5,133.75 bill, <b>no deposit at all</b> → the whole bill is due. This is what an employee who never pays looks like.</li>
+      <li><b>109 Rakib Hossain</b> — paid ৳7,000 against a ৳5,735 bill → ৳1,265 <span class="pill green">Remaining (refund)</span>. Employees <i>can</i> pay more than they owe.</li>
+      <li><b>110 Jannatul Ferdous</b> — paid ৳7,423.13 for a ৳7,423.13 bill → <span class="pill grey">Fully settled</span>.</li>
+      <li><b>112 Shahriar Kabir</b> — <span class="pill grey">Inactive</span>: he left on 20 September, but his 31.25 meal count and ৳3,000 settlement are still here.</li>
+      <li><b>Rafiq Chowdhury</b> — no token, no meals, no deposits: 0 everywhere and <span class="pill grey">Fully settled</span>. A brand-new joiner who has not started eating.</li>
+    </ul>
+  </div>
+
+  <h2><span class="n">9.5</span>Where the meal rate comes from</h2>
+  <p>The application does not choose the rate for you — it gives you the two numbers you need:</p>
+  <div class="box calc">
+    Spend tab&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; → TOTAL MONTHLY SPENDING&nbsp; = ৳59,900<br>
+    Dashboard&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; → Month meal count&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; = 647<br>
+    ------------------------------------------------<br>
+    meal rate ≈ ৳59,900 ÷ 647 = ৳92.58&nbsp; → published as ৳92.50<br>
+    check&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : 647 × ৳92.50 = ৳59,847.53 collected against ৳59,900 spent
+  </div>
+  <p>Rounding the rate down slightly leaves the mess a few taka short; rounding up leaves a small
+  surplus. Either is normal — the team decides. Guest meals are billed to the office separately
+  and are not part of this arithmetic.</p>
+
+  <h2><span class="n">9.6</span>Empty state</h2>
+  <div class="cmp">
+    <div class="b"><div class="cmp-h">Empty — a brand-new month</div><img src="shots/99-november-expenses-empty.png" alt="Expense status empty"><div class="cmp-c"><b>Figure 9.8</b> — November2026, nothing recorded yet.</div></div>
+    <div class="a"><div class="cmp-h">With data</div><img src="shots/60-expenses-full.png" alt="Expense status with data"><div class="cmp-c"><b>Figure 9.9</b> — September2026 at month end.</div></div>
+  </div>
+  <div class="diff">
+    <span class="bt">What is different?</span>
+    <ul style="margin:0">
+      <li>An amber strip appears under the rate card: <i>"Bills appear once you test a meal rate above.
+      Meal counts and deposits are already up to date. Employees see a rate and bill only after you publish."</i></li>
+      <li>The rate card shows <b>—</b> for testing and <b>Not yet</b> for published; there is no
+      <b>Unpublish</b> link and no timestamp.</li>
+      <li>The table still lists <b>every active employee</b> — 0 meal count, ৳0 deposit, and a dash
+      in both <b>Total Bill</b> and <b>Amount to be Paid</b>, because without a rate there is nothing to
+      compare. That is the honest empty state: the people exist, the month has not happened yet.
+      (Note that the inactive employee, 112 Shahriar Kabir, is <i>not</i> listed — a month shows
+      inactive people only if they ate or deposited in it.)</li>
+      <li><b>Deposit history (0)</b> becomes a dashed box: <i>"No deposits recorded yet."</i></li>
+    </ul>
+  </div>
+
+  <figure class="fig medium">
+    <img src="shots/95-october-expenses-advance.png" alt="October expenses with advance deposits">
+    <figcaption><b>Figure 9.10</b> — A halfway state worth knowing: <b>October 2026</b>, whose period has not
+    started, already holds two advance deposits (৳3,000 and ৳3,500, both noted "Advance for October").
+    Deposits can be collected long before the month begins.</figcaption>
+  </figure>
+</section>

@@ -1,0 +1,145 @@
+<section class="sec" id="s10">
+  <h1 class="sh"><span class="n">10</span>Guest Meals</h1>
+
+  <p class="lead">Guests are people who eat at the mess but are not on the employee list —
+  visitors, clients, a contractor's team. <b>The office pays for guest meals, not the employees.</b>
+  Guest counts therefore never touch anyone's meal count or bill; they produce a separate
+  "bill to collect" from the office.</p>
+
+  <h2><span class="n">10.1</span>The fixed guest rates</h2>
+  <table class="tbl">
+    <tr><th style="width:36mm">Meal</th><th class="num" style="width:30mm">Per guest</th><th>Example</th></tr>
+    <tr><td>🍳 Breakfast</td><td class="num"><b>৳60</b></td><td>4 guests → 4 × ৳60 = ৳240</td></tr>
+    <tr><td>🍛 Lunch</td><td class="num"><b>৳150</b></td><td>18 guests → 18 × ৳150 = ৳2,700</td></tr>
+    <tr><td>🌙 Dinner</td><td class="num"><b>৳150</b></td><td>6 guests → 6 × ৳150 = ৳900</td></tr>
+  </table>
+  <p>These three rates are fixed in the application and cannot be changed from any screen. They
+  have nothing to do with the employee meal rate, which changes every month.</p>
+
+  <h2><span class="n">10.2</span>The Guest tab at a glance</h2>
+  <figure class="fig medium">
+    <div class="imgwrap" data-anno="50-guests-today">
+      <img src="shots/50-guests-today.png" alt="Annotated Guest tab">
+    </div>
+    <figcaption><b>Figure 10.1</b> — The Guest tab on 29 September 2026, with guests declared for
+    seven dates this month.</figcaption>
+  </figure>
+
+  <table class="tbl long">
+    <tr><th class="c" style="width:9mm">#</th><th style="width:40mm">Element</th><th>What it does</th></tr>
+    <tr><td class="c">1</td><td><b>Page title and blurb</b></td><td>Restates the three rates and reminds you that the cook sees today's counts while employees never see guests at all.</td></tr>
+    <tr><td class="c">2</td><td><b>Day navigator</b></td><td>Which date you are declaring guests for. Same control as Meal Status.</td></tr>
+    <tr><td class="c">3</td><td><b>Breakfast guests</b></td><td>A whole number from 0 to 10,000. Blank means 0.</td></tr>
+    <tr><td class="c">4</td><td><b>Lunch guests</b></td><td>Same.</td></tr>
+    <tr><td class="c">5</td><td><b>Dinner guests</b></td><td>Same.</td></tr>
+    <tr><td class="c">6</td><td><b>Per-meal bill</b></td><td>Calculated <i>as you type</i>: the amount, with the working (<code>18 × ৳150</code>) underneath.</td></tr>
+    <tr><td class="c">7</td><td><b>Total guest bill</b></td><td>The three added up, for this date.</td></tr>
+    <tr><td class="c">8</td><td><b>Save guests</b></td><td>Writes the date's counts. Enabled only when something has changed. A <b>Clear guests</b> button appears beside it whenever the date has any guests saved.</td></tr>
+    <tr><td class="c">9</td><td><b>Guests this month (n)</b></td><td>Every date with guests, oldest first — tap one to jump to it and edit it. The currently selected date is tinted.</td></tr>
+    <tr><td class="c">10</td><td><b>Per-meal month totals</b></td><td>Breakfast / Lunch / Dinner guest bill for the whole month, each showing its working.</td></tr>
+    <tr><td class="c">11</td><td><b>Total bill to collect</b></td><td>The month's grand total, to be invoiced to the office. Also appears on the Dashboard as "Guest bill to collect".</td></tr>
+  </table>
+
+  <h2><span class="n">10.3</span>Declaring guests, step by step</h2>
+  <ol>
+    <li>Open the <b>Guest</b> tab and navigate to the date.</li>
+    <li>Type the number of guests for each meal. Leave a box empty for none.</li>
+    <li>Watch the bill on the right of each row and the total at the bottom — they update as you type.</li>
+    <li>Press <b>Save guests</b>. The confirmation reads: <i>"Guests saved for 29 September 2026. The cook sees them on the meal board."</i></li>
+  </ol>
+  <div class="box tip">
+    <span class="bt">Saving a date again overwrites it</span>
+    <p>There is exactly one guest record per date per month — never a second one. If ten more
+    guests turn up, change the number and save again; do not try to add a second entry.
+    <b>Clear guests</b> (with confirmation) removes the date's record entirely.</p>
+  </div>
+
+  <h2><span class="n">10.4</span>Any size of party — worked examples</h2>
+  <p>The same form handles one guest and one hundred and fifty. These are real screenshots from
+  four different dates of the demo month.</p>
+
+  <div class="cmp">
+    <div class="a"><div class="cmp-h">A handful — 29 Sep</div><img src="shots/50b-guests-form.png" alt="Small guest numbers"><div class="cmp-c"><b>Figure 10.2</b> — 4 · 18 · 6 guests → ৳240 + ৳2,700 + ৳900 = <b>৳3,840</b>.</div></div>
+    <div class="a"><div class="cmp-h">A big event — 22 Sep</div><img src="shots/51-guests-large.png" alt="Large guest numbers"><div class="cmp-c"><b>Figure 10.3</b> — 30 · 100 · 100 guests → ৳1,800 + ৳15,000 + ৳15,000 = <b>৳31,800</b>.</div></div>
+  </div>
+  <div class="cmp">
+    <div class="a"><div class="cmp-h">One meal only — 25 Sep</div><img src="shots/52-guests-150.png" alt="150 lunch guests"><div class="cmp-c"><b>Figure 10.4</b> — 150 lunch guests and nothing else → <b>৳22,500</b>. Empty boxes contribute ৳0 and are not an error.</div></div>
+    <div class="b"><div class="cmp-h">No guests — 24 Sep</div><img src="shots/53b-guests-none-form.png" alt="No guests"><div class="cmp-c"><b>Figure 10.5</b> — A date with nobody expected: three empty boxes, a ৳0 total, the corner reading <i>No guests</i>, and no <b>Clear guests</b> button.</div></div>
+  </div>
+  <div class="diff">
+    <span class="bt">What is different between a date with guests and a date without?</span>
+    <ul style="margin:0">
+      <li>The corner label: <b>Saved</b> (or <b>Not saved yet</b> while you are typing) versus <b>No guests</b>.</li>
+      <li>The per-meal amounts and the total: real money versus <b>৳0</b>.</li>
+      <li>The <b>Clear guests</b> button exists only when something is saved.</li>
+      <li>The date appears in — or is absent from — the "Guests this month" list below. There are never blank rows for empty dates.</li>
+    </ul>
+  </div>
+
+  <div class="box warn">
+    <span class="bt">What the form refuses</span>
+    <p>Guests must be whole numbers from 0 to 10,000. Type "2.5" or "abc" and the box turns red,
+    its amount becomes a dash with the hint <i>"Whole number"</i>, and <b>Save guests</b> is disabled
+    until it is fixed.</p>
+  </div>
+
+  <h2><span class="n">10.5</span>The month's list and the bill to collect</h2>
+  <div class="cmp">
+    <div class="a"><div class="cmp-h">Guests this month</div><img src="shots/50c-guests-month-list.png" alt="Guest month list"><div class="cmp-c"><b>Figure 10.6</b> — Seven dates, each with its weekday, its 🍳/🍛/🌙 counts and its own bill. Tap any row to edit that date.</div></div>
+    <div class="a"><div class="cmp-h">Guest bill for the month</div><img src="shots/50d-guests-bill-card.png" alt="Guest bill card"><div class="cmp-c"><b>Figure 10.7</b> — The green card: each meal's total with its working, then <b>TOTAL BILL TO COLLECT ৳64,200</b>.</div></div>
+  </div>
+
+  <div class="box calc">
+    Breakfast : 35 guests × ৳60&nbsp; = ৳2,100<br>
+    Lunch&nbsp;&nbsp;&nbsp;&nbsp; : 291 guests × ৳150 = ৳43,650<br>
+    Dinner&nbsp;&nbsp;&nbsp; : 123 guests × ৳150 = ৳18,450<br>
+    ------------------------------------------<br>
+    TOTAL BILL TO COLLECT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= ৳64,200&nbsp; (from the office)
+  </div>
+  <p>No bill is ever stored. Only the guest counts are saved; every amount on this page —
+  per meal, per date, per month — is recalculated from those counts each time the page is drawn,
+  so it cannot drift out of date.</p>
+
+  <h2><span class="n">10.6</span>What the cook sees</h2>
+  <figure class="fig medium">
+    <img src="shots/20b-board-counts-closeup.png" alt="Meal board with guests">
+    <figcaption><b>Figure 10.8</b> — The public meal board on a day with guests. Each meal card gains two
+    extra blocks: an amber <b>guest</b> count and an indigo <b>To prepare</b> total. On 29 September the cook
+    must prepare 10 breakfasts (6 + 4), 28 lunches (10 + 18) and 15 dinners (9 + 6).</figcaption>
+  </figure>
+  <div class="box note">
+    <span class="bt">Guests are never mixed into the employee count</span>
+    <p>The big number at the top of each card stays the employee count; guests sit underneath it,
+    clearly labelled, and only the indigo "To prepare" box adds the two together. The cook's board
+    never shows any money. If no guests are declared for today, the amber and indigo blocks do not
+    appear at all and the board looks exactly as it would without the feature.</p>
+  </div>
+
+  <h2><span class="n">10.7</span>Guests on the 5th (handover day)</h2>
+  <figure class="fig medium">
+    <img src="shots/54-guests-handover.png" alt="Guests on handover day">
+    <figcaption><b>Figure 10.9</b> — 5 October seen by the <b>September</b> manager. Breakfast is theirs to
+    declare; lunch and dinner are greyed out and labelled <i>"Declared by the October 2026 manager."</i>
+    A blue strip above the boxes says the same thing in a sentence.</figcaption>
+  </figure>
+  <p>Each month keeps its own guest record for the 5th, so a date + meal still has exactly one
+  guest count — and each month's guest bill contains only its own meals.</p>
+
+  <h2><span class="n">10.8</span>Empty state</h2>
+  <div class="cmp">
+    <div class="b"><div class="cmp-h">Empty — no guests this month</div><img src="shots/97-november-guests-empty.png" alt="Guests empty"><div class="cmp-c"><b>Figure 10.10</b> — November2026: <i>"No guests declared for November2026 yet."</i> and a ৳0 bill card.</div></div>
+    <div class="a"><div class="cmp-h">With data</div><img src="shots/50-guests-today.png" alt="Guests with data"><div class="cmp-c"><b>Figure 10.11</b> — September2026 with seven guest dates.</div></div>
+  </div>
+  <div class="diff">
+    <span class="bt">What is different?</span>
+    The entry form is <b>identical</b> and fully usable in both — you can declare guests on day one of a
+    month. Below it, the list of dates is replaced by a dashed "no guests declared" box, the heading
+    counter reads <b>(0 dates)</b>, and the green card shows <code>0 × ৳60</code>, <code>0 × ৳150</code>,
+    <code>0 × ৳150</code> and a total of <b>৳0</b>. The card never disappears — it is the month's running
+    invoice and starts at zero.
+    <p style="margin:2mm 0 0">One more detail worth knowing: because today (29 September) is
+    outside November's period, the date navigator has opened on <b>5 November</b> — the first date
+    the period owns. Every dated manager tab does this, so you always start somewhere you are
+    allowed to type.</p>
+  </div>
+</section>
