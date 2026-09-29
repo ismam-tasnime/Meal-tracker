@@ -9,7 +9,7 @@ export default function EmployeeSignupPage() {
       <div className="mb-6 text-center">
         <h1 className="text-xl font-bold tracking-tight text-slate-900">Employee sign up</h1>
         <p className="mt-1 text-sm text-slate-500">
-          Use the phone number the mess manager added for you. Each number can sign up once.
+          Use your Token Number from the employee list. Each Token Number can sign up once.
         </p>
       </div>
       <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">

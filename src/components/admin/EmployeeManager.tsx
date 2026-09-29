@@ -19,12 +19,10 @@ function parseToken(value: string): number | null {
 export function EmployeeManager({ initialEmployees: employees }: { initialEmployees: Employee[] }) {
   const [newName, setNewName] = useState("");
   const [newToken, setNewToken] = useState("");
-  const [newPhone, setNewPhone] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState("");
   const [editingToken, setEditingToken] = useState("");
-  const [editingPhone, setEditingPhone] = useState("");
   const [notice, setNotice] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -34,11 +32,10 @@ export function EmployeeManager({ initialEmployees: employees }: { initialEmploy
     setError(null);
     setNotice(null);
     startTransition(async () => {
-      const result = await createEmployee(newName, parseToken(newToken), newPhone);
+      const result = await createEmployee(newName, parseToken(newToken));
       if (result.ok) {
         setNewName("");
         setNewToken("");
-        setNewPhone("");
       } else {
         setError(result.error);
       }
@@ -49,7 +46,6 @@ export function EmployeeManager({ initialEmployees: employees }: { initialEmploy
     setEditingId(employee.id);
     setEditingName(employee.name);
     setEditingToken(employee.token_no === null ? "" : String(employee.token_no));
-    setEditingPhone(employee.phone ?? "");
   }
 
   function saveEdit(id: string) {
@@ -57,7 +53,7 @@ export function EmployeeManager({ initialEmployees: employees }: { initialEmploy
     setError(null);
     setNotice(null);
     startTransition(async () => {
-      const result = await updateEmployee(id, editingName, parseToken(editingToken), editingPhone);
+      const result = await updateEmployee(id, editingName, parseToken(editingToken));
       if (result.ok) {
         setEditingId(null);
       } else {
@@ -92,7 +88,7 @@ export function EmployeeManager({ initialEmployees: employees }: { initialEmploy
   function resetLogin(employee: Employee) {
     if (
       !confirm(
-        `Reset ${employee.name}'s login? They'll need to sign up again with ${employee.phone} and a new password. Their meals and deposits stay.`
+        `Reset ${employee.name}'s login? They'll need to sign up again with token ${employee.token_no} and a new password. Their meals and deposits stay.`
       )
     ) {
       return;
@@ -129,15 +125,6 @@ export function EmployeeManager({ initialEmployees: employees }: { initialEmploy
           placeholder="New employee name"
           className="h-10 min-w-0 flex-1 rounded-xl border border-slate-300 px-3 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
         />
-        <input
-          value={newPhone}
-          onChange={(e) => setNewPhone(e.target.value)}
-          placeholder="Phone (01712345678)"
-          aria-label="Phone number"
-          type="tel"
-          inputMode="tel"
-          className="h-10 w-full rounded-xl border border-slate-300 px-3 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 sm:w-48"
-        />
         <button
           type="submit"
           disabled={isPending || !newName.trim()}
@@ -148,8 +135,8 @@ export function EmployeeManager({ initialEmployees: employees }: { initialEmploy
       </form>
 
       <p className="-mt-2 text-xs text-slate-500">
-        An employee can sign up at <span className="font-semibold">/employee/signup</span> once
-        you&rsquo;ve added their phone number.
+        An employee can sign up at <span className="font-semibold">/employee/signup</span> with
+        their Token Number.
       </p>
 
       {error && (
@@ -189,16 +176,6 @@ export function EmployeeManager({ initialEmployees: employees }: { initialEmploy
                     className="h-9 min-w-0 flex-1 rounded-xl border border-slate-300 px-2 text-sm"
                     onKeyDown={(e) => e.key === "Enter" && saveEdit(employee.id)}
                   />
-                  <input
-                    value={editingPhone}
-                    onChange={(e) => setEditingPhone(e.target.value)}
-                    placeholder="Phone"
-                    aria-label="Phone number"
-                    type="tel"
-                    inputMode="tel"
-                    className="h-9 w-full rounded-xl border border-slate-300 px-2 text-sm sm:w-36"
-                    onKeyDown={(e) => e.key === "Enter" && saveEdit(employee.id)}
-                  />
                 </div>
               ) : (
                 <div className="flex min-w-0 flex-1 flex-col gap-0.5">
@@ -217,7 +194,7 @@ export function EmployeeManager({ initialEmployees: employees }: { initialEmploy
                       </span>
                     )}
                   </span>
-                  <LoginStatus phone={employee.phone} hasLogin={employee.hasLogin} />
+                  <LoginStatus tokenNo={employee.token_no} hasLogin={employee.hasLogin} />
                 </div>
               )}
 
@@ -238,7 +215,7 @@ export function EmployeeManager({ initialEmployees: employees }: { initialEmploy
                     Edit
                   </button>
                 )}
-                {employee.phone && (
+                {employee.token_no !== null && (
                   <button
                     onClick={() => resetLogin(employee)}
                     className="h-8 rounded-full border border-amber-200 px-2.5 text-xs font-semibold text-amber-700"
@@ -272,14 +249,13 @@ export function EmployeeManager({ initialEmployees: employees }: { initialEmploy
   );
 }
 
-/** The phone number the employee signs up with, and whether they have. */
-function LoginStatus({ phone, hasLogin }: { phone: string | null; hasLogin: boolean }) {
-  if (!phone) {
-    return <span className="text-xs text-amber-700">No phone number — can&rsquo;t sign up yet</span>;
+/** Whether the employee has signed up with their Token Number. */
+function LoginStatus({ tokenNo, hasLogin }: { tokenNo: number | null; hasLogin: boolean }) {
+  if (tokenNo === null) {
+    return <span className="text-xs text-amber-700">No token number — can&rsquo;t sign up yet</span>;
   }
   return (
     <span className="flex items-center gap-1.5 text-xs text-slate-500">
-      <span className="tabular-nums">{phone}</span>
       {hasLogin ? (
         <span className="rounded-full bg-emerald-50 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700">
           Signed up

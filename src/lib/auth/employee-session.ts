@@ -3,9 +3,7 @@ import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import type { Employee } from "@/lib/types/database";
 
-export type SignedInEmployee = Pick<Employee, "id" | "name" | "token_no" | "is_active"> & {
-  phone: string;
-};
+export type SignedInEmployee = Pick<Employee, "id" | "name" | "token_no" | "is_active">;
 
 export type EmployeeSession = {
   user: { id: string } | null;
@@ -29,7 +27,7 @@ export const getEmployeeSession = cache(async (): Promise<EmployeeSession> => {
     supabase.auth.getClaims(),
     supabase
       .from("employee_accounts")
-      .select("phone, user_id, employees(id, name, token_no, is_active)")
+      .select("user_id, employees(id, name, token_no, is_active)")
       .maybeSingle(),
   ]);
   const claims = data?.claims;
@@ -46,6 +44,6 @@ export const getEmployeeSession = cache(async (): Promise<EmployeeSession> => {
 
   return {
     user: { id: claims.sub },
-    employee: own && employee ? { ...employee, phone: own.phone } : null,
+    employee: own && employee ? employee : null,
   };
 });

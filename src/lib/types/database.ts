@@ -13,13 +13,14 @@ export type Employee = {
 };
 
 /**
- * An employee's phone number and, once they've signed up, their login.
+ * The link between an employee and, once they've signed up (with their
+ * Token Number, 0017), their login. phone is an older, optional field.
  * Readable only by mess managers and by the employee themself.
  */
 export type EmployeeAccount = {
   employee_id: string;
-  /** "01XXXXXXXXX" */
-  phone: string;
+  /** "01XXXXXXXXX"; optional since sign-up moved to token numbers (0017). */
+  phone: string | null;
   /** Null until the employee signs up. */
   user_id: string | null;
   created_at: string;
@@ -242,7 +243,7 @@ export type Database = {
       };
       employee_accounts: {
         Row: EmployeeAccount;
-        Insert: { employee_id: string; phone: string };
+        Insert: { employee_id: string; phone?: string | null };
         Update: { phone?: string };
         Relationships: [
           {
@@ -351,7 +352,7 @@ export type Database = {
         Returns: boolean;
       };
       employee_signup_status: {
-        Args: { p_phone: string };
+        Args: { p_token: number };
         Returns: EmployeeSignupStatus;
       };
       register_employee: {

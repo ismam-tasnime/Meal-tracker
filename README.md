@@ -9,7 +9,7 @@ e.g. Lunch: 175 employee meals · 100 guests · 275 to prepare. It refreshes
 itself every minute. The header links to the two panels:
 
 - **Employee Panel** (`/employee`) — each employee signs in with their own
-  phone number and password, and sees only their own things. Nobody can
+  Token Number and password, and sees only their own things. Nobody can
   change anyone else's meals. See [Employee accounts](#employee-accounts).
   - **My meals** — their breakfast/lunch/dinner ON/OFF for any date,
     changeable within the meal deadlines (see below). Past days are locked,
@@ -80,7 +80,8 @@ itself every minute. The header links to the two panels:
   - **Report** — Employee → Meal Count → Total Bill → Total Deposit →
     Amount to be Paid, with CSV export.
   - **Employees** — shared employee list (add, rename, deactivate), each
-    employee's phone number, and a **Reset login** button.
+    employee's Token Number and whether they've signed up, and a **Reset
+    login** button.
 
 ## How the money works
 
@@ -120,7 +121,7 @@ src/
     page.tsx                 Landing page: today's read-only meal board (cook's view)
     employee/
       page.tsx               Employee Panel: my meals (ON/OFF) + my bill, signed-in employees only
-      login/page.tsx         Employee sign-in (phone + password, public route)
+      login/page.tsx         Employee sign-in (Token Number + password, public route)
       signup/page.tsx        Employee sign-up (public route)
     admin/
       login/page.tsx         Mess manager sign-in (public route)
@@ -142,7 +143,7 @@ src/
     data/                    Read-only data fetching (server-only)
     actions/                 "use server" mutations (meals, mess money, employees, auth)
     auth/                    Mess manager / employee session resolution
-    utils/                   Date (Asia/Dhaka), mess month (5th–5th), currency (BDT), phone, guest-bill and spending helpers
+    utils/                   Date (Asia/Dhaka), mess month (5th–5th), currency (BDT), employee token login, guest-bill and spending helpers
     types/database.ts        Hand-written types mirroring the SQL schema
   proxy.ts                   Next.js 16 "Proxy" (formerly middleware) — session refresh + /admin and /employee gates
 supabase/
@@ -155,8 +156,8 @@ supabase/
 ## Database schema
 
 - **employees** — `id, token_no, name, is_active, created_at, updated_at`. `token_no` is the office token number (TKN), unique when set; lists are ordered by it and it's shown beside every name, since several employees share a name.
-- **employee_accounts** — `employee_id` (primary key), `phone` (unique, `01XXXXXXXXX`), `user_id` (the login, null until the employee signs up). Kept apart from `employees` because that table is public and phone numbers aren't.
-- **`register_employee()`** / **`employee_signup_status(phone)`** / **`reset_employee_login(employee_id)`** — link a new login to the employee with its phone number; check a number before signup; delete an employee's login (managers only).
+- **employee_accounts** — `employee_id` (primary key), `user_id` (the login, null until the employee signs up), `phone` (optional since 0017; unique, `01XXXXXXXXX`; numbers added before are kept). Kept apart from `employees` because that table is public and phone numbers aren't.
+- **`register_employee()`** / **`employee_signup_status(token)`** / **`reset_employee_login(employee_id)`** — link a new login to the employee with its Token Number; check a token before signup; delete an employee's login (managers only). A signed-up employee's `token_no` can't change until their login is reset (`guard_employee_token`).
 - **`get_my_statement(month_start)`** — the signed-in employee's own deposits (and month totals) for one mess month. Answers only for the caller.
 - **`get_my_meal_days(month_start)`** — the signed-in employee's own meals for one mess month, day by day, with each day's meal counts, so the Employee Panel can count past meals only. Answers only for the caller.
 - **meal_records** — `id, employee_id, meal_date, breakfast, lunch, dinner, created_at, updated_at`, unique on `(employee_id, meal_date)`, indexed on both `employee_id` and `meal_date`
@@ -189,7 +190,7 @@ Enforced in Postgres, not just hidden in the UI:
 | Table | Public (anon) | Employee (signed in) | Mess manager |
 |---|---|---|---|
 | `employees` | read only | read only | full CRUD (shared) |
-| `employee_accounts` | **no access** | read own row | read all; add / change phone numbers |
+| `employee_accounts` | **no access** | read own row | read all |
 | `meal_records` | read only | read; write **own** row within the meal deadlines | read; write / delete only the meals of **their own running period** (see [Manager periods](#manager-periods)) |
 | `meal_cutoffs` | read only | read only | read + update (shared) |
 | `mess_periods` | **no access** | **no access** (own bill via `get_my_statement`) | read own row; update only `meal_rate` / `published_meal_rate` — never its dates or meals; no insert or delete |
@@ -351,34 +352,37 @@ periods or employees is blocked with nothing deleted. All should say PASS.
 
 ### Employee accounts
 
-1. The mess manager adds the employee's phone number under **Employees**
-   (when adding them, or with **Edit**). Bangladesh mobile numbers only;
-   `+880 1712-345678`, `8801712345678` and `01712345678` are all accepted
-   and saved as `01712345678`.
-2. The employee opens `/employee/signup`, enters that number and a password
-   (at least 6 characters), and is signed straight in. Signup only works
-   for a number on the employee list, only for an active employee, and
-   only once per number.
-3. After that they sign in at `/employee/login` with the number and
+1. The mess manager adds the employee with their Token Number under
+   **Employees** (as before; tokens are unique).
+2. The employee opens `/employee/signup`, enters their Token Number and a
+   password (at least 6 characters), and is signed straight in. Signup
+   only works for a token on the employee list, only for an active
+   employee, and only once per token. No phone number is needed.
+3. After that they sign in at `/employee/login` with the token and
    password.
 
-Like the month logins below, each phone number maps to a fixed internal
-login address — `01712345678` → `emp-01712345678@mess-manager.app`
-(`employeeAccountEmail()` in `src/lib/utils/phone.ts`). Nobody types or
-sees it, and no mail or SMS is ever sent.
+Like the month logins below, each Token Number maps to a fixed internal
+login address — token `12` → `emp-t12@mess-manager.app`
+(`employeeAccountEmail()` in `src/lib/utils/token.ts`). Nobody types or
+sees it, and no mail or SMS is ever sent. Employees who signed up with a
+phone number before migration 0017 were moved to their token's address and
+keep their password; their stored phone numbers are kept.
 
-**Forgotten password, or the wrong person signed up with a number**: the
+**Forgotten password, or the wrong person signed up with a token**: the
 manager presses **Reset login** beside the employee. That deletes the
 login (not the employee, meals, or deposits), and the employee signs up
-again with a new password. A number that has signed up can't be changed or
-removed until its login is reset.
+again with a new password. A signed-up employee's token can't be changed
+until their login is reset.
 
 **Deactivated employees** can't sign up, and if already signed up they can
 still sign in but can't change meals or see their bill until reactivated.
 
-Signup checks the number first (`employee_signup_status`), which tells a
-signed-out visitor whether a number is on the employee list — the same
-thing the signup error message has to say anyway.
+Signup checks the token first (`employee_signup_status`), which tells a
+signed-out visitor whether a token is on the employee list — the same
+thing the signup error message has to say anyway. Token numbers aren't
+secret (the meal board shows them), so an employee's token can be claimed
+by whoever signs up with it first: the Employees tab shows who has signed
+up, and **Reset login** undoes a wrong sign-up.
 
 **Many people signing in at once**: Supabase Auth limits how many
 sign-ins it accepts per server address, and every sign-in here comes from
@@ -519,6 +523,6 @@ required for the plain email/password flow used here).
 - [ ] Create the Supabase project and run the migrations above (for guests and spending: `0014_guest_meals_spending.sql`; for manager periods: `0015_manager_meal_periods.sql` and `0016_guest_trigger_invoker.sql`)
 - [ ] Turn off "Confirm email" in Supabase Authentication settings
 - [ ] Each monthly team signs up once at `/admin/signup` (account name = month, e.g. `January2026`)
-- [ ] Add real employees, with their phone numbers, via `/admin/employees`
+- [ ] Add real employees, with their Token Numbers, via `/admin/employees`
 - [ ] Ask each employee to sign up once at `/employee/signup`
 - [ ] Set `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY` in your deployment host
