@@ -11,13 +11,19 @@ const loadClient = () => import("@/lib/supabase/client").then((m) => m.createCli
 
 export type CellStatus = "idle" | "saving" | "error";
 
-/** "locked": the database refused because an employee deadline has passed. */
-type SaveResult = "ok" | "locked" | "error";
+/**
+ * "locked": the database refused because an employee deadline has passed.
+ * "refused": the signed-in user may not change this meal at all (RLS, or
+ * the manager-period trigger): for a mess manager, the meal isn't in their
+ * open manager period (0015) — e.g. the period ended while the page was open.
+ */
+type SaveResult = "ok" | "locked" | "refused" | "error";
 
 /**
  * Saves one meal ON/OFF straight from the browser to Supabase, as the
- * signed-in user: RLS lets an employee write only their own row and a mess
- * manager anyone's (0010_employee_accounts.sql). Skipping the app server saves a
+ * signed-in user: RLS lets an employee write only their own row, and a mess
+ * manager only the meals of their own open period
+ * (0015_manager_meal_periods.sql). Skipping the app server saves a
  * network hop, and unlike Server Actions — which Next.js runs one at a time
  * per tab — several taps in a row are saved in parallel. Only the one
  * column that changed is written.
@@ -42,6 +48,9 @@ async function saveMeal(
     if (!error) return "ok";
     // Raised by the enforce_meal_cutoffs trigger (0009_meal_cutoffs.sql).
     if (error.message?.includes("MEAL_LOCKED")) return "locked";
+    // Raised by the enforce_manager_meal_period trigger, or RLS refusing the
+    // row outright (0015_manager_meal_periods.sql).
+    if (error.message?.includes("MANAGER_PERIOD") || error.code === "42501") return "refused";
     console.error("saveMeal failed", error);
     return "error";
   } catch (error) {
@@ -62,6 +71,7 @@ export function useMealToggles<Row extends MealRow>(date: string, initialRows: R
   const [rows, setRows] = useState(initialRows);
   const [cellStatus, setCellStatus] = useState<Record<string, CellStatus>>({});
   const [lockRejected, setLockRejected] = useState(false);
+  const [refused, setRefused] = useState(false);
 
   // Warm the client while the page is idle, so the first tap saves instantly.
   useEffect(() => {
@@ -90,14 +100,18 @@ export function useMealToggles<Row extends MealRow>(date: string, initialRows: R
 
       if (result !== "ok") setValue(current);
       if (result === "locked") setLockRejected(true);
-      setCellStatus((prev) => ({ ...prev, [key]: result === "error" ? "error" : "idle" }));
+      if (result === "refused") setRefused(true);
+      setCellStatus((prev) => ({
+        ...prev,
+        [key]: result === "error" || result === "refused" ? "error" : "idle",
+      }));
     },
     [date]
   );
 
   const hasError = Object.values(cellStatus).includes("error");
 
-  return { rows, cellStatus, toggle, hasError, lockRejected };
+  return { rows, cellStatus, toggle, hasError, lockRejected, refused };
 }
 
 /**

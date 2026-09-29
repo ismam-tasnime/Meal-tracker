@@ -4,7 +4,7 @@ import type { MealType, MessPeriod } from "@/lib/types/database";
 import { formatBDT } from "@/lib/utils/currency";
 import { formatDayOfWeek, formatShortDate } from "@/lib/utils/date";
 import { GUEST_MEAL_RATES, guestBill, totalGuests } from "@/lib/utils/guests";
-import { formatPeriodName, formatPeriodRange } from "@/lib/utils/mess";
+import { formatPeriodMeals, formatPeriodName } from "@/lib/utils/mess";
 
 // Defined here rather than imported from meals-client: this is a Server
 // Component, and values imported from a "use client" module aren't usable here.
@@ -89,7 +89,7 @@ export function GuestMonthSummary({
           🧾 Guest bill for {formatPeriodName(period)}
         </h2>
         <p className="text-xs text-emerald-800/80">
-          {formatPeriodRange(period)} · paid by the office, not employees
+          {formatPeriodMeals(period)} · paid by the office, not employees
         </p>
 
         <dl className="mt-3 divide-y divide-emerald-100 rounded-xl bg-white px-3 text-sm ring-1 ring-inset ring-emerald-100">

@@ -1,6 +1,6 @@
 import { format } from "date-fns";
-import type { MessPeriod } from "@/lib/types/database";
-import { MONTH_NAMES, addDaysToDateStr, parseDateStr } from "@/lib/utils/date";
+import type { MealType, MessPeriod } from "@/lib/types/database";
+import { MONTH_NAMES, parseDateStr } from "@/lib/utils/date";
 
 /** Each mess month runs from this day of one month to the day before it in the next. */
 export const MESS_START_DAY = 5;
@@ -78,13 +78,20 @@ export function messAccountEmail({ year, month }: MessMonth): string {
   return `mess-${year}-${String(month).padStart(2, "0")}@mess-manager.app`;
 }
 
+/**
+ * Does the period have any meal on this date? Its first and last dates
+ * count (the 5th's lunch/dinner, the next 5th's breakfast), so on the 5th
+ * two periods share the date. Which meal is whose is the database's call
+ * (private.get_meal_period, 0015); this only screens dates for forms.
+ */
 export function isDateInPeriod(dateStr: string, period: PeriodRange): boolean {
-  return dateStr >= period.start_date && dateStr < period.end_date;
+  return dateStr >= period.start_date && dateStr <= period.end_date;
 }
 
-/** Last day that belongs to the period (end_date is exclusive). */
-export function periodLastDay(period: PeriodRange): string {
-  return addDaysToDateStr(period.end_date, -1);
+/** Today if the period has meals on it; otherwise the period's nearer end. */
+export function defaultPeriodDate(period: PeriodRange, today: string): string {
+  if (isDateInPeriod(today, period)) return today;
+  return today < period.start_date ? period.start_date : period.end_date;
 }
 
 /** "January2027" — named after the month the period starts in. */
@@ -93,12 +100,60 @@ export function formatPeriodName(period: PeriodRange): string {
   return formatMessMonthName({ year, month });
 }
 
-/** "5 Jan – 4 Feb 2027" */
+/** "5 Jan – 5 Feb 2027": the first and last dates with meals of the period. */
 export function formatPeriodRange(period: PeriodRange): string {
   const start = parseDateStr(period.start_date);
-  const last = parseDateStr(periodLastDay(period));
+  const last = parseDateStr(period.end_date);
   const sameYear = start.getFullYear() === last.getFullYear();
   return `${format(start, sameYear ? "d MMM" : "d MMM yyyy")} – ${format(last, "d MMM yyyy")}`;
+}
+
+export type PeriodMeals = PeriodRange & Pick<MessPeriod, "start_meal" | "end_meal">;
+
+/**
+ * The meals a mess month covers when it's created: 5th lunch → next 5th
+ * breakfast. Must match the mess_periods column defaults (0015).
+ */
+export function messMonthMeals(month: MessMonth): PeriodMeals {
+  return { ...messMonthRange(month), start_meal: "lunch", end_meal: "breakfast" };
+}
+
+const MEAL_NAMES = { breakfast: "Breakfast", lunch: "Lunch", dinner: "Dinner" } as const;
+
+/**
+ * The period meal by meal: "5 Sep Lunch → 5 Oct Breakfast", or with
+ * `long`, "5 September 2026 Lunch → 5 October 2026 Breakfast".
+ */
+export function formatPeriodMeals(period: PeriodMeals, { long = false } = {}): string {
+  const day = (dateStr: string) => format(parseDateStr(dateStr), long ? "d MMMM yyyy" : "d MMM");
+  return `${day(period.start_date)} ${MEAL_NAMES[period.start_meal]} → ${day(period.end_date)} ${MEAL_NAMES[period.end_meal]}`;
+}
+
+/** "October 2026": the month whose manager takes over after this period. */
+export function formatNextMonthTitle(period: PeriodRange): string {
+  return formatMessMonthTitle(messMonthOf(period.end_date));
+}
+
+/** "August 2026": the month whose manager handles meals before this period. */
+export function formatPreviousMonthTitle(period: PeriodRange): string {
+  return formatMessMonthTitle(shiftMessMonth(messMonthOf(period.start_date), -1));
+}
+
+/**
+ * The other month with meals on a date the period shares with it: the
+ * previous month on the period's first date, the next one on its last.
+ * Only names it for notes; which meal is whose comes from the database.
+ */
+export function formatNeighbourMonthTitle(period: PeriodRange, dateStr: string): string | null {
+  if (dateStr === period.start_date) return formatPreviousMonthTitle(period);
+  if (dateStr === period.end_date) return formatNextMonthTitle(period);
+  return null;
+}
+
+/** "breakfast", "lunch and dinner", "breakfast, lunch and dinner". */
+export function formatMealList(meals: MealType[]): string {
+  if (meals.length <= 1) return meals.join("");
+  return `${meals.slice(0, -1).join(", ")} and ${meals[meals.length - 1]}`;
 }
 
 export type MealWeights = { breakfast: number; lunch: number; dinner: number };

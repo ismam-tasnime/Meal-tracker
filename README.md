@@ -32,15 +32,23 @@ itself every minute. The header links to the two panels:
     bill, what they've paid, and their due or refund. A rate the manager is
     only testing is never shown here.
 - **Mess Manager Panel** (`/admin`) — one account per mess month, shared by
-  that month's team (~5 people). The mess runs from the 5th to the 4th of
-  the next month (e.g. 5 Jan – 4 Feb). The team signs up once at
+  that month's team (~5 people). Each month's **manager period** runs meal
+  by meal from the 5th's **lunch** to the next month's 5th **breakfast**
+  (e.g. 5 Jan lunch → 5 Feb breakfast) — see
+  [Manager periods](#manager-periods). The team signs up once at
   `/admin/signup` with the account name `January2026` and a password; each
   month can have only one account. Each month's data is private to its
   team. Tabs:
+  - **Dashboard** — the manager period, meal by meal, marked **Active
+    Manager Period**, **Manager Period Completed** or **Manager Period Not
+    Started**, and the month's figures.
   - **Meal Status** — pick a date, set that date's meal counts
-    (Breakfast 0.75 / Lunch 1.25 / Dinner 1.00 by default), and see or fix
-    every employee's ON/OFF — any date, any time; the employee deadlines
-    don't apply here. Also where the employee meal deadlines are set.
+    (Breakfast 0.75 / Lunch 1.25 / Dinner 1.00 by default), and see every
+    employee's ON/OFF. A manager can fix ON/OFF only for the meals of their
+    own manager period, and only while it's running; the employee
+    deadlines don't apply to them. Once the period has ended the page is a
+    read-only record of the month's meals. Also where the employee meal
+    deadlines are set.
   - **Guest** — pick a date (inside the mess month) and enter how many
     guests eat breakfast, lunch and dinner (any number, 0–10,000 per meal).
     Guests are paid for by the office at fixed rates — Breakfast ৳60,
@@ -49,7 +57,9 @@ itself every minute. The header links to the two panels:
     are the month's dates with guests (tap one to edit it) and the **Total
     Bill to Collect** for the month, meal by meal (also on the Dashboard, as
     "Guest bill to collect"). Saving a date again overwrites it; there's
-    never a second record for the same date + meal.
+    never a second record for the same date + meal. On the 5th each month
+    declares its own meals' guests (the outgoing month breakfast, the
+    incoming month lunch and dinner).
     The Employee Panel never shows guests; the cook's meal board shows
     today's guest counts (never bills).
   - **Expense Status** — record deposits (any number per employee, before
@@ -64,7 +74,8 @@ itself every minute. The header links to the two panels:
     Spending** opens a form (date, name, amount); any number of entries per
     date. Tap an entry to edit or delete it. **Sum Spending** has the
     database add up every entry of the mess month: **TOTAL MONTHLY
-    SPENDING**. Dates must be inside the mess month, so months never mix.
+    SPENDING**. Dates must be inside the mess month (both 5ths count, so a
+    payment on the 5th can go in either month), and months never mix.
     Employees never see spending.
   - **Report** — Employee → Meal Count → Total Bill → Total Deposit →
     Amount to be Paid, with CSV export.
@@ -75,7 +86,8 @@ itself every minute. The header links to the two panels:
 
 ```
 daily meal count   = breakfast ON × breakfast count + lunch ON × lunch count + dinner ON × dinner count
-monthly meal count = sum of daily meal counts over the mess month
+monthly meal count = sum of daily meal counts over the manager period's own meals
+                     (5th lunch … next 5th breakfast)
 total bill         = monthly meal count × meal rate
 balance            = total deposit − total bill
                      > 0 → remaining (refund) · = 0 → fully settled · < 0 → due
@@ -114,7 +126,7 @@ src/
       login/page.tsx         Mess manager sign-in (public route)
       signup/page.tsx        Mess manager sign-up (public route)
       (protected)/           Everything below requires a mess manager session
-        page.tsx              Dashboard for your mess month
+        page.tsx              Dashboard: your manager period and its status, month figures
         meals/page.tsx        Meal Status: per-date meal counts + employee ON/OFF
         guests/page.tsx       Guest: per-date guest counts, bills, month's Total Bill to Collect
         expenses/page.tsx     Expense Status: deposits + meal rate + balances
@@ -134,9 +146,10 @@ src/
     types/database.ts        Hand-written types mirroring the SQL schema
   proxy.ts                   Next.js 16 "Proxy" (formerly middleware) — session refresh + /admin and /employee gates
 supabase/
-  migrations/                 Run in order: 0001 schema … 0014 guest meals and spending
+  migrations/                 Run in order: 0001 schema … 0015 manager periods
   tests/meal_cutoffs_check.sql  Paste into the SQL Editor to verify meal deadlines (changes nothing)
   tests/guest_spending_check.sql  Same, for guest meals and spending (changes nothing)
+  tests/manager_periods_check.sql  Same, for manager periods and data safety (changes nothing)
 ```
 
 ## Database schema
@@ -150,16 +163,21 @@ supabase/
 - **meal_cutoffs** — one row: `breakfast_cutoff, lunch_cutoff, dinner_cutoff` (`time`, Bangladesh time) — the employee meal deadlines.
 - **`meal_lock_reason(date, meal, now)`** / **`enforce_meal_cutoffs()`** — the deadline rule and the `meal_records` trigger that enforces it for everyone but mess managers.
 - **admin_profiles** — `id` (references `auth.users`), `full_name` (e.g. "January2026"). A row here means "is a mess manager account".
-- **mess_periods** — `manager_id` (unique), `start_date, end_date` (end exclusive), `meal_rate` (null until set). Each account manages exactly one month. An exclusion constraint stops two periods from overlapping.
-- **meal_day_weights** — `period_id, meal_date, breakfast_weight, lunch_weight, dinner_weight`. One row per customised date; a missing row means the defaults 0.75 / 1.25 / 1.00. The date must be inside the period.
+- **mess_periods** — `manager_id` (unique), `start_date` + `start_meal` (the first meal: 5th, `lunch`), `end_date` + `end_meal` (the last meal: next 5th, `breakfast`), both inclusive; `first_slot` / `last_slot` (generated: those meals' slots), `meal_rate` / `published_meal_rate`. Each account manages exactly one month. An exclusion constraint on the slot range stops any meal belonging to two periods. See [Manager periods](#manager-periods).
+- **meal_day_weights** — `period_id, meal_date, breakfast_weight, lunch_weight, dinner_weight`. One row per customised date; a missing row means the defaults 0.75 / 1.25 / 1.00. The date must be inside the period; on the 5th each period has its own row, and only its own meals' counts are used.
 - **deposits** — `period_id, employee_id, amount (> 0), deposited_on, note`. Any number per employee. An employee with deposits can't be hard-deleted (deactivate instead).
-- **guest_meals** — `meal_date` (primary key), `period_id, breakfast_guests, lunch_guests, dinner_guests` (whole numbers 0–10,000), `updated_at`. One row per date, so a date + meal has exactly one guest count; no row means no guests. The date must be inside the period. No bills are stored.
+- **guest_meals** — primary key `(period_id, meal_date)`, `breakfast_guests, lunch_guests, dinner_guests` (whole numbers 0–10,000), `updated_at`. One row per month and date; a trigger (`guard_guest_meal_owner`) keeps each row to its own month's meals, so a date + meal has exactly one guest count even on the 5th. No row means no guests. No bills are stored.
 - **spending_records** — `id, period_id, spent_on, person_name (1–80 chars), amount (> 0), created_at, updated_at`. Any number per date. The date must be inside the period; managers can change only the date, name and amount, never move an entry to another month.
 - **`get_today_guest_meals()`** — today's three guest counts (Asia/Dhaka) for the cook's public meal board, and nothing else: no other date, no bills.
 - **`get_spending_total(period_id)`** — "Sum Spending": the number of entries and their total, added up from the rows. Zero for a period the caller doesn't own.
 - **`register_mess_manager()`** — run right after signup. Reads the month from the caller's own login address and creates their profile and period, so an account can only ever manage the month in its own username.
-- **`get_period_report(period_id)`** — per employee: meal counts, weighted meal count, bill, total deposit, balance. Lists active employees plus anyone who ate or deposited that month (so people who joined or left mid-month are included). Returns nothing for a period the caller doesn't own.
-- **`private.owns_period()` / `private.date_in_period()`** — RLS helpers: is this period the caller's, and is this date inside it?
+- **`get_period_report(period_id)`** — per employee: meal counts, weighted meal count, bill, total deposit, balance, counting exactly the period's own meals. Lists active employees plus anyone who ate or deposited that month (so people who joined or left mid-month are included). Returns nothing for a period the caller doesn't own.
+- **`private.meal_slot(date, meal)`** — every meal as one number in time order: days since 2000-01-01 × 3 + 0 (breakfast) / 1 (lunch) / 2 (dinner).
+- **`private.get_meal_period(date, meal)`** — whose meal is this: the id of the one period owning it (null if no manager has that month yet). The single answer every rule below uses.
+- **`private.period_status(start, end)`** — `upcoming` / `active` / `completed`: whether a period is open for changing employee meals (00:00 on its first day to 23:59 on its last, Bangladesh time).
+- **`private.manager_can_change_meal(date, meal)`** / **`private.manager_can_change_date(date)`** — may the signed-in manager change this meal (their own period owns it and is active) / any meal of this date. Used by RLS and the trigger below.
+- **`enforce_manager_meal_period()`** — the `meal_records` trigger that rejects any change to a meal the manager may not change (`MANAGER_PERIOD`).
+- **`get_my_meal_access(date)`** — for the Mess Manager Panel: the caller's period status and, for one date, which meals are theirs and which they may change right now.
 - **`private.is_admin()`** — SQL helper used by RLS policies ("is the caller a mess manager?").
 
 See `supabase/migrations/` for the full, commented definitions.
@@ -172,12 +190,12 @@ Enforced in Postgres, not just hidden in the UI:
 |---|---|---|---|
 | `employees` | read only | read only | full CRUD (shared) |
 | `employee_accounts` | **no access** | read own row | read all; add / change phone numbers |
-| `meal_records` | read only | read; write **own** row within the meal deadlines | read + write any date, any time; delete only inside own periods |
+| `meal_records` | read only | read; write **own** row within the meal deadlines | read; write / delete only the meals of **their own running period** (see [Manager periods](#manager-periods)) |
 | `meal_cutoffs` | read only | read only | read + update (shared) |
-| `mess_periods` | **no access** | **no access** (own bill via `get_my_statement`) | read own row; update only `meal_rate` |
+| `mess_periods` | **no access** | **no access** (own bill via `get_my_statement`) | read own row; update only `meal_rate` / `published_meal_rate` — never its dates or meals; no insert or delete |
 | `meal_day_weights` | **no access** | **no access** (own bill via `get_my_statement`) | own period's dates only |
 | `deposits` | **no access** | **no access** (own deposits via `get_my_statement`) | own period only (add / remove) |
-| `guest_meals` | **no access** (the meal board gets today's counts via `get_today_guest_meals`) | **no access** | own period's dates only (add / change / remove) |
+| `guest_meals` | **no access** (the meal board gets today's counts via `get_today_guest_meals`) | **no access** | own period's dates and meals only (add / change / remove) |
 | `spending_records` | **no access** | **no access** | own period's dates only (add / change / remove) |
 | `admin_profiles` | no access | no access | read own row only |
 
@@ -189,8 +207,98 @@ returns nothing.
 
 Nobody signed out can change a meal: `meal_records` is readable by anyone
 (the cook's board needs it) but writable only by a signed-in employee for
-their own row, or by a mess manager. An employee can't see anyone else's
-bill or deposits, or anyone's phone number.
+their own row, or by a mess manager for their own running period's meals.
+An employee can't see anyone else's bill or deposits, or anyone's phone
+number.
+
+### Manager periods
+
+Each mess month has one manager account, and its **manager period** runs
+meal by meal from the **5th's lunch** through the **next month's 5th
+breakfast**:
+
+| Meal | Belongs to |
+|---|---|
+| 4 Sep dinner, 5 Sep breakfast | August's manager |
+| 5 Sep lunch, 5 Sep dinner, 6 Sep … 4 Oct, 5 Oct breakfast | September's manager |
+| 5 Oct lunch, 5 Oct dinner, 6 Oct breakfast … | October's manager |
+
+Every meal belongs to exactly one period. A month owns 3 meals × its number
+of days (28, 29, 30 or 31), meeting the next month with no gap or overlap —
+calendar dates, never "30 days", so December → January, February and leap
+years need nothing special.
+
+**Stored explicitly.** `mess_periods` names the first and last meal:
+`start_date` + `start_meal` (5 Sep, lunch) and `end_date` + `end_meal`
+(5 Oct, breakfast), both inclusive. Each meal also has a number in time
+order, its *slot* (`private.meal_slot`), and `first_slot` / `last_slot` are
+generated from those columns; an exclusion constraint on the slot range
+means no meal can ever belong to two periods.
+
+**One answer to "whose meal is this?"** — `private.get_meal_period(date,
+meal)`. Everything else uses it or the same slots: who may change a meal,
+which meals a bill counts, which month's meal counts apply on the 5th, and
+whose guests are whose. The app never works it out itself: pages ask the
+database (`get_my_meal_access`) what the signed-in manager may do.
+
+**Who may change an employee's meal ON/OFF.** Only the manager whose own
+period owns that meal, and only while that period is running: from 00:00
+on its first day to 23:59 on its last day, Bangladesh time
+(`private.period_status`: upcoming → active → completed). On the 5th both
+managers are running, each for their own meals only — the outgoing manager
+for breakfast, the incoming one for lunch and dinner. Enforced in Postgres
+whatever sends the request (the app, a changed URL, form or server action,
+or a hand-made Supabase/REST call with any employee id, period id or date):
+
+- **RLS** on `meal_records` lets a manager insert, update or delete a row
+  only on a date where their running period owns at least one meal;
+- the **`enforce_manager_meal_period` trigger** then checks each meal the
+  write actually changes and rejects the whole write if any one isn't
+  theirs (a delete counts as turning every ON meal off);
+- the period itself is out of reach: managers can update only
+  `meal_rate` / `published_meal_rate` on `mess_periods` — never its dates
+  or meals — and can't insert or delete periods.
+
+Nothing is taken from the request: the period comes from the signed-in
+login (`auth.uid()` → its one `mess_periods` row).
+
+**When a period ends**, nothing is locked or deleted. The manager keeps
+signing in and keeps everything about their month: its meals (read-only),
+meal counts, deposits (cash collection), dues, meal rate (test and
+publish), guests, spending, report, CSV export and calculations. Only
+changing employees' meal ON/OFF stops. Meal Status then says: "Your manager
+period has ended. Your management period was: 5 September 2026 Lunch → 5
+October 2026 Breakfast. Employee meal-status updates are now handled by the
+October 2026 manager. You can still access your previous period's meal
+records, calculations, cash collection, reports, and other historical
+information." — and every meal shows 🔒. Before a period starts, Meal Status
+says so, and its meals are 🔒 until its first day. On the 5th, the other
+month's meals are 🔒 with a note saying whose they are.
+
+**The next manager** changes only their own period's meals; they can read
+other dates' meal ON/OFF (as every manager can) but can't change them, and
+can't see another month's meal counts, deposits, rate, guests, spending or
+report.
+
+**Bills count exactly the period's own meals** (`get_period_report`,
+`get_dashboard_stats`, `get_my_statement`, `get_my_meal_days`): 5 Oct
+breakfast is on September's bill, at September's meal count for 5 Oct; 5
+Oct lunch and dinner are on October's. Each month keeps its own meal-count
+row and guest row for the 5th. Spending dated the 5th can be recorded in
+either month.
+
+**Employees are unaffected**: their deadlines and panel don't change.
+
+**No account change deletes business data.** Deleting a manager's login
+used to cascade (login → profile → period → meal counts, deposits, guests,
+spending). Every such foreign key is now `ON DELETE RESTRICT` (0015), so the
+delete fails instead: a login can't be deleted while its manager profile
+exists, a profile while its period exists, a period while it has meal
+counts, deposits, guests or spending, and an employee while they have meals.
+To stop someone signing in, change the account's password (or ban the user)
+in Supabase Dashboard → Authentication → Users; neither removes anything.
+Nothing in the app ever deletes a previous month, manager, period or its
+history.
 
 ### Meal deadlines
 
@@ -202,9 +310,10 @@ Employees (signed in to the Employee Panel) can change their own meals:
 | Today | ✅ until that meal's deadline, 🔒 from the deadline on |
 | After today | ✅ always (the deadline applies once that day is today) |
 
-Mess managers can change any meal on any date at any time. Deadlines
-default to 08:00 / 11:00 / 17:00 and are set under Meal Status → Employee
-meal deadlines (one office-wide setting, table `meal_cutoffs`).
+Mess managers aren't bound by the deadlines, but change only the meals
+of their own running manager period ([Manager periods](#manager-periods)).
+Deadlines default to 08:00 / 11:00 / 17:00 and are set under Meal Status →
+Employee meal deadlines (one office-wide setting, table `meal_cutoffs`).
 
 Enforced in Postgres, not only on screen: the `enforce_meal_cutoffs`
 trigger on `meal_records` (migration 0009) rejects a locked change however
@@ -228,6 +337,17 @@ date, no second record for a date, dates outside the month refused, several
 spending entries per date, the month total (3,000 + 2,500 + 1,200 + 4,000 =
 10,700), edits and deletes, months kept apart, and employees, other months'
 managers and signed-out visitors refused. All should say PASS.
+
+`supabase/tests/manager_periods_check.sql` does the same for manager
+periods (migration 0015): whose meal each boundary meal is (5 Sep breakfast
+→ August, 5 Sep lunch → September, 5 Oct breakfast → September, 5 Oct lunch
+→ October, …), December → January, February and leap years, when a period
+opens and closes (to the second, Bangladesh time), who may change which
+meal at exact moments, real writes through RLS and the trigger by the
+current, previous and next month's managers, a finished manager keeping
+everything but meal changes, bills counting each meal exactly once, guests,
+meal counts and spending on the 5th, and that deleting logins, profiles,
+periods or employees is blocked with nothing deleted. All should say PASS.
 
 ### Employee accounts
 
@@ -374,7 +494,9 @@ required for the plain email/password flow used here).
   several taps save in parallel.
 - **No double fetches**: server actions that change data call
   `revalidatePath`, which already re-renders the page; the UI never also
-  calls `router.refresh()`.
+  calls `router.refresh()`. (Meal Status refreshes only when the database
+  refuses a meal change — e.g. the period ended while the page was open —
+  to reload the locks.)
 - **RLS** uses `(select auth.uid())` so it's evaluated once per query, not
   once per row.
 
@@ -383,15 +505,18 @@ required for the plain email/password flow used here).
 - **Timezone**: all "today" logic uses Asia/Dhaka regardless of server or
   visitor location, so the office's calendar day is always correct.
 - **Employee deletion**: an employee can only be hard-deleted if they have
-  no meal history and no deposits (to protect billing records). Otherwise,
-  deactivate them — they disappear from the Employee Panel but stay in any
-  month's report where they ate or deposited.
+  no meal history and no deposits (to protect billing records; the database
+  refuses it too). Otherwise, deactivate them — they disappear from the
+  Employee Panel but stay in any month's report where they ate or deposited.
+- **Handover day**: a manager period is open for meal changes for its
+  whole first and last day (the 5ths), each manager only for their own
+  meals of that day, rather than switching over at a clock time.
 - **CSV export**: monthly reports export as CSV, which opens directly in
   Excel, Google Sheets, and Numbers.
 
 ## Still to configure before going live
 
-- [ ] Create the Supabase project and run the migrations above (for guests and spending: `0014_guest_meals_spending.sql`)
+- [ ] Create the Supabase project and run the migrations above (for guests and spending: `0014_guest_meals_spending.sql`; for manager periods: `0015_manager_meal_periods.sql`)
 - [ ] Turn off "Confirm email" in Supabase Authentication settings
 - [ ] Each monthly team signs up once at `/admin/signup` (account name = month, e.g. `January2026`)
 - [ ] Add real employees, with their phone numbers, via `/admin/employees`

@@ -5,7 +5,7 @@ import { setGuestMeals } from "@/lib/actions/mess";
 import { MEALS } from "@/lib/meals-client";
 import type { MealType } from "@/lib/types/database";
 import { formatBDT } from "@/lib/utils/currency";
-import { formatDisplayDate } from "@/lib/utils/date";
+import { formatDisplayDate, formatShortDate } from "@/lib/utils/date";
 import {
   GUEST_MEAL_RATES,
   MAX_GUESTS,
@@ -15,6 +15,7 @@ import {
   parseGuestCount,
   type GuestCounts,
 } from "@/lib/utils/guests";
+import { formatMealList } from "@/lib/utils/mess";
 
 const MEAL_ICONS: Record<MealType, string> = { breakfast: "🍳", lunch: "🍛", dinner: "🌙" };
 
@@ -29,8 +30,24 @@ const toDraft = (counts: GuestCounts): Record<MealType, string> => ({
  * One date's guests: a count per meal, with each meal's bill (guests × the
  * fixed rate) and the date's total worked out as you type. Saving
  * overwrites the date's one record; all zeros removes it.
+ *
+ * `owned` (from the database) says which of the date's meals are this
+ * month's: on the 5th, the other month's manager declares the guests of
+ * its own meals, so those boxes are read-only here. The database refuses
+ * them anyway.
  */
-export function GuestCountsForm({ date, initial }: { date: string; initial: GuestCounts }) {
+export function GuestCountsForm({
+  date,
+  initial,
+  owned,
+  otherMonth,
+}: {
+  date: string;
+  initial: GuestCounts;
+  owned: Record<MealType, boolean>;
+  /** The month whose manager has this date's other meals ("October 2026"). */
+  otherMonth: string | null;
+}) {
   // Keyed by `date` from the parent, so this remounts with fresh state per date.
   const [saved, setSaved] = useState(initial);
   const [draft, setDraft] = useState(() => toDraft(initial));
@@ -50,6 +67,8 @@ export function GuestCountsForm({ date, initial }: { date: string; initial: Gues
   };
   const bill = guestBill(counts);
   const dirty = MEALS.some(({ key }) => parsed[key] !== saved[key]);
+  const othersMeals = MEALS.filter(({ key }) => !owned[key]).map(({ key }) => key);
+  const otherManager = otherMonth ? `the ${otherMonth} manager` : "the other month’s manager";
 
   function save(next: GuestCounts) {
     setMessage(null);
@@ -93,6 +112,13 @@ export function GuestCountsForm({ date, initial }: { date: string; initial: Gues
         </span>
       </div>
 
+      {othersMeals.length > 0 && (
+        <p className="rounded-xl bg-sky-50 px-3 py-2 text-sm text-sky-800">
+          {formatShortDate(date)} is a handover day: {formatMealList(othersMeals)} guests are
+          declared by {otherManager}.
+        </p>
+      )}
+
       <ul className="flex flex-col divide-y divide-slate-100">
         {MEALS.map(({ key, label }) => {
           const invalid = parsed[key] === null;
@@ -103,7 +129,9 @@ export function GuestCountsForm({ date, initial }: { date: string; initial: Gues
                   <span aria-hidden>{MEAL_ICONS[key]}</span> {label}
                 </span>
                 <span className="block text-xs text-slate-500">
-                  {formatBDT(GUEST_MEAL_RATES[key])} per guest
+                  {owned[key]
+                    ? `${formatBDT(GUEST_MEAL_RATES[key])} per guest`
+                    : `Declared by ${otherManager}`}
                 </span>
               </label>
               <input
@@ -115,9 +143,10 @@ export function GuestCountsForm({ date, initial }: { date: string; initial: Gues
                 step="1"
                 placeholder="0"
                 value={draft[key]}
+                disabled={!owned[key]}
                 onChange={(e) => setDraft((prev) => ({ ...prev, [key]: e.target.value }))}
                 aria-invalid={invalid}
-                className={`h-11 w-20 shrink-0 rounded-xl border px-2 text-center text-base font-semibold text-slate-900 placeholder:text-slate-300 focus:outline-none focus:ring-1 ${
+                className={`h-11 w-20 shrink-0 rounded-xl border px-2 text-center text-base font-semibold text-slate-900 placeholder:text-slate-300 focus:outline-none focus:ring-1 disabled:bg-slate-50 disabled:text-slate-400 ${
                   invalid
                     ? "border-red-400 focus:border-red-500 focus:ring-red-500"
                     : "border-slate-300 focus:border-indigo-500 focus:ring-indigo-500"

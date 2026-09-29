@@ -1,31 +1,45 @@
 "use client";
 
-import { memo, useState, useTransition } from "react";
+import { memo, useEffect, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { setDayWeights } from "@/lib/actions/mess";
 import type { AdminMealSheetRow } from "@/lib/data/meals";
 import type { MealType } from "@/lib/types/database";
 import { MealToggleButton } from "@/components/public/MealToggleButton";
 import { EmployeeName } from "@/components/EmployeeName";
 import { MEALS, useMealToggles, type CellStatus } from "@/lib/meals-client";
-import { DEFAULT_MEAL_WEIGHTS, formatMealCount, type MealWeights } from "@/lib/utils/mess";
+import { formatShortDate } from "@/lib/utils/date";
+import {
+  DEFAULT_MEAL_WEIGHTS,
+  formatMealCount,
+  formatMealList,
+  type MealWeights,
+} from "@/lib/utils/mess";
 
-function dayMealCount(row: AdminMealSheetRow, weights: MealWeights): number {
-  return MEALS.reduce((sum, { key }) => sum + (row[key] ? weights[key] : 0), 0);
+type MealFlags = Record<MealType, boolean>;
+
+/** The row's meal count for this date: only meals of the manager's own period. */
+function dayMealCount(row: AdminMealSheetRow, weights: MealWeights, owned: MealFlags): number {
+  return MEALS.reduce((sum, { key }) => sum + (row[key] && owned[key] ? weights[key] : 0), 0);
 }
 
 /** One employee's row. Memoised: tapping a meal re-renders only that row. */
 const StatusRow = memo(function StatusRow({
   row,
   weights,
+  owned,
+  canChange,
   statuses,
   onToggle,
 }: {
   row: AdminMealSheetRow;
   weights: MealWeights;
+  owned: MealFlags;
+  canChange: MealFlags;
   statuses: [CellStatus, CellStatus, CellStatus];
   onToggle: (employeeId: string, meal: MealType, current: boolean) => void;
 }) {
-  const count = formatMealCount(dayMealCount(row, weights));
+  const count = formatMealCount(dayMealCount(row, weights, owned));
   return (
     <tr className="border-b border-slate-100 last:border-b-0">
       <td className="sticky left-0 z-10 bg-white px-3 py-2 font-semibold text-slate-800">
@@ -46,6 +60,7 @@ const StatusRow = memo(function StatusRow({
             value={row[key]}
             status={statuses[i]}
             onToggle={() => onToggle(row.employeeId, key, row[key])}
+            locked={!canChange[key]}
           />
         </td>
       ))}
@@ -57,6 +72,8 @@ const StatusRow = memo(function StatusRow({
 }, (a, b) =>
   a.row === b.row &&
   a.weights === b.weights &&
+  a.owned === b.owned &&
+  a.canChange === b.canChange &&
   a.onToggle === b.onToggle &&
   a.statuses.every((s, i) => s === b.statuses[i])
 );
@@ -65,21 +82,41 @@ const StatusRow = memo(function StatusRow({
  * The mess manager's view of one date: the date's meal counts at the top,
  * then every employee's ON/OFF status and resulting meal count. Changing a
  * meal count re-prices every employee who had that meal on this date.
+ *
+ * `owned` and `canChange` come from the database (get_my_meal_access):
+ * a meal of another month (the 5th's breakfast or lunch/dinner) is shown
+ * read-only and left out of the counts, and every meal is read-only while
+ * the manager period isn't running. The database refuses those saves
+ * anyway; this only shows it.
  */
 export function MealStatusEditor({
   date,
   initialRows,
   initialWeights,
   weightsCustomised,
+  owned,
+  canChange,
+  otherMonth,
 }: {
   date: string;
   initialRows: AdminMealSheetRow[];
   initialWeights: MealWeights;
   weightsCustomised: boolean;
+  owned: MealFlags;
+  canChange: MealFlags;
+  /** The month whose manager has this date's other meals ("October 2026"). */
+  otherMonth: string | null;
 }) {
   // Keyed by `date` from the parent, so this component fully remounts
   // (fresh state) whenever the selected date changes.
-  const { rows, cellStatus, toggle, hasError } = useMealToggles(date, initialRows);
+  const { rows, cellStatus, toggle, hasError, refused } = useMealToggles(date, initialRows);
+  const router = useRouter();
+
+  // A save the database refused: the period ended (or the meal changed
+  // hands) while this page was open. Reload the locks from the database.
+  useEffect(() => {
+    if (refused) router.refresh();
+  }, [refused, router]);
   const [savedWeights, setSavedWeights] = useState(initialWeights);
   const [customised, setCustomised] = useState(weightsCustomised);
   const [draft, setDraft] = useState<Record<MealType, string>>({
@@ -126,8 +163,9 @@ export function MealStatusEditor({
   }
 
   const onCounts = MEALS.map(({ key }) => rows.filter((r) => r[key]).length);
-  const dayTotal = rows.reduce((sum, r) => sum + dayMealCount(r, savedWeights), 0);
+  const dayTotal = rows.reduce((sum, r) => sum + dayMealCount(r, savedWeights, owned), 0);
   const isDefault = MEALS.every(({ key }) => savedWeights[key] === DEFAULT_MEAL_WEIGHTS[key]);
+  const othersMeals = MEALS.filter(({ key }) => !owned[key]).map(({ key }) => key);
 
   return (
     <div className="flex flex-col gap-4">
@@ -159,9 +197,11 @@ export function MealStatusEditor({
                 max="10"
                 step="0.01"
                 value={draft[key]}
+                disabled={!owned[key]}
                 onChange={(e) => setDraft((prev) => ({ ...prev, [key]: e.target.value }))}
-                className="h-11 w-full rounded-xl border border-slate-300 px-3 text-center text-base font-semibold text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                className="h-11 w-full rounded-xl border border-slate-300 px-3 text-center text-base font-semibold text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:bg-slate-50 disabled:text-slate-400"
               />
+              {!owned[key] && <span className="text-[11px] text-slate-400">Not yours</span>}
             </div>
           ))}
         </div>
@@ -203,10 +243,27 @@ export function MealStatusEditor({
         )}
       </form>
 
-      {hasError && (
-        <p role="alert" className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">
-          Couldn&rsquo;t save a meal (outlined in red). Check your connection and tap it again.
+      {othersMeals.length > 0 && othersMeals.length < MEALS.length && (
+        <p className="rounded-xl bg-sky-50 px-3 py-2 text-sm text-sky-800">
+          {formatShortDate(date)} is a handover day: {formatMealList(othersMeals)}{" "}
+          {othersMeals.length > 1 ? "belong" : "belongs"} to the{" "}
+          {otherMonth ? `${otherMonth} manager’s` : "other manager’s"} period, so{" "}
+          {othersMeals.length > 1 ? "they’re" : "it’s"} read-only here and left out of your meal
+          counts.
         </p>
+      )}
+
+      {refused ? (
+        <p role="alert" className="rounded-xl bg-amber-50 px-3 py-2 text-sm text-amber-800">
+          That meal can&rsquo;t be changed from your account: it isn&rsquo;t in your running manager
+          period. The page has been updated to show what you can change.
+        </p>
+      ) : (
+        hasError && (
+          <p role="alert" className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">
+            Couldn&rsquo;t save a meal (outlined in red). Check your connection and tap it again.
+          </p>
+        )
       )}
 
       {rows.length === 0 ? (
@@ -223,7 +280,7 @@ export function MealStatusEditor({
                   <th key={key} className="px-2 py-2.5 text-center font-semibold">
                     {label}
                     <span className="block text-[10px] font-semibold normal-case text-slate-400">
-                      × {formatMealCount(savedWeights[key])}
+                      {owned[key] ? `× ${formatMealCount(savedWeights[key])}` : "Not yours"}
                     </span>
                   </th>
                 ))}
@@ -236,6 +293,8 @@ export function MealStatusEditor({
                   key={row.employeeId}
                   row={row}
                   weights={savedWeights}
+                  owned={owned}
+                  canChange={canChange}
                   statuses={[
                     cellStatus[`${row.employeeId}:breakfast`] ?? "idle",
                     cellStatus[`${row.employeeId}:lunch`] ?? "idle",
@@ -254,7 +313,10 @@ export function MealStatusEditor({
                   </span>
                 </td>
                 {onCounts.map((count, i) => (
-                  <td key={MEALS[i].key} className="px-2 py-2 text-center font-semibold">
+                  <td
+                    key={MEALS[i].key}
+                    className={`px-2 py-2 text-center font-semibold ${owned[MEALS[i].key] ? "" : "text-slate-400"}`}
+                  >
                     {count}
                   </td>
                 ))}

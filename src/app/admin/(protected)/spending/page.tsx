@@ -3,7 +3,7 @@ import { LoadError } from "@/components/LoadError";
 import { getMyPeriod } from "@/lib/data/periods";
 import { listSpending } from "@/lib/data/spending";
 import { isMissingFromDatabase } from "@/lib/supabase/errors";
-import { formatPeriodName, formatPeriodRange } from "@/lib/utils/mess";
+import { formatPeriodMeals, formatPeriodName } from "@/lib/utils/mess";
 
 export const dynamic = "force-dynamic";
 
@@ -23,7 +23,7 @@ export default async function ManagerSpendingPage() {
       : "Could not load spending.";
   }
 
-  const month = `${formatPeriodName(period)} (${formatPeriodRange(period)})`;
+  const month = `${formatPeriodName(period)} (${formatPeriodMeals(period)})`;
 
   return (
     <div className="flex flex-col gap-4">

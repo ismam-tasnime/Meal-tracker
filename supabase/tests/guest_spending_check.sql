@@ -26,6 +26,7 @@ declare
   v_emp_login constant uuid := 'e0000000-0000-4000-8000-00000000000e';
   v_emp constant uuid := 'e1000000-0000-4000-8000-00000000000e';
   v_today_period uuid;
+  v_today_bf_period uuid;
   c record;
   v_stmt text;
   v_got text;
@@ -44,13 +45,14 @@ begin
   for c in
     select * from (values
       -- n, name, who, setup (run first, as the SQL editor), sql (run as `who`), expected.
-      -- Month A = a1000000-…, month B = b1000000-…; $1 = today (Asia/Dhaka), $2 = today's month.
+      -- Month A = a1000000-…, month B = b1000000-…; $1 = today (Asia/Dhaka), $2 = the month owning
+      -- today's lunch, $3 = the month owning today's breakfast (on the 5th they differ).
 
       -- Guest meals ---------------------------------------------------------
       (1, 'Manager saves 1 breakfast guest', 'manager A', null::text[],
           $s$insert into public.guest_meals (meal_date, period_id, breakfast_guests, lunch_guests, dinner_guests)
              values ('2099-01-10', 'a1000000-0000-4000-8000-00000000000a', 1, 0, 0)
-             on conflict (meal_date) do update set period_id = excluded.period_id,
+             on conflict (period_id, meal_date) do update set
                breakfast_guests = excluded.breakfast_guests, lunch_guests = excluded.lunch_guests,
                dinner_guests = excluded.dinner_guests
              returning format('%s/%s/%s', breakfast_guests, lunch_guests, dinner_guests)$s$, '1/0/0'),
@@ -76,7 +78,7 @@ begin
                    values ('2099-01-10', 'a1000000-0000-4000-8000-00000000000a', 20, 100, 50)$s$],
           $s$insert into public.guest_meals (meal_date, period_id, breakfast_guests, lunch_guests, dinner_guests)
              values ('2099-01-10', 'a1000000-0000-4000-8000-00000000000a', 25, 120, 50)
-             on conflict (meal_date) do update set period_id = excluded.period_id,
+             on conflict (period_id, meal_date) do update set
                breakfast_guests = excluded.breakfast_guests, lunch_guests = excluded.lunch_guests,
                dinner_guests = excluded.dinner_guests
              returning format('%s/%s/%s', breakfast_guests, lunch_guests, dinner_guests)$s$, '25/120/50'),
@@ -116,15 +118,17 @@ begin
       (16, 'Signed out can''t read guest meals', 'anon', null,
           $s$select count(*)::text from public.guest_meals$s$, 'REJECT'),
       (17, 'Cook''s board gets today''s guest counts', 'anon',
-          array[$s$insert into public.guest_meals (meal_date, period_id, breakfast_guests, lunch_guests, dinner_guests)
-                   values ($1, $2, 7, 8, 9)
-                   on conflict (meal_date) do update
-                     set breakfast_guests = 7, lunch_guests = 8, dinner_guests = 9$s$],
+          array[$s$insert into public.guest_meals (meal_date, period_id, lunch_guests, dinner_guests)
+                   values ($1, $2, 8, 9)
+                   on conflict (period_id, meal_date) do update set lunch_guests = 8, dinner_guests = 9$s$,
+                 $s$insert into public.guest_meals (meal_date, period_id, breakfast_guests)
+                   values ($1, $3, 7)
+                   on conflict (period_id, meal_date) do update set breakfast_guests = 7$s$],
           $s$select format('%s/%s/%s', breakfast_guests, lunch_guests, dinner_guests)
              from public.get_today_guest_meals()$s$, '7/8/9'),
       (18, 'Cook''s board gets no other date', 'anon',
           array[$s$insert into public.guest_meals (meal_date, period_id, breakfast_guests)
-                   values ($1, $2, 7) on conflict (meal_date) do update set breakfast_guests = 7$s$,
+                   values ($1, $3, 7) on conflict (period_id, meal_date) do update set breakfast_guests = 7$s$,
                 $s$insert into public.guest_meals (meal_date, period_id, lunch_guests)
                    values ('2099-01-10', 'a1000000-0000-4000-8000-00000000000a', 100)$s$],
           $s$select count(*)::text from public.get_today_guest_meals()$s$, '1'),
@@ -173,9 +177,9 @@ begin
                    ('b1000000-0000-4000-8000-00000000000b', '2099-02-10', 'Other', 9999)$s$],
           $s$select format('%s entries, %s', entry_count, total_amount)
              from public.get_spending_total('a1000000-0000-4000-8000-00000000000a')$s$, '4 entries, 10700.00'),
-      (26, 'Spending dated outside the month refused', 'manager A', null,
+      (26, 'Spending dated after the month''s last day refused', 'manager A', null,
           $s$insert into public.spending_records (period_id, spent_on, person_name, amount)
-             values ('a1000000-0000-4000-8000-00000000000a', '2099-02-05', 'Rahim', 100) returning 'ALLOW'$s$, 'REJECT'),
+             values ('a1000000-0000-4000-8000-00000000000a', '2099-02-06', 'Rahim', 100) returning 'ALLOW'$s$, 'REJECT'),
       (27, 'Manager edits a spending', 'manager A',
           array[$s$insert into public.spending_records (id, period_id, spent_on, person_name, amount) values
                    ('51000000-0000-4000-8000-000000000001', 'a1000000-0000-4000-8000-00000000000a', '2099-01-28', 'Rahim', 3000)$s$],
@@ -278,11 +282,10 @@ begin
       insert into public.employee_accounts (employee_id, phone, user_id)
       values (v_emp, '01999999998', v_emp_login);
 
-      -- Today's mess month, for the cook's board: the real one if a manager
-      -- has signed up for it, otherwise a throwaway one.
-      select id into v_today_period
-        from public.mess_periods
-       where v_today >= start_date and v_today < end_date;
+      -- Today's months, for the cook's board: whoever owns today's lunch and
+      -- today's breakfast (on the 5th, two months; migration 0015). The real
+      -- ones if a manager has signed up for them, otherwise throwaway ones.
+      v_today_period := private.get_meal_period(v_today, 'lunch');
       if v_today_period is null then
         insert into auth.users (id, email, aud, role)
         values (v_mgr_today, 'zz-guest-check-today@mess-manager.test', 'authenticated', 'authenticated');
@@ -291,10 +294,19 @@ begin
         values (v_mgr_today, v_today, v_today + 1)
         returning id into v_today_period;
       end if;
+      v_today_bf_period := private.get_meal_period(v_today, 'breakfast');
+      if v_today_bf_period is null then
+        insert into auth.users (id, email, aud, role)
+        values (md5('zz-guest-check-today-bf')::uuid, 'zz-guest-check-today-bf@mess-manager.test', 'authenticated', 'authenticated');
+        insert into public.admin_profiles (id, full_name) values (md5('zz-guest-check-today-bf')::uuid, 'zz guest check today bf');
+        insert into public.mess_periods (manager_id, start_date, start_meal, end_date, end_meal)
+        values (md5('zz-guest-check-today-bf')::uuid, v_today - 1, 'dinner', v_today, 'breakfast')
+        returning id into v_today_bf_period;
+      end if;
 
       if c.setup is not null then
         foreach v_stmt in array c.setup loop
-          execute v_stmt using v_today, v_today_period;
+          execute v_stmt using v_today, v_today_period, v_today_bf_period;
         end loop;
       end if;
 
@@ -309,7 +321,7 @@ begin
         set local role authenticated;
       end if;
 
-      execute c.sql into v_got using v_today, v_today_period;
+      execute c.sql into v_got using v_today, v_today_period, v_today_bf_period;
       raise exception using errcode = 'P0T01', message = coalesce(v_got, 'ALLOW');
     exception when others then
       -- Everything above, fixtures included, is rolled back here.

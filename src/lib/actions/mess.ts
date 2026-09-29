@@ -279,9 +279,10 @@ const SPENDING_NOT_SET_UP = "Spending isn’t set up yet — run migration 0014.
 /**
  * Declares how many guests eat each meal on one date. The office pays for
  * them at fixed rates, and every bill is worked out from these counts
- * (src/lib/utils/guests.ts). One record per date, so saving a date again
- * overwrites its counts; all three at 0 removes the date's record, like the
- * menu.
+ * (src/lib/utils/guests.ts). One record per month and date, so saving a
+ * date again overwrites its counts; all three at 0 removes the date's
+ * record, like the menu. On the 5th, each month's record holds only its own
+ * meals' guests — the database refuses the rest (0015).
  */
 export async function setGuestMeals(dateStr: string, input: GuestCounts): Promise<ActionResult> {
   const period = await requirePeriod();
@@ -311,7 +312,7 @@ export async function setGuestMeals(dateStr: string, input: GuestCounts): Promis
           lunch_guests: counts.lunch,
           dinner_guests: counts.dinner,
         },
-        { onConflict: "meal_date" }
+        { onConflict: "period_id,meal_date" }
       )
     : await supabase
         .from("guest_meals")
@@ -323,7 +324,11 @@ export async function setGuestMeals(dateStr: string, input: GuestCounts): Promis
     console.error("setGuestMeals failed", error);
     return {
       ok: false,
-      error: isMissingFromDatabase(error) ? GUESTS_NOT_SET_UP : "Could not save the guests.",
+      error: isMissingFromDatabase(error)
+        ? GUESTS_NOT_SET_UP
+        : error.message?.includes("GUEST_MEAL_PERIOD")
+          ? "On this date you can only declare guests for your own month’s meals."
+          : "Could not save the guests.",
     };
   }
 
