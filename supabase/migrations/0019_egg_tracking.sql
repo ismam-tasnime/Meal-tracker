@@ -468,3 +468,73 @@ $$;
 revoke all on function public.get_my_egg_days(date) from public;
 revoke all on function public.get_my_egg_days(date) from anon;
 grant execute on function public.get_my_egg_days(date) to authenticated;
+
+-- ---------------------------------------------------------------------------
+-- 6. The dashboard: the month's egg charges beside its meal bill
+-- ---------------------------------------------------------------------------
+
+-- Every number is as in 0015 — same employees, same meal count, same
+-- deposits, and total_bill is still the MEAL bill only. What is new is
+-- egg_total, so the Dashboard can show the egg charges and the full bill
+-- (meal + egg) the same way the Expense Status and Report tables do.
+-- total_due was already the full picture: it adds up the report's balances,
+-- which bill eggs from section 3 onwards.
+-- The return type changes, so the old version has to be dropped first.
+drop function if exists public.get_dashboard_stats(uuid, date);
+
+create function public.get_dashboard_stats(p_period_id uuid, p_today date)
+returns table (
+  active_employees bigint,
+  today_in_period boolean,
+  today_breakfast bigint,
+  today_lunch bigint,
+  today_dinner bigint,
+  meal_count numeric,
+  total_deposit numeric,
+  total_bill numeric,
+  egg_total numeric,
+  total_due numeric
+)
+language sql
+stable
+security invoker
+set search_path = public
+as $$
+  with period as (
+    select id, start_date, end_date, first_slot, last_slot, meal_rate
+    from public.mess_periods
+    where id = p_period_id
+  ),
+  report as (
+    select * from public.get_period_report(p_period_id)
+  ),
+  today as (
+    select
+      count(*) filter (where breakfast) as breakfast,
+      count(*) filter (where lunch) as lunch,
+      count(*) filter (where dinner) as dinner
+    from public.meal_records
+    where meal_date = p_today
+  )
+  select
+    (select count(*) from public.employees where is_active),
+    p_today between period.start_date and period.end_date,
+    case when private.meal_slot(p_today, 'breakfast') between period.first_slot and period.last_slot
+         then today.breakfast end,
+    case when private.meal_slot(p_today, 'lunch') between period.first_slot and period.last_slot
+         then today.lunch end,
+    case when private.meal_slot(p_today, 'dinner') between period.first_slot and period.last_slot
+         then today.dinner end,
+    coalesce((select sum(meal_count) from report), 0),
+    coalesce((select sum(total_deposit) from report), 0),
+    case when period.meal_rate is null then null
+         else coalesce((select sum(total_bill) from report), 0) end,
+    coalesce((select sum(egg_total) from report), 0),  -- known with or without a rate
+    case when period.meal_rate is null then null
+         else coalesce((select sum(-balance) from report where balance < 0), 0) end
+  from period cross join today;
+$$;
+
+revoke all on function public.get_dashboard_stats(uuid, date) from public;
+revoke execute on function public.get_dashboard_stats(uuid, date) from anon;
+grant execute on function public.get_dashboard_stats(uuid, date) to authenticated;

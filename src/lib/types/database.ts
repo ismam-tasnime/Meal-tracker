@@ -285,8 +285,11 @@ export type DashboardStatsRow = {
   today_dinner: number | null;
   meal_count: number;
   total_deposit: number;
-  /** Null until the meal rate is set. */
+  /** The MEAL bill only. Null until the meal rate is set. */
   total_bill: number | null;
+  /** The month's egg charges; known with or without a meal rate (0019). */
+  egg_total: number;
+  /** Measured against the full bill (meals + eggs). Null until the rate is set. */
   total_due: number | null;
 };
 

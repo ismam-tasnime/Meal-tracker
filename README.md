@@ -166,6 +166,7 @@ supabase/
   tests/token_signup_check.sql  Same, for the Token Number rules (changes nothing)
   tests/employee_id_signup_check.sql  Same, for Employee ID sign-up and sign-in (changes nothing)
   tests/egg_tracking_check.sql  Same, for eggs and egg billing (changes nothing)
+  tests/egg_bill_boundary_check.sql  Same, for the meal bill being untouched by eggs (changes nothing)
 ```
 
 ## Database schema
@@ -376,6 +377,14 @@ again, dates and months outside the manager's own refused, each month
 keeping its own eggs, employees reading only their own and never writing,
 signed-out visitors refused, and a price change never re-pricing eggs
 already recorded.
+
+`supabase/tests/egg_bill_boundary_check.sql` re-runs the bill checks of
+`manager_periods_check.sql` — same fixtures, same expected values — against
+the versions of those functions that carry the egg columns, then adds eggs
+and expects every meal number to stay exactly as it was. The boundary dates
+carry deliberately wrong meal counts (9.99) for the meals their month
+doesn't own, so a bill that ever priced a meal from the wrong month would
+fail loudly.
 
 `supabase/tests/manager_periods_check.sql` does the same for manager
 periods (migration 0015): whose meal each boundary meal is (5 Sep breakfast

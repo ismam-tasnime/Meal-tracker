@@ -12,8 +12,13 @@ export type DashboardStats = {
   today: { breakfast: number | null; lunch: number | null; dinner: number | null } | null;
   periodMealCount: number;
   periodDeposits: number;
-  /** Null until the meal rate is set. */
+  /** The meal bill only. Null until the meal rate is set. */
   periodBill: number | null;
+  /** The month's egg charges, an extra charge on top of the meal bill (0019). */
+  periodEggs: number;
+  /** The meal bill plus the egg charges. Null until the meal rate is set. */
+  periodTotalBill: number | null;
+  /** Counts the egg charges too, like every other balance. */
   totalDue: number | null;
 };
 
@@ -42,6 +47,8 @@ export async function getDashboardStats(period: MessPeriod): Promise<DashboardSt
     periodMealCount: num(data.meal_count),
     periodDeposits: num(data.total_deposit),
     periodBill: data.total_bill === null ? null : num(data.total_bill),
+    periodEggs: num(data.egg_total),
+    periodTotalBill: data.total_bill === null ? null : num(data.total_bill) + num(data.egg_total),
     totalDue: data.total_due === null ? null : num(data.total_due),
   };
 }

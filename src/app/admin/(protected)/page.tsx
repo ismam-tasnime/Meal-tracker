@@ -106,14 +106,24 @@ export default async function ManagerDashboardPage() {
             }
           />
           <StatCard
-            label="Total bill"
+            label="Meal bill"
             value={stats.periodBill === null ? "—" : formatBDT(stats.periodBill)}
             hint={range}
           />
           <StatCard
+            label="Egg charges"
+            value={formatBDT(stats.periodEggs)}
+            hint="Extra charge · not a meal"
+          />
+          <StatCard
+            label="Total bill"
+            value={stats.periodTotalBill === null ? "—" : formatBDT(stats.periodTotalBill)}
+            hint="Meals + eggs"
+          />
+          <StatCard
             label="Still due"
             value={stats.totalDue === null ? "—" : formatBDT(stats.totalDue)}
-            hint="From all employees"
+            hint="From all employees · meals + eggs"
           />
           <StatCard
             label="Guest bill to collect"
