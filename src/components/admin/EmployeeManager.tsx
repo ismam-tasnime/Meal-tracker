@@ -88,7 +88,7 @@ export function EmployeeManager({ initialEmployees: employees }: { initialEmploy
   function resetLogin(employee: Employee) {
     if (
       !confirm(
-        `Reset ${employee.name}'s login? They'll need to sign up again with token ${employee.token_no} and a new password. Their meals and deposits stay.`
+        `Reset ${employee.name}'s login? They'll need to sign up again with token ${employee.token_no}, an Employee ID and a new password. Their meals, eggs and deposits stay.`
       )
     ) {
       return;
@@ -194,7 +194,12 @@ export function EmployeeManager({ initialEmployees: employees }: { initialEmploy
                       </span>
                     )}
                   </span>
-                  <LoginStatus tokenNo={employee.token_no} hasLogin={employee.hasLogin} />
+                  <LoginStatus
+                    tokenNo={employee.token_no}
+                    hasLogin={employee.hasLogin}
+                    employeeCode={employee.employeeCode}
+                    phone={employee.phone}
+                  />
                 </div>
               )}
 
@@ -249,13 +254,28 @@ export function EmployeeManager({ initialEmployees: employees }: { initialEmploy
   );
 }
 
-/** Whether the employee has signed up with their Token Number. */
-function LoginStatus({ tokenNo, hasLogin }: { tokenNo: number | null; hasLogin: boolean }) {
+/**
+ * Whether the employee has signed up with their Token Number, and — once
+ * they have — the Employee ID they sign in with and the phone number they
+ * gave (0018). Managers can read these; they can't change them, and
+ * resetting the login clears the Employee ID.
+ */
+function LoginStatus({
+  tokenNo,
+  hasLogin,
+  employeeCode,
+  phone,
+}: {
+  tokenNo: number | null;
+  hasLogin: boolean;
+  employeeCode: string | null;
+  phone: string | null;
+}) {
   if (tokenNo === null) {
     return <span className="text-xs text-amber-700">No token number — can&rsquo;t sign up yet</span>;
   }
   return (
-    <span className="flex items-center gap-1.5 text-xs text-slate-500">
+    <span className="flex flex-wrap items-center gap-1.5 text-xs text-slate-500">
       {hasLogin ? (
         <span className="rounded-full bg-emerald-50 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700">
           Signed up
@@ -265,6 +285,8 @@ function LoginStatus({ tokenNo, hasLogin }: { tokenNo: number | null; hasLogin: 
           Not signed up
         </span>
       )}
+      {employeeCode && <span className="truncate">ID {employeeCode}</span>}
+      {phone && <span className="tabular-nums">{phone}</span>}
     </span>
   );
 }

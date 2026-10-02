@@ -13,13 +13,16 @@ export type Employee = {
 };
 
 /**
- * The link between an employee and, once they've signed up (with their
- * Token Number, 0017), their login. phone is an older, optional field.
+ * The link between an employee and their login. Sign-up is authorised by
+ * the Token Number and the employee signs in with their Employee ID
+ * (employee_code, 0018); the phone number is given at sign-up too.
  * Readable only by mess managers and by the employee themself.
  */
 export type EmployeeAccount = {
   employee_id: string;
-  /** "01XXXXXXXXX"; optional since sign-up moved to token numbers (0017). */
+  /** The Employee ID they sign in with; null until they sign up (0018). */
+  employee_code: string | null;
+  /** "01XXXXXXXXX"; optional on rows created before sign-up asked for it. */
   phone: string | null;
   /** Null until the employee signs up. */
   user_id: string | null;
@@ -27,8 +30,18 @@ export type EmployeeAccount = {
   updated_at: string;
 };
 
-/** Answers from employee_signup_status() / register_employee(). */
-export type EmployeeSignupStatus = "ok" | "not_found" | "inactive" | "taken";
+/**
+ * Answers from employee_signup_check() / register_employee_signup()
+ * (0018) and register_employee().
+ */
+export type EmployeeSignupStatus =
+  | "ok"
+  | "not_found"
+  | "inactive"
+  | "taken"
+  | "code_taken"
+  | "bad_code"
+  | "bad_phone";
 
 /** One employee's bill for one mess month (get_my_statement). */
 export type MyStatementRow = {
@@ -42,10 +55,27 @@ export type MyStatementRow = {
   lunch_count: number;
   dinner_count: number;
   meal_count: number;
+  /** Meal cost only: meal_count × published rate. Null until published. */
   total_bill: number | null;
+  /** Eggs eaten this month; always known, published rate or not (0019). */
+  egg_count: number;
+  /** Σ egg quantity × that record's price per egg. Never part of the meal count. */
+  egg_total: number;
+  /** total_bill + egg_total. Null until the rate is published. */
+  final_bill: number | null;
   total_deposit: number;
+  /** total_deposit − final_bill. Null until the rate is published. */
   balance: number | null;
   deposits: { amount: number; deposited_on: string; note: string | null }[];
+};
+
+/** One date of the signed-in employee's eggs (get_my_egg_days, 0019). */
+export type MyEggDayRow = {
+  meal_date: string;
+  egg_qty: number;
+  /** The price per egg this record was saved with. */
+  egg_price: number;
+  egg_total: number;
 };
 
 /** One day of the signed-in employee's meals, with that day's meal counts. */
@@ -120,6 +150,11 @@ export type MessPeriod = {
   meal_rate: number | null;
   /** The rate employees see with their bill; null until published. */
   published_meal_rate: number | null;
+  /**
+   * Price per egg (BDT) the manager is using this month; null until set
+   * (0019). Each egg record keeps the price it was saved with.
+   */
+  egg_price: number | null;
   /** When published_meal_rate was last set (set by the database). */
   rate_published_at: string | null;
   created_at: string;
@@ -143,6 +178,25 @@ export type Deposit = {
   deposited_on: string; // YYYY-MM-DD
   note: string | null;
   created_at: string;
+};
+
+/**
+ * One employee's eggs on one date (0019). Eggs are an extra charge and are
+ * never part of a meal count, a meal rate or a meal's ON/OFF status. At
+ * most one row per month, employee and date, so an edit can't charge twice.
+ */
+export type EggRecord = {
+  id: string;
+  period_id: string;
+  employee_id: string;
+  meal_date: string; // YYYY-MM-DD
+  egg_qty: number;
+  /** The price per egg this record was saved with; kept for history. */
+  egg_price: number;
+  /** egg_qty × egg_price, computed by the database. */
+  egg_total: number;
+  created_at: string;
+  updated_at: string;
 };
 
 /**
@@ -208,10 +262,16 @@ export type PeriodReportRow = {
   dinner_count: number;
   /** Weighted: Σ meals ON × that date's meal count. */
   meal_count: number;
-  /** meal_count × meal rate; null until the rate is set. */
+  /** Meal cost only: meal_count × meal rate. Null until the rate is set. */
   total_bill: number | null;
+  /** Eggs this employee ate this month; never part of the meal count (0019). */
+  egg_count: number;
+  /** Σ egg quantity × that record's price per egg. Known with or without a rate. */
+  egg_total: number;
+  /** total_bill + egg_total; null until the meal rate is set. */
+  final_bill: number | null;
   total_deposit: number;
-  /** total_deposit − total_bill: > 0 remaining, 0 settled, < 0 due. Null until the rate is set. */
+  /** total_deposit − final_bill: > 0 remaining, 0 settled, < 0 due. Null until the rate is set. */
   balance: number | null;
 };
 
@@ -302,6 +362,21 @@ export type Database = {
           },
         ];
       };
+      egg_records: {
+        Row: EggRecord;
+        // egg_total is computed by the database, never sent by a client.
+        Insert: Pick<EggRecord, "period_id" | "employee_id" | "meal_date" | "egg_qty" | "egg_price">;
+        Update: Partial<Pick<EggRecord, "egg_qty" | "egg_price">>;
+        Relationships: [
+          {
+            foreignKeyName: "egg_records_employee_id_fkey";
+            columns: ["employee_id"];
+            isOneToOne: false;
+            referencedRelation: "employees";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       guest_meals: {
         Row: GuestMeal;
         Insert: Partial<GuestMeal> & { meal_date: string; period_id: string };
@@ -355,6 +430,14 @@ export type Database = {
         Args: { p_token: number };
         Returns: EmployeeSignupStatus;
       };
+      employee_signup_check: {
+        Args: { p_token: number; p_code: string };
+        Returns: EmployeeSignupStatus;
+      };
+      register_employee_signup: {
+        Args: { p_token: number; p_name: string; p_phone: string; p_code: string };
+        Returns: EmployeeSignupStatus;
+      };
       register_employee: {
         Args: Record<string, never>;
         Returns: EmployeeSignupStatus;
@@ -370,6 +453,10 @@ export type Database = {
       get_my_statement: {
         Args: { p_start: string };
         Returns: MyStatementRow[];
+      };
+      get_my_egg_days: {
+        Args: { p_start: string };
+        Returns: MyEggDayRow[];
       };
       get_today_guest_meals: {
         Args: Record<string, never>;

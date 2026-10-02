@@ -18,6 +18,16 @@ import {
 import type { MealCutoffs } from "@/lib/utils/cutoffs";
 import { MAX_GUESTS, hasGuests, isValidGuestCount, type GuestCounts } from "@/lib/utils/guests";
 import {
+  DEFAULT_EGG_PRICE,
+  MAX_EGG_PRICE,
+  MAX_EGG_QTY,
+  NO_EGGS,
+  isValidEggPrice,
+  isValidEggQty,
+  roundEggAmount,
+  type EggEntry,
+} from "@/lib/utils/eggs";
+import {
   MAX_SPENDING_AMOUNT,
   cleanPersonName,
   isValidSpendingAmount,
@@ -336,6 +346,122 @@ export async function setGuestMeals(dateStr: string, input: GuestCounts): Promis
   // The cook's board is dynamic, so it shows the new counts on its next load.
   revalidateMoneyPages();
   return { ok: true };
+}
+
+
+const EGGS_NOT_SET_UP = "Egg tracking isn’t set up yet — run migration 0019.";
+
+/**
+ * "Price per egg": the price (BDT) this mess month charges for an egg.
+ * Every egg quantity saved from now on is stamped with it; egg records
+ * already saved keep the price they were saved with, so a price change
+ * never re-prices history. null clears it (the default price applies).
+ */
+export async function setEggPrice(price: number | null): Promise<ActionResult> {
+  const period = await requirePeriod();
+
+  if (price !== null && !isValidEggPrice(price)) {
+    return { ok: false, error: `Price per egg must be between 0 and ${MAX_EGG_PRICE}.` };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("mess_periods")
+    .update({ egg_price: price === null ? null : roundEggAmount(price) })
+    .eq("id", period.id);
+
+  if (error) {
+    console.error("setEggPrice failed", error);
+    return {
+      ok: false,
+      error: isMissingFromDatabase(error) ? EGGS_NOT_SET_UP : "Could not save the price per egg.",
+    };
+  }
+
+  // Every admin page is dynamic, so they read the new price on their next
+  // load; the Meal Status page keeps it in local state meanwhile.
+  return { ok: true };
+}
+
+export type EggSaveResult = { ok: true; entry: EggEntry } | { ok: false; error: string };
+
+/**
+ * Records how many eggs one employee ate on one date, at this month's
+ * current price per egg. Saving again overwrites that one record, so an
+ * edit can never charge twice, and 0 removes it (no record = no eggs = ৳0).
+ *
+ * Eggs are an extra charge only: nothing here touches meal_records, so no
+ * meal count, meal rate, meal status or deadline is affected.
+ */
+export async function setEggQty(
+  dateStr: string,
+  employeeId: string,
+  qty: number
+): Promise<EggSaveResult> {
+  const period = await requirePeriod();
+
+  if (!isValidDateStr(dateStr) || !isDateInPeriod(dateStr, period)) {
+    return { ok: false, error: "That date is outside your mess month." };
+  }
+  if (!employeeId) return { ok: false, error: "Pick an employee." };
+  const eggs = Number(qty);
+  if (!isValidEggQty(eggs)) {
+    return { ok: false, error: `Eggs must be a whole number from 0 to ${MAX_EGG_QTY}.` };
+  }
+
+  const supabase = await createClient();
+
+  if (eggs === 0) {
+    const { error } = await supabase
+      .from("egg_records")
+      .delete()
+      .eq("period_id", period.id)
+      .eq("employee_id", employeeId)
+      .eq("meal_date", dateStr);
+
+    if (error) {
+      console.error("setEggQty (delete) failed", error);
+      return {
+        ok: false,
+        error: isMissingFromDatabase(error) ? EGGS_NOT_SET_UP : "Could not save the eggs.",
+      };
+    }
+    return { ok: true, entry: NO_EGGS };
+  }
+
+  // numeric(10,2) in the database, so round here too — otherwise the screen
+  // would show a price the bill doesn't use.
+  const price = roundEggAmount(period.egg_price ?? DEFAULT_EGG_PRICE);
+
+  const { data, error } = await supabase
+    .from("egg_records")
+    .upsert(
+      {
+        period_id: period.id,
+        employee_id: employeeId,
+        meal_date: dateStr,
+        egg_qty: eggs,
+        egg_price: price,
+      },
+      { onConflict: "period_id,employee_id,meal_date" }
+    )
+    .select("egg_qty, egg_price, egg_total")
+    .single();
+
+  if (error || !data) {
+    if (error) console.error("setEggQty failed", error);
+    return {
+      ok: false,
+      error: error && isMissingFromDatabase(error) ? EGGS_NOT_SET_UP : "Could not save the eggs.",
+    };
+  }
+
+  // The total comes back from the database (a generated column), so what
+  // the manager sees is exactly what the bill will use.
+  return {
+    ok: true,
+    entry: { qty: Number(data.egg_qty), price: Number(data.egg_price), total: Number(data.egg_total) },
+  };
 }
 
 export type SpendingInput = { spentOn: string; personName: string; amount: number };

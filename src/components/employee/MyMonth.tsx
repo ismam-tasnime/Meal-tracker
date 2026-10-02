@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { BillCalculator } from "@/components/employee/BillCalculator";
 import { MealHistory } from "@/components/employee/MealHistory";
+import { MyEggs } from "@/components/employee/MyEggs";
 import { PublishedBill } from "@/components/employee/PublishedBill";
+import type { MyEggDay } from "@/lib/data/eggs";
 import type { MonthMealDay } from "@/lib/data/statement";
 import type { MyStatementRow } from "@/lib/types/database";
 import { formatBDT } from "@/lib/utils/currency";
@@ -18,7 +20,7 @@ import {
 
 /**
  * One mess month of the employee's own record: past meal counts (tap for
- * the dates), deposits, the published bill, and the dummy-rate bill
+ * the dates), eggs, deposits, the published bill, and the dummy-rate bill
  * calculator. Only a PUBLISHED meal rate is shown here, never one the mess
  * manager is testing.
  */
@@ -28,6 +30,7 @@ export function MyMonth({
   date,
   statement,
   days,
+  eggDays,
   cutoffs,
   serverNow,
 }: {
@@ -35,6 +38,8 @@ export function MyMonth({
   month: MessMonth;
   statement: MyStatementRow;
   days: MonthMealDay[];
+  /** This month's egg records, read-only (0019). */
+  eggDays: MyEggDay[];
   /** Kept in the month links so switching months doesn't lose the meal date. */
   date: string;
   cutoffs: MealCutoffs;
@@ -75,6 +80,9 @@ export function MyMonth({
         cutoffs={cutoffs}
         serverNow={serverNow}
       />
+
+      <h3 className="mt-1 text-sm font-bold text-slate-900">My eggs</h3>
+      <MyEggs statement={statement} days={eggDays} />
 
       <h3 className="mt-1 text-sm font-bold text-slate-900">My deposit</h3>
       <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">

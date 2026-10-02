@@ -29,8 +29,13 @@ function balanceLabel(balance: number | null): string {
 }
 
 /**
- * Employee → Meal Count → Total Bill → Total Deposit → Amount to be Paid.
- * Shared by Expense Status and the final Report.
+ * Employee → Meal Count → Meal Bill → Eggs → Total Bill → Total Deposit →
+ * Amount to be Paid. Shared by Expense Status and the final Report.
+ *
+ * The meal bill is the meal count × the meal rate, exactly as before; the
+ * egg charge (0019) is an extra on top, and the total bill — and so the
+ * amount to be paid — is the two added together. Egg costs are known even
+ * before a meal rate is set, so they are always shown.
  */
 export function BillSummaryTable({
   rows,
@@ -48,11 +53,13 @@ export function BillSummaryTable({
     (acc, r) => ({
       mealCount: acc.mealCount + r.meal_count,
       bill: acc.bill + (r.total_bill ?? 0),
+      eggs: acc.eggs + r.egg_total,
+      finalBill: acc.finalBill + (r.final_bill ?? 0),
       deposit: acc.deposit + r.total_deposit,
       due: acc.due + Math.max(0, -(r.balance ?? 0)),
       remaining: acc.remaining + Math.max(0, r.balance ?? 0),
     }),
-    { mealCount: 0, bill: 0, deposit: 0, due: 0, remaining: 0 }
+    { mealCount: 0, bill: 0, eggs: 0, finalBill: 0, deposit: 0, due: 0, remaining: 0 }
   );
 
   async function exportCsv() {
@@ -68,7 +75,10 @@ export function BillSummaryTable({
         Dinners: r.dinner_count,
         "Meal Count": r.meal_count.toFixed(2),
         "Meal Rate": rateSet ? Number(period.meal_rate).toFixed(2) : "",
-        "Total Bill": r.total_bill === null ? "" : r.total_bill.toFixed(2),
+        "Meal Bill": r.total_bill === null ? "" : r.total_bill.toFixed(2),
+        Eggs: r.egg_count,
+        "Egg Cost": r.egg_total.toFixed(2),
+        "Total Bill": r.final_bill === null ? "" : r.final_bill.toFixed(2),
         "Total Deposit": r.total_deposit.toFixed(2),
         "Amount to be Paid": r.balance === null ? "" : (-r.balance).toFixed(2),
         Status: balanceLabel(r.balance),
@@ -124,9 +134,21 @@ export function BillSummaryTable({
                 </dd>
               </div>
               <div>
-                <dt className="text-slate-400">Total bill</dt>
+                <dt className="text-slate-400">Meal bill</dt>
                 <dd className="font-semibold tabular-nums text-slate-700">
                   {r.total_bill === null ? "—" : formatBDT(r.total_bill)}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-slate-400">Eggs</dt>
+                <dd className="font-semibold tabular-nums text-slate-700">
+                  {r.egg_count === 0 ? "—" : `${r.egg_count} · ${formatBDT(r.egg_total)}`}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-slate-400">Total bill</dt>
+                <dd className="font-semibold tabular-nums text-slate-700">
+                  {r.final_bill === null ? "—" : formatBDT(r.final_bill)}
                 </dd>
               </div>
               <div>
@@ -152,7 +174,9 @@ export function BillSummaryTable({
           <li className="rounded-2xl border border-slate-200 bg-slate-50 p-3 text-xs">
             <p className="font-semibold text-slate-600">
               Total: {formatMealCount(totals.mealCount)} meal count ·{" "}
-              {rateSet ? formatBDT(totals.bill) : "—"} bill · {formatBDT(totals.deposit)} deposited
+              {rateSet ? formatBDT(totals.bill) : "—"} meal bill · {formatBDT(totals.eggs)} eggs ·{" "}
+              {rateSet ? formatBDT(totals.finalBill) : "—"} bill ·{" "}
+              {formatBDT(totals.deposit)} deposited
             </p>
             {rateSet && (
               <p className="mt-1">
@@ -168,7 +192,7 @@ export function BillSummaryTable({
       </ul>
 
       <div className="hidden overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm sm:block">
-        <table className="w-full min-w-[560px] text-sm">
+        <table className="w-full min-w-[720px] text-sm">
           <thead>
             <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
               <th className="sticky left-0 z-10 bg-slate-50 px-3 py-2 font-semibold">Employee</th>
@@ -176,6 +200,13 @@ export function BillSummaryTable({
                 <th className="px-2 py-2 text-center font-semibold">B / L / D</th>
               )}
               <th className="px-3 py-2 text-right font-semibold">Meal Count</th>
+              <th className="px-3 py-2 text-right font-semibold">Meal Bill</th>
+              <th className="px-3 py-2 text-right font-semibold">
+                Eggs
+                <span className="block text-[10px] font-semibold normal-case text-slate-400">
+                  extra charge
+                </span>
+              </th>
               <th className="px-3 py-2 text-right font-semibold">Total Bill</th>
               <th className="px-3 py-2 text-right font-semibold">Total Deposit</th>
               <th className="px-3 py-2 text-right font-semibold">Amount to be Paid</th>
@@ -204,6 +235,19 @@ export function BillSummaryTable({
                   {r.total_bill === null ? "—" : formatBDT(r.total_bill)}
                 </td>
                 <td className="px-3 py-2 text-right tabular-nums text-slate-700">
+                  {r.egg_count === 0 ? (
+                    "—"
+                  ) : (
+                    <>
+                      <span className="mr-1 text-xs text-slate-400">{r.egg_count} ×</span>
+                      {formatBDT(r.egg_total)}
+                    </>
+                  )}
+                </td>
+                <td className="px-3 py-2 text-right font-semibold tabular-nums text-slate-800">
+                  {r.final_bill === null ? "—" : formatBDT(r.final_bill)}
+                </td>
+                <td className="px-3 py-2 text-right tabular-nums text-slate-700">
                   {formatBDT(r.total_deposit)}
                 </td>
                 <td className="px-3 py-2 text-right">
@@ -213,7 +257,7 @@ export function BillSummaryTable({
             ))}
             {rows.length === 0 && (
               <tr>
-                <td colSpan={showMealBreakdown ? 6 : 5} className="px-3 py-6 text-center text-slate-400">
+                <td colSpan={showMealBreakdown ? 8 : 7} className="px-3 py-6 text-center text-slate-400">
                   No employees yet.
                 </td>
               </tr>
@@ -231,6 +275,12 @@ export function BillSummaryTable({
                 </td>
                 <td className="px-3 py-2 text-right font-semibold tabular-nums text-slate-800">
                   {rateSet ? formatBDT(totals.bill) : "—"}
+                </td>
+                <td className="px-3 py-2 text-right font-semibold tabular-nums text-slate-800">
+                  {formatBDT(totals.eggs)}
+                </td>
+                <td className="px-3 py-2 text-right font-semibold tabular-nums text-slate-800">
+                  {rateSet ? formatBDT(totals.finalBill) : "—"}
                 </td>
                 <td className="px-3 py-2 text-right font-semibold tabular-nums text-slate-800">
                   {formatBDT(totals.deposit)}

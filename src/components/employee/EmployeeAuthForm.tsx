@@ -4,14 +4,50 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { signInEmployee, signUpEmployee } from "@/lib/actions/employee-auth";
+import { MAX_EMPLOYEE_ID } from "@/lib/utils/employee-id";
 
 const INPUT_CLASS =
   "h-11 rounded-xl border border-slate-300 px-3 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500";
 
-/** Employee sign-in and sign-up: Token Number + password. */
+const LABEL_CLASS = "text-sm font-semibold text-slate-700";
+
+/** One labelled text box, with an optional hint under it. */
+function Field({
+  id,
+  label,
+  hint,
+  children,
+}: {
+  id: string;
+  label: string;
+  hint?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="flex flex-col gap-1.5">
+      <label htmlFor={id} className={LABEL_CLASS}>
+        {label}
+      </label>
+      {children}
+      {hint && <p className="text-xs text-slate-400">{hint}</p>}
+    </div>
+  );
+}
+
+/**
+ * Employee sign-in (Employee ID + password) and sign-up (full name, Token
+ * Number, Employee ID, phone number and a password, twice).
+ *
+ * The Token Number is only asked for at sign-up: it is checked against the
+ * mess manager's employee list and is what attaches the new account to that
+ * employee record. Signing in afterwards uses the Employee ID.
+ */
 export function EmployeeAuthForm({ mode, next = "/employee" }: { mode: "login" | "signup"; next?: string }) {
   const router = useRouter();
+  const [name, setName] = useState("");
   const [token, setToken] = useState("");
+  const [employeeId, setEmployeeId] = useState("");
+  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -23,14 +59,14 @@ export function EmployeeAuthForm({ mode, next = "/employee" }: { mode: "login" |
     setError(null);
 
     if (isSignup && password !== confirmPassword) {
-      setError("Passwords do not match.");
+      setError("Password and Confirm Password do not match.");
       return;
     }
 
     startTransition(async () => {
       const result = isSignup
-        ? await signUpEmployee(token, password)
-        : await signInEmployee(token, password);
+        ? await signUpEmployee({ name, token, employeeId, phone, password, confirmPassword })
+        : await signInEmployee(employeeId, password);
       if (result.ok) {
         // replace() fetches the page fresh; no extra refresh() needed.
         router.replace(next);
@@ -42,33 +78,77 @@ export function EmployeeAuthForm({ mode, next = "/employee" }: { mode: "login" |
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-      <div className="flex flex-col gap-1.5">
-        <label htmlFor="token" className="text-sm font-semibold text-slate-700">
-          Token Number
-        </label>
-        <input
+      {isSignup && (
+        <Field id="name" label="Full name">
+          <input
+            id="name"
+            type="text"
+            required
+            maxLength={80}
+            autoComplete="name"
+            placeholder="Md. Rahim Uddin"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className={INPUT_CLASS}
+          />
+        </Field>
+      )}
+
+      {isSignup && (
+        <Field
           id="token"
+          label="Token Number"
+          hint="The number the mess manager has on the employee list."
+        >
+          <input
+            id="token"
+            type="text"
+            required
+            inputMode="numeric"
+            pattern="[0-9]*"
+            placeholder="12"
+            value={token}
+            onChange={(e) => setToken(e.target.value)}
+            className={INPUT_CLASS}
+          />
+        </Field>
+      )}
+
+      <Field
+        id="employeeId"
+        label="Employee ID"
+        hint={isSignup ? "You will sign in with this. Letters, numbers, - and _." : undefined}
+      >
+        <input
+          id="employeeId"
           type="text"
           required
-          inputMode="numeric"
-          pattern="[0-9]*"
+          maxLength={MAX_EMPLOYEE_ID}
           autoComplete="username"
-          placeholder="12"
-          value={token}
-          onChange={(e) => setToken(e.target.value)}
+          placeholder="EMP-1024"
+          value={employeeId}
+          onChange={(e) => setEmployeeId(e.target.value)}
           className={INPUT_CLASS}
         />
-        {isSignup && (
-          <p className="text-xs text-slate-400">
-            The number the mess manager has on the employee list.
-          </p>
-        )}
-      </div>
+      </Field>
 
-      <div className="flex flex-col gap-1.5">
-        <label htmlFor="password" className="text-sm font-semibold text-slate-700">
-          Password
-        </label>
+      {isSignup && (
+        <Field id="phone" label="Phone number" hint="Your mobile number, like 01712345678.">
+          <input
+            id="phone"
+            type="tel"
+            required
+            inputMode="tel"
+            autoComplete="tel"
+            placeholder="01712345678"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            className={INPUT_CLASS}
+          />
+        </Field>
+      )}
+
+      <Field id="password" label="Password" hint={isSignup ? "At least 6 characters." : undefined}>
         <input
           id="password"
           type="password"
@@ -79,14 +159,10 @@ export function EmployeeAuthForm({ mode, next = "/employee" }: { mode: "login" |
           onChange={(e) => setPassword(e.target.value)}
           className={INPUT_CLASS}
         />
-        {isSignup && <p className="text-xs text-slate-400">At least 6 characters.</p>}
-      </div>
+      </Field>
 
       {isSignup && (
-        <div className="flex flex-col gap-1.5">
-          <label htmlFor="confirmPassword" className="text-sm font-semibold text-slate-700">
-            Confirm password
-          </label>
+        <Field id="confirmPassword" label="Confirm password">
           <input
             id="confirmPassword"
             type="password"
@@ -96,7 +172,7 @@ export function EmployeeAuthForm({ mode, next = "/employee" }: { mode: "login" |
             onChange={(e) => setConfirmPassword(e.target.value)}
             className={INPUT_CLASS}
           />
-        </div>
+        </Field>
       )}
 
       {error && (

@@ -7,6 +7,7 @@ import { RetryButton } from "@/components/RetryButton";
 import { getEmployeeSession, type EmployeeSession } from "@/lib/auth/employee-session";
 import { EmployeeSignOutButton } from "@/components/employee/EmployeeSignOutButton";
 import { getDayMenu, getMealCutoffs } from "@/lib/data/meals";
+import { getMyEggDays } from "@/lib/data/eggs";
 import { getMyMeals, getMyMonthMeals, getMyStatement } from "@/lib/data/statement";
 import { formatCutoff } from "@/lib/utils/cutoffs";
 import { isValidDateStr, todayInOfficeTz } from "@/lib/utils/date";
@@ -50,7 +51,7 @@ export default async function EmployeePanelPage({
             ? "The connection to the database failed. Check your internet and try again."
             : employee
               ? "Your employee account has been deactivated. Please contact the mess manager."
-              : "This login isn’t linked to an employee. Sign out and sign in with your Token Number."}
+              : "This login isn’t linked to an employee. Sign out and sign in with your Employee ID."}
         </p>
         {loadFailed && (
           <div className="mt-4">
@@ -68,15 +69,17 @@ export default async function EmployeePanelPage({
   let meals: Awaited<ReturnType<typeof getMyMeals>> | null = null;
   let statement: Awaited<ReturnType<typeof getMyStatement>> = null;
   let monthDays: Awaited<ReturnType<typeof getMyMonthMeals>> = [];
+  let eggDays: Awaited<ReturnType<typeof getMyEggDays>> = [];
   // Never throws (falls back to "nothing announced"), so it can't fail the page.
   const menuPromise = getDayMenu(date);
   // getMealCutoffs never throws (falls back to defaults), so it can't fail the page.
   const cutoffsPromise = getMealCutoffs();
   try {
-    [meals, statement, monthDays] = await Promise.all([
+    [meals, statement, monthDays, eggDays] = await Promise.all([
       getMyMeals(employee.id, date),
       getMyStatement(month),
       getMyMonthMeals(month),
+      getMyEggDays(month),
     ]);
   } catch (err) {
     console.error("Failed to load the Employee Panel", err);
@@ -153,6 +156,7 @@ export default async function EmployeePanelPage({
               date={date}
               statement={statement}
               days={monthDays}
+              eggDays={eggDays}
               cutoffs={cutoffs}
               serverNow={serverNow}
             />

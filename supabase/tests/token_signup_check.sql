@@ -1,5 +1,9 @@
--- Checks employee sign-up by Token Number (migration 0017). Paste into the
--- Supabase SQL editor and Run; one row per check, every row should say PASS.
+-- Checks what migration 0017 still owns: the Token Number is unique, is
+-- checked against the employee list before anyone can sign up, and can't
+-- change under an employee who has signed up. Creating the login itself
+-- moved to the Employee ID in 0018 — see employee_id_signup_check.sql.
+-- Paste into the Supabase SQL editor and Run; one row per check, every row
+-- should say PASS.
 --
 -- Safe on the live project: changes nothing. Each check runs in its own
 -- sub-transaction that is always rolled back, fixtures included. The test
@@ -36,17 +40,14 @@ begin
           $s$select public.employee_signup_status(990003)$s$, 'inactive'),
       (4, 'A token that already signed up is taken', 'anon',
           $s$select public.employee_signup_status(990002)$s$, 'taken'),
-      (5, 'Signing up links the login to that employee, with no phone', 'new-login',
-          $s$select public.register_employee();
-             select (select count(*) from public.employee_accounts a where a.user_id = auth.uid()) || ' / '
-                    || (select (a.phone is null)::text from public.employee_accounts a where a.user_id = auth.uid())$s$,
-          '1 / true'),
-      (6, 'The new employee can mark their own meals', 'new-login',
-          $s$select public.register_employee();
-             insert into public.meal_records (employee_id, meal_date, lunch)
-             values (md5('tk-e1')::uuid, (now() at time zone 'Asia/Dhaka')::date + 2, true) returning 'ALLOW'$s$, 'ALLOW'),
-      (7, 'A second login for a taken token is refused', 'dup-login',
-          $s$select public.register_employee()$s$, 'taken'),
+      (5, 'A token address alone no longer links a login (0018)', 'new-login',
+          $s$select public.register_employee()$s$, 'not_found'),
+      (6, 'An employee who hasn''t signed up can''t mark meals', 'new-login',
+          $s$insert into public.meal_records (employee_id, meal_date, lunch)
+             values (md5('tk-e1')::uuid, (now() at time zone 'Asia/Dhaka')::date + 2, true) returning 'ALLOW'$s$,
+          'REJECT'),
+      (7, 'A second login for a taken token can''t link either', 'dup-login',
+          $s$select public.register_employee()$s$, 'not_found'),
       (8, 'Two employees can''t share a token', 'postgres',
           $s$update public.employees set token_no = 990002 where id = md5('tk-e1')::uuid returning 'ALLOW'$s$, 'REJECT'),
       (9, 'A signed-up employee''s token can''t change under their login', 'postgres',

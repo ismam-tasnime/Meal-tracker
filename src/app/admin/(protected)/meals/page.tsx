@@ -5,6 +5,7 @@ import { MealMenuForm } from "@/components/admin/MealMenuForm";
 import { PeriodStatusNotice } from "@/components/admin/PeriodStatusNotice";
 import { getMyMealAccess } from "@/lib/data/access";
 import { getAdminMealSheet, getDayMenu, getMealCutoffs } from "@/lib/data/meals";
+import { getEggSheet } from "@/lib/data/eggs";
 import { getDayWeights } from "@/lib/data/mess";
 import { getMyPeriod } from "@/lib/data/periods";
 import { isValidDateStr, todayInOfficeTz } from "@/lib/utils/date";
@@ -41,13 +42,15 @@ export default async function ManagerMealStatusPage({
   let rows: Awaited<ReturnType<typeof getAdminMealSheet>> = [];
   let weights: Awaited<ReturnType<typeof getDayWeights>> | null = null;
   let menu: Awaited<ReturnType<typeof getDayMenu>> = EMPTY_DAY_MENU;
+  let eggs: Awaited<ReturnType<typeof getEggSheet>> = {};
   let loadError: string | null = null;
   try {
-    [access, rows, weights, menu] = await Promise.all([
+    [access, rows, weights, menu, eggs] = await Promise.all([
       getMyMealAccess(date),
       inPeriod ? getAdminMealSheet(date) : [],
       inPeriod ? getDayWeights(period.id, date) : null,
       inPeriod ? getDayMenu(date) : EMPTY_DAY_MENU,
+      inPeriod ? getEggSheet(period.id, date) : {},
     ]);
   } catch {
     loadError = "Could not load meal records.";
@@ -60,7 +63,7 @@ export default async function ManagerMealStatusPage({
         <h1 className="text-lg font-bold tracking-tight text-slate-900">Meal Status</h1>
         <p className="text-sm text-slate-500">
           Pick a date to announce what&rsquo;s cooking, see who ate, set that date&rsquo;s meal
-          counts, and fix any employee&rsquo;s meal ON/OFF. You can change the meals of your own
+          counts, record eggs, and fix any employee&rsquo;s meal ON/OFF. You can change the meals of your own
           manager period ({formatPeriodMeals(period)}) until its last day — employee deadlines
           don&rsquo;t apply to you.
         </p>
@@ -88,6 +91,8 @@ export default async function ManagerMealStatusPage({
             initialRows={rows}
             initialWeights={{ breakfast: weights.breakfast, lunch: weights.lunch, dinner: weights.dinner }}
             weightsCustomised={weights.customised}
+            initialEggs={eggs}
+            initialEggPrice={period.egg_price ?? null}
             owned={access.owned}
             canChange={access.canChange}
             otherMonth={formatNeighbourMonthTitle(period, date)}

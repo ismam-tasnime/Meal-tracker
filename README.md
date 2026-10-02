@@ -9,7 +9,7 @@ e.g. Lunch: 175 employee meals · 100 guests · 275 to prepare. It refreshes
 itself every minute. The header links to the two panels:
 
 - **Employee Panel** (`/employee`) — each employee signs in with their own
-  Token Number and password, and sees only their own things. Nobody can
+  Employee ID and password, and sees only their own things. Nobody can
   change anyone else's meals. See [Employee accounts](#employee-accounts).
   - **My meals** — their breakfast/lunch/dinner ON/OFF for any date,
     changeable within the meal deadlines (see below). Past days are locked,
@@ -18,6 +18,10 @@ itself every minute. The header links to the two panels:
     dinners they have already had; tapping one lists the dates (read-only,
     🔒). Past meals only: a meal counts once its day is over or today's
     deadline has passed, so upcoming meals switched ON don't count yet.
+  - **My eggs** — for any mess month: eggs consumed, the price per egg, the
+    egg total, and the same date by date (Date · Eggs · Price/egg · Total).
+    Read-only: only the mess manager records eggs or sets their price. Eggs
+    are an extra charge and never part of the meal count above.
   - **My deposit** — the month's total and each deposit.
   - **Bill calculator** — a **Dummy meal rate** box: type any rate to see
     the bill it would give for their past meals (meal count × rate) and what
@@ -28,9 +32,10 @@ itself every minute. The header links to the two panels:
     phone another employee never sees it), and signing out erases it
     (`src/lib/dummy-rate.ts`).
   - **My bill** — once the mess manager **publishes** the meal rate, a
-    "The meal rate has been published" message with the rate, their total
-    bill, what they've paid, and their due or refund. A rate the manager is
-    only testing is never shown here.
+    "The meal rate has been published" message with the rate, their meal
+    cost, their egg charges, the total bill, what they've paid, and their
+    due or refund. A rate the manager is only testing is never shown here,
+    and an egg charge joins the bill only once the rate is published.
 - **Mess Manager Panel** (`/admin`) — one account per mess month, shared by
   that month's team (~5 people). Each month's **manager period** runs meal
   by meal from the 5th's **lunch** to the next month's 5th **breakfast**
@@ -43,8 +48,13 @@ itself every minute. The header links to the two panels:
     Manager Period**, **Manager Period Completed** or **Manager Period Not
     Started**, and the month's figures.
   - **Meal Status** — pick a date, set that date's meal counts
-    (Breakfast 0.75 / Lunch 1.25 / Dinner 1.00 by default), and see every
-    employee's ON/OFF. A manager can fix ON/OFF only for the meals of their
+    (Breakfast 0.75 / Lunch 1.25 / Dinner 1.00 by default), set the month's
+    **price per egg**, and see every employee's ON/OFF with their **egg
+    qty · egg price · egg total** beside it. Eggs are an extra charge: a
+    quantity never adds to breakfast, lunch, dinner or the meal count, and
+    0 eggs removes the record. A quantity is saved at the price per egg of
+    the moment, so changing that price later never re-prices eggs already
+    recorded. A manager can fix ON/OFF only for the meals of their
     own manager period, and only while it's running; the employee
     deadlines don't apply to them. Once the period has ended the page is a
     read-only record of the month's meals. Also where the employee meal
@@ -77,11 +87,11 @@ itself every minute. The header links to the two panels:
     SPENDING**. Dates must be inside the mess month (both 5ths count, so a
     payment on the 5th can go in either month), and months never mix.
     Employees never see spending.
-  - **Report** — Employee → Meal Count → Total Bill → Total Deposit →
-    Amount to be Paid, with CSV export.
+  - **Report** — Employee → Meal Count → Meal Bill → Eggs → Total Bill →
+    Total Deposit → Amount to be Paid, with CSV export.
   - **Employees** — shared employee list (add, rename, deactivate), each
-    employee's Token Number and whether they've signed up, and a **Reset
-    login** button.
+    employee's Token Number, whether they've signed up, the Employee ID and
+    phone number they signed up with, and a **Reset login** button.
 
 ## How the money works
 
@@ -89,7 +99,9 @@ itself every minute. The header links to the two panels:
 daily meal count   = breakfast ON × breakfast count + lunch ON × lunch count + dinner ON × dinner count
 monthly meal count = sum of daily meal counts over the manager period's own meals
                      (5th lunch … next 5th breakfast)
-total bill         = monthly meal count × meal rate
+meal bill          = monthly meal count × meal rate
+egg bill           = sum over the month of (egg quantity × that record's price per egg)
+total bill         = meal bill + egg bill
 balance            = total deposit − total bill
                      > 0 → remaining (refund) · = 0 → fully settled · < 0 → due
 ```
@@ -121,7 +133,7 @@ src/
     page.tsx                 Landing page: today's read-only meal board (cook's view)
     employee/
       page.tsx               Employee Panel: my meals (ON/OFF) + my bill, signed-in employees only
-      login/page.tsx         Employee sign-in (Token Number + password, public route)
+      login/page.tsx         Employee sign-in (Employee ID + password, public route)
       signup/page.tsx        Employee sign-up (public route)
     admin/
       login/page.tsx         Mess manager sign-in (public route)
@@ -143,22 +155,27 @@ src/
     data/                    Read-only data fetching (server-only)
     actions/                 "use server" mutations (meals, mess money, employees, auth)
     auth/                    Mess manager / employee session resolution
-    utils/                   Date (Asia/Dhaka), mess month (5th–5th), currency (BDT), employee token login, guest-bill and spending helpers
+    utils/                   Date (Asia/Dhaka), mess month (5th–5th), currency (BDT), Employee ID / phone login, egg, guest-bill and spending helpers
     types/database.ts        Hand-written types mirroring the SQL schema
   proxy.ts                   Next.js 16 "Proxy" (formerly middleware) — session refresh + /admin and /employee gates
 supabase/
-  migrations/                 Run in order: 0001 schema … 0015 manager periods, 0016
+  migrations/                 Run in order: 0001 schema … 0018 Employee ID sign-in, 0019 eggs
   tests/meal_cutoffs_check.sql  Paste into the SQL Editor to verify meal deadlines (changes nothing)
   tests/guest_spending_check.sql  Same, for guest meals and spending (changes nothing)
   tests/manager_periods_check.sql  Same, for manager periods and data safety (changes nothing)
+  tests/token_signup_check.sql  Same, for the Token Number rules (changes nothing)
+  tests/employee_id_signup_check.sql  Same, for Employee ID sign-up and sign-in (changes nothing)
+  tests/egg_tracking_check.sql  Same, for eggs and egg billing (changes nothing)
 ```
 
 ## Database schema
 
 - **employees** — `id, token_no, name, is_active, created_at, updated_at`. `token_no` is the office token number (TKN), unique when set; lists are ordered by it and it's shown beside every name, since several employees share a name.
-- **employee_accounts** — `employee_id` (primary key), `user_id` (the login, null until the employee signs up), `phone` (optional since 0017; unique, `01XXXXXXXXX`; numbers added before are kept). Kept apart from `employees` because that table is public and phone numbers aren't.
-- **`register_employee()`** / **`employee_signup_status(token)`** / **`reset_employee_login(employee_id)`** — link a new login to the employee with its Token Number; check a token before signup; delete an employee's login (managers only). A signed-up employee's `token_no` can't change until their login is reset (`guard_employee_token`).
-- **`get_my_statement(month_start)`** — the signed-in employee's own deposits (and month totals) for one mess month. Answers only for the caller.
+- **employee_accounts** — `employee_id` (primary key), `user_id` (the login, null until the employee signs up), `employee_code` (the Employee ID they sign in with, unique case-insensitively, null until they sign up, 0018), `phone` (`01XXXXXXXXX`, asked for at sign-up since 0018; optional on older rows). Kept apart from `employees` because that table is public and these details aren't. No client can write `employee_code`: only the sign-up and reset functions do.
+- **`employee_signup_check(token, employee_id)`** / **`register_employee_signup(token, name, phone, employee_id)`** / **`register_employee()`** / **`reset_employee_login(employee_id)`** — check a Token Number *and* Employee ID before any login exists; finish a sign-up (link the login to the token's employee, store the Employee ID and phone, update that employee's name — never insert an employee); confirm a login is linked; delete an employee's login and clear their Employee ID (managers only). A signed-up employee's `token_no` and `employee_code` can't change until their login is reset (`guard_employee_token`, `guard_employee_account_code`).
+- **egg_records** — `id, period_id, employee_id, meal_date, egg_qty, egg_price, egg_total` (computed by the database), timestamps; unique on `(period_id, employee_id, meal_date)`, so an edit can never charge twice. Eggs are an extra charge and are never part of `meal_records`, so they can't touch a meal count, a meal rate or a meal's status. Each row keeps the price it was saved with, and belongs to one mess month (0019).
+- **`get_my_egg_days(month_start)`** — the signed-in employee's own eggs for one mess month, date by date. Answers only for the caller, read-only.
+- **`get_my_statement(month_start)`** — the signed-in employee's own deposits, meal bill, egg charge and final bill (and month totals) for one mess month. Answers only for the caller.
 - **`get_my_meal_days(month_start)`** — the signed-in employee's own meals for one mess month, day by day, with each day's meal counts, so the Employee Panel can count past meals only. Answers only for the caller.
 - **meal_records** — `id, employee_id, meal_date, breakfast, lunch, dinner, created_at, updated_at`, unique on `(employee_id, meal_date)`, indexed on both `employee_id` and `meal_date`
 - **meal_cutoffs** — one row: `breakfast_cutoff, lunch_cutoff, dinner_cutoff` (`time`, Bangladesh time) — the employee meal deadlines.
@@ -198,6 +215,7 @@ Enforced in Postgres, not just hidden in the UI:
 | `deposits` | **no access** | **no access** (own deposits via `get_my_statement`) | own period only (add / remove) |
 | `guest_meals` | **no access** (the meal board gets today's counts via `get_today_guest_meals`) | **no access** | own period's dates and meals only (add / change / remove) |
 | `spending_records` | **no access** | **no access** | own period's dates only (add / change / remove) |
+| `egg_records` | **no access** | read **own** rows only; no write at all | own period's dates only (add / change / remove) |
 | `admin_profiles` | no access | no access | read own row only |
 
 Month accounts can't see each other's periods, meal counts, deposits,
@@ -209,8 +227,10 @@ returns nothing.
 Nobody signed out can change a meal: `meal_records` is readable by anyone
 (the cook's board needs it) but writable only by a signed-in employee for
 their own row, or by a mess manager for their own running period's meals.
-An employee can't see anyone else's bill or deposits, or anyone's phone
-number.
+An employee can't see anyone else's bill, deposits, or eggs, or anyone's
+phone number or Employee ID. Employees can read their own egg charges but
+have no write policy on `egg_records` at all, so only a mess manager can
+change an egg quantity or price.
 
 ### Manager periods
 
@@ -339,6 +359,24 @@ spending entries per date, the month total (3,000 + 2,500 + 1,200 + 4,000 =
 10,700), edits and deletes, months kept apart, and employees, other months'
 managers and signed-out visitors refused. All should say PASS.
 
+`supabase/tests/employee_id_signup_check.sql` does the same for sign-up and
+sign-in (migration 0018): an unknown or deactivated token refused, a token
+that already signed up refused, an Employee ID another employee uses
+refused, a malformed Employee ID or phone number refused, sign-up linking
+the login and storing the Employee ID, phone and name without ever adding
+an employee record, a login only ever claiming the Employee ID it was
+created with, managers unable to write an Employee ID, and **Reset login**
+clearing the login and Employee ID while keeping the employee and phone.
+
+`supabase/tests/egg_tracking_check.sql` does the same for eggs (migration
+0019): quantity × price, no final bill before the meal rate is set, the
+final bill being meal cost + egg cost once it is, eggs never changing the
+meal count or any meal's status, no double charge when a quantity is saved
+again, dates and months outside the manager's own refused, each month
+keeping its own eggs, employees reading only their own and never writing,
+signed-out visitors refused, and a price change never re-pricing eggs
+already recorded.
+
 `supabase/tests/manager_periods_check.sql` does the same for manager
 periods (migration 0015): whose meal each boundary meal is (5 Sep breakfast
 → August, 5 Sep lunch → September, 5 Oct breakfast → September, 5 Oct lunch
@@ -354,25 +392,34 @@ periods or employees is blocked with nothing deleted. All should say PASS.
 
 1. The mess manager adds the employee with their Token Number under
    **Employees** (as before; tokens are unique).
-2. The employee opens `/employee/signup`, enters their Token Number and a
-   password (at least 6 characters), and is signed straight in. Signup
-   only works for a token on the employee list, only for an active
-   employee, and only once per token. No phone number is needed.
-3. After that they sign in at `/employee/login` with the token and
-   password.
+2. The employee opens `/employee/signup` and enters their full name, Token
+   Number, Employee ID, phone number and a password twice (at least 6
+   characters), and is signed straight in. Sign-up only works for a token
+   on the employee list, only for an active employee, and only once per
+   token — an unknown token is refused with *"Invalid token number. Please
+   contact the Mess Manager."* The Employee ID must be free (letters,
+   digits, `-` and `_`), and the phone number a Bangladesh mobile number.
+   The name typed here replaces that employee's name on the list, and the
+   Employee ID and phone number are stored on their account — no second
+   employee record is ever created.
+3. After that they sign in at `/employee/login` with their **Employee ID**
+   and password. The Token Number is no longer a login: it is what
+   authorises the sign-up and links the account to the employee record.
 
-Like the month logins below, each Token Number maps to a fixed internal
-login address — token `12` → `emp-t12@mess-manager.app`
-(`employeeAccountEmail()` in `src/lib/utils/token.ts`). Nobody types or
-sees it, and no mail or SMS is ever sent. Employees who signed up with a
-phone number before migration 0017 were moved to their token's address and
-keep their password; their stored phone numbers are kept.
+Like the month logins below, each Employee ID maps to a fixed internal
+login address — `EMP-1024` → `emp-id-emp-1024@mess-manager.app`
+(`employeeAccountEmail()` in `src/lib/utils/employee-id.ts`), so an ID is
+case-insensitive. Nobody types or sees that address, and no mail or SMS is
+ever sent. Employees who had signed up before migration 0018 were moved to
+such an address and keep their password; their Employee ID is their token
+number until a manager resets their login.
 
 **Forgotten password, or the wrong person signed up with a token**: the
 manager presses **Reset login** beside the employee. That deletes the
-login (not the employee, meals, or deposits), and the employee signs up
-again with a new password. A signed-up employee's token can't be changed
-until their login is reset.
+login and clears their Employee ID (not the employee, meals, eggs, or
+deposits), and the employee signs up again with a new password. A
+signed-up employee's token and Employee ID can't be changed until their
+login is reset.
 
 **Deactivated employees** can't sign up, and if already signed up they can
 still sign in but can't change meals or see their bill until reactivated.
@@ -520,9 +567,10 @@ required for the plain email/password flow used here).
 
 ## Still to configure before going live
 
-- [ ] Create the Supabase project and run the migrations above (for guests and spending: `0014_guest_meals_spending.sql`; for manager periods: `0015_manager_meal_periods.sql` and `0016_guest_trigger_invoker.sql`)
+- [ ] Create the Supabase project and run the migrations above (for guests and spending: `0014_guest_meals_spending.sql`; for manager periods: `0015_manager_meal_periods.sql` and `0016_guest_trigger_invoker.sql`; for Employee ID sign-in and eggs: `0018_employee_id_signup.sql` and `0019_egg_tracking.sql`)
 - [ ] Turn off "Confirm email" in Supabase Authentication settings
 - [ ] Each monthly team signs up once at `/admin/signup` (account name = month, e.g. `January2026`)
 - [ ] Add real employees, with their Token Numbers, via `/admin/employees`
-- [ ] Ask each employee to sign up once at `/employee/signup`
+- [ ] Ask each employee to sign up once at `/employee/signup` (name, token, Employee ID, phone, password)
+- [ ] Set the month's **price per egg** under **Meal Status** if the mess charges for eggs
 - [ ] Set `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY` in your deployment host

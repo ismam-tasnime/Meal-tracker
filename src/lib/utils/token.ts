@@ -10,11 +10,7 @@ export function normalizeTokenNo(input: string): number | null {
 
 export const TOKEN_HINT = "Enter your Token Number, like 12.";
 
-/**
- * The internal Supabase Auth login address behind an employee's Token
- * Number. Nobody sees it or receives mail at it. Must match the pattern in
- * private.register_employee() (0017_employee_token_signup.sql).
- */
-export function employeeAccountEmail(tokenNo: number): string {
-  return `emp-t${tokenNo}@mess-manager.app`;
-}
+// The Token Number authorises sign-up and links the new account to the
+// employee record, but it is no longer the login credential: employees sign
+// in with their Employee ID (src/lib/utils/employee-id.ts,
+// 0018_employee_id_signup.sql).

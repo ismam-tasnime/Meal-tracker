@@ -9,7 +9,8 @@ export default function EmployeeSignupPage() {
       <div className="mb-6 text-center">
         <h1 className="text-xl font-bold tracking-tight text-slate-900">Employee sign up</h1>
         <p className="mt-1 text-sm text-slate-500">
-          Use your Token Number from the employee list. Each Token Number can sign up once.
+          Your Token Number must be on the mess manager&rsquo;s employee list, and each Token
+          Number can sign up once. You sign in afterwards with your Employee ID.
         </p>
       </div>
       <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
